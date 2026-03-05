@@ -1,4 +1,7 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
+import { analyzeContract } from "./actions";
 
 type NavItem = {
   label: string;
@@ -37,7 +40,19 @@ function Sidebar() {
   );
 }
 
-function UploadSection() {
+type UploadSectionProps = {
+  text: string;
+  onTextChange: (value: string) => void;
+  onAnalyze: () => void;
+  loading: boolean;
+};
+
+function UploadSection({
+  text,
+  onTextChange,
+  onAnalyze,
+  loading,
+}: UploadSectionProps) {
   return (
     <section className="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-sm shadow-slate-200">
       <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -71,12 +86,22 @@ function UploadSection() {
           <div className="flex flex-1 flex-col rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
             <textarea
               placeholder="Vlož sem text smlouvy (Ctrl+V)…"
+              value={text}
+              onChange={(event) => onTextChange(event.target.value)}
               className="min-h-[140px] w-full flex-1 resize-none border-0 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
             />
             <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 text-xs text-slate-500">
               <span>Podporujeme češtinu i angličtinu.</span>
-              <button className="rounded-full bg-slate-900 px-3.5 py-1.5 text-xs font-medium text-slate-50 shadow-sm shadow-slate-400/40 transition hover:bg-slate-800">
-                Analyzovat smlouvu
+              <button
+                type="button"
+                onClick={onAnalyze}
+                disabled={loading}
+                className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3.5 py-1.5 text-xs font-medium text-slate-50 shadow-sm shadow-slate-400/40 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-800/70"
+              >
+                {loading && (
+                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-slate-50" />
+                )}
+                {loading ? "Analyzuji…" : "Analyzovat smlouvu"}
               </button>
             </div>
           </div>
@@ -129,6 +154,50 @@ function RecommendationCard({
 }
 
 export default function HomePage() {
+  const [contractText, setContractText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState<{
+    fixace: string;
+    uspora: string;
+    pojisteni: string;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleAnalyze = async () => {
+    if (!contractText.trim()) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result: any = await analyzeContract(contractText);
+
+      if (result && typeof result === "object" && "error" in result) {
+        setError(result.error || "Nepodařilo se analyzovat text.");
+        return;
+      }
+
+      setAnalysis({
+        fixace: result?.fixace ?? "Informace o fixaci nebyla nalezena",
+        uspora: result?.uspora ?? "Nelze odhadnout úsporu",
+        pojisteni: result?.pojisteni ?? "Nelze určit stav pojištění",
+      });
+    } catch {
+      setError("Něco se pokazilo při analýze. Zkus to prosím znovu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fixaceHighlight =
+    analysis?.fixace ?? "Za 3 měsíce";
+  const usporaHighlight =
+    analysis?.uspora ?? "Potenciální úspora ~1 850 Kč / měs.";
+  const pojisteniHighlight =
+    analysis?.pojisteni ?? "Pokrývá jen 60 % hodnoty";
+
   return (
     <div className="flex min-h-screen bg-slate-100 text-slate-900">
       <Sidebar />
@@ -150,33 +219,43 @@ export default function HomePage() {
           </header>
 
           <div className="flex flex-1 flex-col gap-6 pb-4">
-            <UploadSection />
+            <UploadSection
+              text={contractText}
+              onTextChange={setContractText}
+              onAnalyze={handleAnalyze}
+              loading={loading}
+            />
 
             <section className="rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-sm shadow-slate-200">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                   Doporučení od AI
                 </h2>
-                <span className="text-xs text-slate-500">
-                  Na základě posledně nahrané smlouvy
-                </span>
+                <div className="flex flex-col items-end gap-1 text-xs text-slate-500">
+                  <span>Na základě posledně nahrané smlouvy</span>
+                  {error && (
+                    <span className="text-[11px] font-medium text-rose-600">
+                      {error}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <RecommendationCard
                   title="Končící fixace"
-                  highlight="Za 3 měsíce"
+                  highlight={fixaceHighlight}
                   description="Doporučujeme začít řešit refinancování alespoň 2–3 měsíce před koncem fixace, abys stihl porovnat nabídky."
                   badge="Priorita"
                 />
                 <RecommendationCard
                   title="Výhodnější hypotéka"
-                  highlight="Potenciální úspora ~1 850 Kč / měs."
+                  highlight={usporaHighlight}
                   description="Na základě aktuálních sazeb by přechod k jiné bance mohl snížit měsíční splátku, aniž by se prodlužovala celková doba splácení."
                   badge="Tip trhu"
                 />
                 <RecommendationCard
                   title="Revize pojištění"
-                  highlight="Pokrývá jen 60 % hodnoty"
+                  highlight={pojisteniHighlight}
                   description="Pojištění nemovitosti je nastavené na nižší částku, než je její aktuální tržní hodnota. Zvaž navýšení limitů krytí."
                   badge="Bezpečnost"
                 />
