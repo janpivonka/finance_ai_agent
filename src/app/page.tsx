@@ -1,269 +1,74 @@
 "use client";
+import React from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, Sparkles } from "lucide-react";
 
-import React, { useState } from "react";
-import { analyzeContract } from "./actions";
+export default function DashboardPage() {
+  const router = useRouter();
 
-type NavItem = {
-  label: string;
-};
-
-const navItems: NavItem[] = [
-  { label: "Dashboard" },
-  { label: "Skenovat smlouvu" },
-  { label: "Historie" },
-];
-
-function Sidebar() {
   return (
-    <aside className="flex h-screen w-20 flex-col items-center border-r border-slate-800 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-6 text-slate-200">
-      <div className="mb-8 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-800/80 text-xs font-semibold tracking-tight">
-        FS
-      </div>
-      <nav className="flex flex-1 flex-col items-center gap-4">
-        {navItems.map((item, index) => (
-          <button
-            key={item.label}
-            className="group relative flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900/40 text-slate-400 ring-1 ring-transparent transition hover:bg-slate-800/70 hover:text-slate-50 hover:ring-slate-600/80"
-          >
-            <span className="sr-only">{item.label}</span>
-            <span className="text-xs font-medium">{index + 1}</span>
-            <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-slate-100 opacity-0 shadow-lg ring-1 ring-slate-700/80 transition group-hover:opacity-100">
-              {item.label}
-            </span>
-          </button>
-        ))}
-      </nav>
-      <div className="mt-auto flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/60 text-[10px] font-medium text-slate-300 ring-1 ring-slate-700/70">
-        JD
-      </div>
-    </aside>
-  );
-}
-
-type UploadSectionProps = {
-  text: string;
-  onTextChange: (value: string) => void;
-  onAnalyze: () => void;
-  loading: boolean;
-};
-
-function UploadSection({
-  text,
-  onTextChange,
-  onAnalyze,
-  loading,
-}: UploadSectionProps) {
-  return (
-    <section className="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-sm shadow-slate-200">
-      <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-        Vstupní dokumenty
-      </h2>
-      <div className="grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <label
-          htmlFor="pdf-upload"
-          className="group flex flex-1 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-10 text-center transition hover:border-slate-400 hover:bg-slate-100/90"
-        >
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-slate-50 shadow-sm shadow-slate-400/40">
-            <span className="text-base font-semibold">PDF</span>
+    <div className="min-h-screen bg-[#F8FAFC] px-8 pt-16 pb-12">
+      <div className="mx-auto max-w-6xl">
+        <header className="mb-12 relative">
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-600 mb-4">
+            <Sparkles size={12} />
+            AI Financial Assistant
           </div>
-          <p className="mb-1 text-sm font-medium text-slate-900">
-            Přetáhni sem PDF smlouvy
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
+            Vítejte zpět, Jakube
+          </h1>
+          <p className="mt-4 text-lg text-slate-500 max-w-2xl leading-relaxed">
+            Váš osobní AI ekosystém je připraven. Analyzujte smlouvy, konzultujte úspory a spravujte své portfolio na jednom místě.
           </p>
-          <p className="mb-3 text-xs text-slate-500">
-            nebo klikni pro výběr souboru z počítače
-          </p>
-          <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-medium text-slate-600 shadow-sm ring-1 ring-slate-200">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Bezpečně uloženo a analyzováno lokálně
-          </div>
-          <input id="pdf-upload" type="file" accept="application/pdf" className="hidden" />
-        </label>
+        </header>
 
-        <div className="flex flex-col gap-3">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
-            Nebo vlož text smlouvy
-          </p>
-          <div className="flex flex-1 flex-col rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-            <textarea
-              placeholder="Vlož sem text smlouvy (Ctrl+V)…"
-              value={text}
-              onChange={(event) => onTextChange(event.target.value)}
-              className="min-h-[140px] w-full flex-1 resize-none border-0 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
-            />
-            <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 text-xs text-slate-500">
-              <span>Podporujeme češtinu i angličtinu.</span>
-              <button
-                type="button"
-                onClick={onAnalyze}
-                disabled={loading}
-                className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3.5 py-1.5 text-xs font-medium text-slate-50 shadow-sm shadow-slate-400/40 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-800/70"
-              >
-                {loading && (
-                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-slate-50" />
-                )}
-                {loading ? "Analyzuji…" : "Analyzovat smlouvu"}
-              </button>
+        {/* Tady jsou ty karty z tvého screenshotu, jen s lepším paddingem a efekty */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            { title: "Analýza hypotéky", desc: "Zjistěte potenciál úspory z vašich smluv.", icon: "🏠", link: "/analysis", tag: "Doporučeno" },
+            { title: "Hlasová konzultace", desc: "Proberte detaily s AI specialistou.", icon: "🎙️", link: "/consultation", tag: "Připraveno" },
+            { title: "Moje Historie", desc: "Přehled všech vašich dřívějších analýz.", icon: "📂", link: "#", tag: "Brzy" },
+          ].map((item) => (
+            <div 
+              key={item.title}
+              onClick={() => item.link !== "#" && router.push(item.link)}
+              className="group cursor-pointer rounded-[2rem] border border-slate-200 bg-white p-8 transition-all hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1"
+            >
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-2xl group-hover:bg-blue-50 transition-colors">
+                {item.icon}
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-6">{item.desc}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">
+                  {item.tag}
+                </span>
+                <ArrowRight size={18} className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+              </div>
             </div>
-          </div>
+          ))}
         </div>
-      </div>
-    </section>
-  );
-}
 
-type RecommendationCardProps = {
-  title: string;
-  highlight: string;
-  description: string;
-  badge?: string;
-};
-
-function RecommendationCard({
-  title,
-  highlight,
-  description,
-  badge,
-}: RecommendationCardProps) {
-  return (
-    <article className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-200 transition hover:-translate-y-0.5 hover:shadow-md hover:shadow-slate-200/80">
-      <div className="mb-3 flex items-start justify-between gap-2">
-        <div>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-            {title}
-          </h3>
-          <p className="mt-1 text-base font-semibold text-slate-900">
-            {highlight}
-          </p>
-        </div>
-        {badge && (
-          <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200">
-            {badge}
-          </span>
-        )}
-      </div>
-      <p className="mb-4 text-xs leading-relaxed text-slate-500">
-        {description}
-      </p>
-      <button className="inline-flex items-center gap-1 text-xs font-medium text-slate-900">
-        Zobrazit detail
-        <span className="text-[10px]">→</span>
-      </button>
-      <div className="pointer-events-none absolute inset-x-6 bottom-[-40px] h-16 rounded-full bg-gradient-to-r from-emerald-100/60 via-cyan-100/40 to-sky-100/60 blur-3xl" />
-    </article>
-  );
-}
-
-export default function HomePage() {
-  const [contractText, setContractText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState<{
-    fixace: string;
-    uspora: string;
-    pojisteni: string;
-  } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleAnalyze = async () => {
-    if (!contractText.trim()) {
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result: any = await analyzeContract(contractText);
-
-      if (result && typeof result === "object" && "error" in result) {
-        setError(result.error || "Nepodařilo se analyzovat text.");
-        return;
-      }
-
-      setAnalysis({
-        fixace: result?.fixace ?? "Informace o fixaci nebyla nalezena",
-        uspora: result?.uspora ?? "Nelze odhadnout úsporu",
-        pojisteni: result?.pojisteni ?? "Nelze určit stav pojištění",
-      });
-    } catch {
-      setError("Něco se pokazilo při analýze. Zkus to prosím znovu.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fixaceHighlight =
-    analysis?.fixace ?? "Za 3 měsíce";
-  const usporaHighlight =
-    analysis?.uspora ?? "Potenciální úspora ~1 850 Kč / měs.";
-  const pojisteniHighlight =
-    analysis?.pojisteni ?? "Pokrývá jen 60 % hodnoty";
-
-  return (
-    <div className="flex min-h-screen bg-slate-100 text-slate-900">
-      <Sidebar />
-      <main className="flex-1 bg-slate-50/80">
-        <div className="mx-auto flex h-full max-w-6xl flex-col px-6 py-6 md:px-10 md:py-8">
-          <header className="mb-6 flex items-center justify-between gap-4">
+        {/* Tmavý banner s úsporou */}
+        <div className="mt-12 rounded-[2.5rem] bg-slate-950 p-10 text-white relative overflow-hidden shadow-2xl">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-                Finanční přehled
-              </p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
-                FinSense AI
-              </h1>
-            </div>
-            <div className="flex items-center gap-3 rounded-full bg-white/80 px-3 py-1.5 text-xs text-slate-600 shadow-sm ring-1 ring-slate-200">
-              <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-              Živý náhled – žádná data se neposílají mimo tvůj počítač
-            </div>
-          </header>
-
-          <div className="flex flex-1 flex-col gap-6 pb-4">
-            <UploadSection
-              text={contractText}
-              onTextChange={setContractText}
-              onAnalyze={handleAnalyze}
-              loading={loading}
-            />
-
-            <section className="rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-sm shadow-slate-200">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Doporučení od AI
-                </h2>
-                <div className="flex flex-col items-end gap-1 text-xs text-slate-500">
-                  <span>Na základě posledně nahrané smlouvy</span>
-                  {error && (
-                    <span className="text-[11px] font-medium text-rose-600">
-                      {error}
-                    </span>
-                  )}
-                </div>
+              <h2 className="text-blue-400 font-bold uppercase tracking-widest text-xs mb-4">Aktuální potenciál úspor</h2>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-black tracking-tighter">1 250 Kč</span>
+                <span className="text-slate-400">/ měsíčně</span>
               </div>
-              <div className="grid gap-4 md:grid-cols-3">
-                <RecommendationCard
-                  title="Končící fixace"
-                  highlight={fixaceHighlight}
-                  description="Doporučujeme začít řešit refinancování alespoň 2–3 měsíce před koncem fixace, abys stihl porovnat nabídky."
-                  badge="Priorita"
-                />
-                <RecommendationCard
-                  title="Výhodnější hypotéka"
-                  highlight={usporaHighlight}
-                  description="Na základě aktuálních sazeb by přechod k jiné bance mohl snížit měsíční splátku, aniž by se prodlužovala celková doba splácení."
-                  badge="Tip trhu"
-                />
-                <RecommendationCard
-                  title="Revize pojištění"
-                  highlight={pojisteniHighlight}
-                  description="Pojištění nemovitosti je nastavené na nižší částku, než je její aktuální tržní hodnota. Zvaž navýšení limitů krytí."
-                  badge="Bezpečnost"
-                />
-              </div>
-            </section>
+            </div>
+            <button 
+              onClick={() => router.push('/consultation')}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+            >
+              Pokračovat v konzultaci
+            </button>
           </div>
+          <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-blue-600/10 rounded-full blur-[100px]" />
         </div>
-      </main>
+      </div>
     </div>
   );
 }

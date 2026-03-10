@@ -1,141 +1,272 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import Vapi from "@vapi-ai/web";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { analyzeContract } from "./actions";
+import { FileText, Zap, ShieldCheck, ArrowRight, UploadCloud, File } from "lucide-react";
 
-type NavItem = {
-  label: string;
+type UploadSectionProps = {
+  text: string;
+  onTextChange: (value: string) => void;
+  onAnalyze: () => void;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  loading: boolean;
+  fileName: string | null;
 };
 
-const navItems: NavItem[] = [
-  { label: "Dashboard" },
-  { label: "Skenovat smlouvu" },
-  { label: "Historie" },
-];
-
-function Sidebar() {
+function UploadSection({
+  text,
+  onTextChange,
+  onAnalyze,
+  onFileChange,
+  loading,
+  fileName,
+}: UploadSectionProps) {
   return (
-    <aside className="flex h-screen w-20 flex-col items-center border-r border-slate-800 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-6 text-slate-200">
-      <div className="mb-8 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-800/80 text-xs font-semibold tracking-tight">
-        FS
+    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400">
+        Vstupní dokumenty
+      </h2>
+      <div className="grid gap-6 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+        <label
+          htmlFor="pdf-upload"
+          className="group flex flex-1 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-blue-400 hover:bg-blue-50/30"
+        >
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-lg transition-transform group-hover:scale-110">
+            {fileName ? <File size={20} /> : <UploadCloud size={20} />}
+          </div>
+          <p className="mb-1 text-sm font-bold text-slate-900">
+            {fileName ? fileName : "Přetáhněte PDF smlouvy"}
+          </p>
+          <p className="mb-3 text-xs text-slate-500">
+            {fileName ? "Klikněte pro změnu souboru" : "nebo klikněte pro výběr souboru"}
+          </p>
+          <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[10px] font-bold text-slate-600 shadow-sm ring-1 ring-slate-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Zabezpečené zpracování
+          </div>
+          <input 
+            id="pdf-upload" 
+            type="file" 
+            accept="application/pdf" 
+            className="hidden" 
+            onChange={onFileChange}
+            disabled={loading}
+          />
+        </label>
+
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Nebo vložte text
+          </p>
+          <div className="flex flex-1 flex-col rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <textarea
+              placeholder="Vložte sem text smlouvy (Ctrl+V)…"
+              value={text}
+              onChange={(event) => onTextChange(event.target.value)}
+              className="min-h-[140px] w-full flex-1 resize-none border-0 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
+            />
+            <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
+              <span className="text-[10px] text-slate-400 font-medium">AI analýza v češtině</span>
+              <button
+                type="button"
+                onClick={onAnalyze}
+                disabled={loading || !text.trim()}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700 disabled:opacity-30 active:scale-95"
+              >
+                {loading ? (
+                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                ) : <Zap size={14} />}
+                {loading ? "Analyzuji…" : "Spustit analýzu"}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      <nav className="flex flex-1 flex-col items-center gap-4">
-        {navItems.map((item, index) => (
-          <button
-            key={item.label}
-            className="group relative flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900/40 text-slate-400 ring-1 ring-transparent transition hover:bg-slate-800/70 hover:text-slate-50 hover:ring-slate-600/80"
-          >
-            <span className="sr-only">{item.label}</span>
-            <span className="text-xs font-medium">{index + 1}</span>
-            <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs text-slate-100 opacity-0 shadow-lg ring-1 ring-slate-700/80 transition group-hover:opacity-100">
-              {item.label}
-            </span>
-          </button>
-        ))}
-      </nav>
-      <div className="mt-auto flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/60 text-[10px] font-medium text-slate-300 ring-1 ring-slate-700/70">
-        JD
-      </div>
-    </aside>
+    </section>
   );
 }
 
-export default function AdvisorPage() {
-  const searchParams = useSearchParams();
-  const usporaParam = searchParams.get("uspora");
-  const fixaceParam = searchParams.get("fixace");
+function RecommendationCard({
+  title,
+  highlight,
+  description,
+  badge,
+  icon: Icon
+}: any) {
+  return (
+    <article className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-xl hover:-translate-y-1">
+      <div className="mb-4 flex items-start justify-between">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 group-hover:bg-blue-50 transition-colors">
+          <Icon size={18} className="text-slate-400 group-hover:text-blue-600" />
+        </div>
+        {badge && (
+          <span className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+            {badge}
+          </span>
+        )}
+      </div>
+      <div>
+        <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">{title}</h3>
+        <p className="text-sm font-black text-slate-900 mb-2 leading-tight">{highlight}</p>
+        <p className="text-[11px] leading-relaxed text-slate-500">{description}</p>
+      </div>
+    </article>
+  );
+}
 
-  const uspora =
-    usporaParam && usporaParam.trim() !== "" ? usporaParam : "0";
-  const fixace =
-    fixaceParam && fixaceParam.trim() !== "" ? fixaceParam : "neuvedena";
+export default function AnalysisPage() {
+  const router = useRouter();
+  const [contractText, setContractText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
-  const [starting, setStarting] = useState(false);
-  const vapiRef = useRef<any | null>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (vapiRef.current) return;
-
-    const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
-
-    if (!publicKey) {
-      console.warn("NEXT_PUBLIC_VAPI_PUBLIC_KEY není nastaven.");
-      return;
+  // Pomocná funkce pro uložení do historie
+  const saveToHistory = (data: any, name: string) => {
+    try {
+      const historyEntry = {
+        id: Date.now(),
+        date: new Date().toLocaleString("cs-CZ"),
+        fileName: name,
+        ...data
+      };
+      
+      const existingHistory = JSON.parse(localStorage.getItem("finance_history") || "[]");
+      const updatedHistory = [historyEntry, ...existingHistory];
+      localStorage.setItem("finance_history", JSON.stringify(updatedHistory));
+    } catch (err) {
+      console.error("Nepodařilo se uložit do historie:", err);
     }
+  };
 
-    vapiRef.current = new Vapi(publicKey);
-  }, []);
-
-  const handleStartCall = async () => {
-    if (!vapiRef.current) return;
+  // Funkce pro analýzu vkládaného textu
+  const handleAnalyzeText = async () => {
+    if (!contractText.trim()) return;
+    
+    setLoading(true);
+    setError(null);
+    setUploadedFileName(null);
+    setAnalysis(null);
 
     try {
-      setStarting(true);
-      await vapiRef.current.start("4c32087f-c5e7-48db-b775-10a47b12e912", {
-        variableValues: {
-          uspora,
-          fixace,
-        },
-      });
-    } catch (error) {
-      console.error("Chyba při spouštění hovoru Vapi:", error);
+      const formData = new FormData();
+      formData.append("text", contractText);
+
+      const result: any = await analyzeContract(formData);
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
+      
+      setAnalysis(result);
+      saveToHistory(result, "Vložený text");
+    } catch {
+      setError("Něco se pokazilo při analýze textu.");
     } finally {
-      setStarting(false);
+      setLoading(false);
+    }
+  };
+
+  // Funkce pro nahrání a analýzu PDF souboru
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    setError(null);
+    setContractText(""); 
+    setUploadedFileName(file.name);
+    setAnalysis(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const result: any = await analyzeContract(formData);
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
+      
+      setAnalysis(result);
+      saveToHistory(result, file.name);
+    } catch (err) {
+      setError("Nepodařilo se nahrát nebo zpracovat PDF.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100 text-slate-900">
-      <Sidebar />
-      <main className="flex-1 bg-slate-50/80">
-        <div className="mx-auto flex h-full max-w-6xl flex-col px-6 py-6 md:px-10 md:py-8">
-          <header className="mb-6 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">
-                Hlasová konzultace
-              </p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">
-                FinSense AI – Poradce
-              </h1>
-            </div>
-            <div className="flex items-center gap-3 rounded-full bg-white/80 px-3 py-1.5 text-xs text-slate-600 shadow-sm ring-1 ring-slate-200">
-              <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-              Připraveno spojit vás s AI bankéřem
-            </div>
-          </header>
+    <div className="mx-auto max-w-6xl px-6 py-10 md:px-10">
+      <header className="mb-8">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600">
+          Smart Analysis
+        </p>
+        <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">
+          Analýza finančních smluv
+        </h1>
+      </header>
 
-          <div className="flex flex-1 items-center pb-4">
-            <section className="w-full rounded-3xl border border-slate-200/80 bg-white/90 p-8 shadow-sm shadow-slate-200 md:p-10">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Osobní doporučení
-              </h2>
-              <p className="mb-2 text-xl font-semibold text-slate-900 md:text-2xl">
-                Váš osobní AI bankéř je připraven probrat vaši úsporu{" "}
-                <span className="whitespace-nowrap text-emerald-600">
-                  {uspora} Kč
-                </span>
-                .
-              </p>
-              <p className="mb-6 text-sm text-slate-600 md:max-w-xl">
-                Na základě analýzy vaší smlouvy dokáže vysvětlit, odkud úspora
-                pochází, a jak ji dále optimalizovat. Fixace:{" "}
-                <span className="font-medium text-slate-900">{fixace}</span>.
-              </p>
+      <div className="space-y-8">
+        <UploadSection
+          text={contractText}
+          onTextChange={setContractText}
+          onAnalyze={handleAnalyzeText}
+          onFileChange={handleFileChange}
+          loading={loading}
+          fileName={uploadedFileName}
+        />
 
-              <button
-                type="button"
-                onClick={handleStartCall}
-                disabled={starting || !vapiRef.current}
-                className="inline-flex items-center justify-center rounded-full bg-slate-900 px-10 py-3 text-sm font-semibold text-slate-50 shadow-sm shadow-slate-400/40 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-800/70"
-              >
-                {starting ? "Spojuji hovor…" : "Zahájit hovor"}
-              </button>
-            </section>
+        {error && (
+          <div className="rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-800 border border-red-100">
+            {error}
           </div>
-        </div>
-      </main>
+        )}
+
+        {analysis && (
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Výsledky analýzy
+              </h2>
+              <button 
+                onClick={() => router.push(`/consultation?uspora=${analysis.uspora}&fixace=${analysis.fixace}`)}
+                className="group flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700"
+              >
+                Probrat výsledky s AI bankéřem
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </button>
+            </div>
+            
+            <div className="grid gap-4 md:grid-cols-3">
+              <RecommendationCard
+                icon={FileText}
+                title="Fixace hypotéky"
+                highlight={analysis.fixace}
+                description="Konec fixace je kritický moment pro vyjednání lepších podmínek."
+                badge="Klíčový údaj"
+              />
+              <RecommendationCard
+                icon={Zap}
+                title="Potenciál úspory"
+                highlight={`${analysis.uspora} Kč / měsíčně`}
+                description="Odhadovaná částka, kterou můžete ušetřit při aktuálních sazbách."
+                badge="Příležitost"
+              />
+              <RecommendationCard
+                icon={ShieldCheck}
+                title="Stav pojištění"
+                highlight={analysis.pojisteni}
+                description="Prověřujeme, zda vaše krytí odpovídá aktuální tržní ceně."
+                badge="Bezpečnost"
+              />
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
