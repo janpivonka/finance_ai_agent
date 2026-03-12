@@ -3,7 +3,19 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { analyzeContract } from "./actions";
-import { FileText, Zap, ShieldCheck, ArrowRight, UploadCloud, File } from "lucide-react";
+import { 
+  FileText, 
+  Zap, 
+  ShieldCheck, 
+  ArrowRight, 
+  UploadCloud, 
+  File, 
+  TrendingUp, 
+  CheckCircle2,
+  Building2,
+  Percent,
+  Banknote
+} from "lucide-react";
 
 type UploadSectionProps = {
   text: string;
@@ -123,14 +135,13 @@ export default function AnalysisPage() {
   const [error, setError] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
-  // Pomocná funkce pro uložení do historie
   const saveToHistory = (data: any, name: string) => {
     try {
       const historyEntry = {
         id: Date.now(),
         date: new Date().toLocaleString("cs-CZ"),
         fileName: name,
-        ...data
+        ...data 
       };
       
       const existingHistory = JSON.parse(localStorage.getItem("finance_history") || "[]");
@@ -141,10 +152,8 @@ export default function AnalysisPage() {
     }
   };
 
-  // Funkce pro analýzu vkládaného textu
   const handleAnalyzeText = async () => {
     if (!contractText.trim()) return;
-    
     setLoading(true);
     setError(null);
     setUploadedFileName(null);
@@ -153,13 +162,11 @@ export default function AnalysisPage() {
     try {
       const formData = new FormData();
       formData.append("text", contractText);
-
       const result: any = await analyzeContract(formData);
       if (result?.error) {
         setError(result.error);
         return;
       }
-      
       setAnalysis(result);
       saveToHistory(result, "Vložený text");
     } catch {
@@ -169,11 +176,9 @@ export default function AnalysisPage() {
     }
   };
 
-  // Funkce pro nahrání a analýzu PDF souboru
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setLoading(true);
     setError(null);
     setContractText(""); 
@@ -183,13 +188,11 @@ export default function AnalysisPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-
       const result: any = await analyzeContract(formData);
       if (result?.error) {
         setError(result.error);
         return;
       }
-      
       setAnalysis(result);
       saveToHistory(result, file.name);
     } catch (err) {
@@ -201,7 +204,7 @@ export default function AnalysisPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10 md:px-10">
-      <header className="mb-8">
+      <header className="mb-8 text-center md:text-left">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600">
           Smart Analysis
         </p>
@@ -221,20 +224,20 @@ export default function AnalysisPage() {
         />
 
         {error && (
-          <div className="rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-800 border border-red-100">
+          <div className="rounded-2xl bg-red-50 p-4 text-sm font-medium text-red-800 border border-red-100 italic">
             {error}
           </div>
         )}
 
         {analysis && (
           <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                 Výsledky analýzy
               </h2>
               <button 
                 onClick={() => router.push(`/consultation?uspora=${analysis.uspora}&fixace=${analysis.fixace}`)}
-                className="group flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700"
+                className="group flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
               >
                 Probrat výsledky s AI bankéřem
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
@@ -252,7 +255,7 @@ export default function AnalysisPage() {
               <RecommendationCard
                 icon={Zap}
                 title="Potenciál úspory"
-                highlight={`${analysis.uspora} Kč / měsíčně`}
+                highlight={`${analysis.uspora.toLocaleString()} Kč / měsíčně`}
                 description="Odhadovaná částka, kterou můžete ušetřit při aktuálních sazbách."
                 badge="Příležitost"
               />
@@ -264,6 +267,65 @@ export default function AnalysisPage() {
                 badge="Bezpečnost"
               />
             </div>
+
+            {/* NOVÁ TABULKA: Místo dangerouslySetInnerHTML používáme čistý React map */}
+            {analysis.top_nabidky && (
+              <div className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex items-center gap-3 bg-slate-50 px-8 py-5 border-b border-slate-100">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-white shadow-md shadow-emerald-200">
+                    <CheckCircle2 size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 leading-tight">Srovnání s aktuálním trhem</h3>
+                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Screening celého trhu proveden v reálném čase</p>
+                  </div>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50/50 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <th className="px-8 py-4"><div className="flex items-center gap-2"><Building2 size={12}/> Banka</div></th>
+                        <th className="px-8 py-4"><div className="flex items-center gap-2"><Percent size={12}/> Sazba</div></th>
+                        <th className="px-8 py-4 text-emerald-600"><div className="flex items-center gap-2"><Banknote size={12}/> Měsíční úspora</div></th>
+                        <th className="px-8 py-4 hidden md:table-cell">Hlavní výhoda</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {analysis.top_nabidky.map((item: any, index: number) => (
+                        <tr key={index} className="group hover:bg-slate-50/80 transition-colors">
+                          <td className="px-8 py-5 font-bold text-slate-900">{item.banka}</td>
+                          <td className="px-8 py-5 text-slate-600 font-medium">{item.sazba}</td>
+                          <td className="px-8 py-5 font-black text-emerald-600 text-lg">
+                            {Number(item.usp).toLocaleString()} Kč
+                          </td>
+                          <td className="px-8 py-5 text-slate-500 text-xs hidden md:table-cell">
+                            <span className="inline-block rounded-lg bg-slate-100 px-3 py-1 font-medium group-hover:bg-white transition-colors">
+                              {item.vyhoda}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="bg-slate-50 p-6">
+                  <div className="flex items-center gap-2 rounded-2xl bg-white p-4 border border-slate-200 text-[11px] text-slate-500 leading-relaxed italic">
+                    <TrendingUp size={14} className="shrink-0 text-blue-500" />
+                    Tato analýza vychází z exkluzivních sazeb našeho systému. Výpočet úspory je orientační. Doporučujeme zahájit proces refinancování s naším specialistou pro získání finální nabídky.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Analytický briefing pro asistenta (v dashboardu jako text) */}
+            {analysis.analyticky_duvod && (
+               <div className="mt-4 p-4 rounded-2xl border border-blue-100 bg-blue-50/30">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-blue-600 mb-1">Analytické shrnutí</h4>
+                  <p className="text-xs text-slate-700 leading-relaxed">{analysis.analyticky_duvod}</p>
+               </div>
+            )}
           </section>
         )}
       </div>
