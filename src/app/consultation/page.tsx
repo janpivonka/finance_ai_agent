@@ -19,35 +19,50 @@ import {
 function ConsultationContent() {
   const searchParams = useSearchParams();
   
-  const usporaParam = searchParams.get("uspora");
-  const fixaceParam = searchParams.get("fixace");
-
+  // Stavy inicializované na základní hodnoty (shodné pro server i klient)
   const [starting, setStarting] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [extraContext, setExtraContext] = useState<string | null>(null);
   
+  // Bezpečné získání parametrů - pokud nejsou, použijí se fallbacky
+  const usporaParam = searchParams.get("uspora") || "0";
+  const fixaceParam = searchParams.get("fixace") || "neuvedena";
+
   const vapiRef = useRef<any | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // 1. BEZPEČNÉ ČTENÍ LOCALSTORAGE (pouze na klientovi)
   useEffect(() => {
-    const history = JSON.parse(localStorage.getItem("finance_history") || "[]");
-    if (history.length > 0) {
-      setExtraContext(history[0].analyticky_duvod);
+    const historyData = localStorage.getItem("finance_history");
+    if (historyData) {
+      try {
+        const history = JSON.parse(historyData);
+        if (history.length > 0 && history[0].analyticky_duvod) {
+          setExtraContext(history[0].analyticky_duvod);
+        }
+      } catch (e) {
+        console.error("Chyba při parsování historie:", e);
+      }
     }
   }, []);
 
+  // 2. AUTO-SCROLL CHATU
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // 3. INICIALIZACE VAPI
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (vapiRef.current) return;
 
     const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
-    if (!publicKey) return;
+    if (!publicKey) {
+      console.warn("Vapi Public Key chybí v .env souboru");
+      return;
+    }
 
     const vapi = new Vapi(publicKey);
 
@@ -74,13 +89,13 @@ function ConsultationContent() {
       setStarting(true);
       await vapiRef.current.start("4c32087f-c5e7-48db-b775-10a47b12e912", {
         variableValues: { 
-          uspora: usporaParam || "0", 
-          fixace: fixaceParam || "neuvedena",
+          uspora: usporaParam, 
+          fixace: fixaceParam,
           analyticky_duvod: extraContext || "Klient chce probrat možnosti úspor."
         },
       });
     } catch (error) {
-      console.error(error);
+      console.error("Vapi start error:", error);
       setIsCalling(false);
     } finally {
       setStarting(false);
@@ -96,8 +111,10 @@ function ConsultationContent() {
     event.preventDefault();
     const text = inputValue.trim();
     if (!text || !vapiRef.current) return;
+    
     setMessages((prev) => [...prev, { role: "user", text }]);
     setInputValue("");
+    
     vapiRef.current.send({
       type: "add-message",
       message: { role: "user", content: text },
@@ -118,7 +135,7 @@ function ConsultationContent() {
             <Zap size={12} className={`text-cyan-400 ${isCalling ? 'animate-bounce' : 'animate-pulse'}`} />
             Neural Consultation 2.0
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white md:text-5xl animate-pulse-gentle">
+          <h1 className="text-3xl font-black tracking-tight text-white md:text-5xl">
             AI <span className="animate-gradient-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] bg-clip-text text-transparent italic">Bankovní</span> specialista
           </h1>
         </div>
@@ -151,7 +168,7 @@ function ConsultationContent() {
                   <span className="text-[10px] font-bold uppercase tracking-wider">Potenciál úspory</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-white tracking-tighter animate-pulse-gentle">{usporaParam || "0"}</span>
+                  <span className="text-3xl font-black text-white tracking-tighter">{usporaParam}</span>
                   <span className="text-xs font-bold text-slate-500 uppercase ml-1 text-indigo-400">Kč/m</span>
                 </div>
               </div>
@@ -161,7 +178,7 @@ function ConsultationContent() {
                   <Calendar size={14} />
                   <span className="text-[10px] font-bold uppercase tracking-wider">Fixace do</span>
                 </div>
-                <span className="text-xl font-black text-white tracking-tight">{fixaceParam || "Neuvedena"}</span>
+                <span className="text-xl font-black text-white tracking-tight">{fixaceParam}</span>
               </div>
 
               <div className="mt-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/20 p-4 animate-pulse-slow">
@@ -204,10 +221,9 @@ function ConsultationContent() {
 
         {/* PRAVÝ PANEL: TRANSCRIPT */}
         <main className="flex flex-1 flex-col overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/30 backdrop-blur-xl shadow-2xl min-h-0 ring-1 ring-white/5 animate-fade-in-up">
-          {/* TRANSCRIPT HEADER */}
           <div className="flex shrink-0 items-center justify-between border-b border-white/5 bg-white/5 px-8 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#020617] shadow-inner ring-1 ring-white/10 group">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#020617] shadow-inner ring-1 ring-white/10">
                 <MessageSquare size={16} className={`transition-colors ${isCalling ? 'text-fuchsia-400' : 'text-cyan-400'}`} />
               </div>
               <div>
@@ -230,7 +246,6 @@ function ConsultationContent() {
             )}
           </div>
 
-          {/* CHAT AREA */}
           <div className="flex-1 overflow-y-auto bg-transparent p-8 space-y-6 scrollbar-hide">
             {messages.length === 0 && (
               <div className="flex h-full flex-col items-center justify-center text-center opacity-20 group">
@@ -240,11 +255,6 @@ function ConsultationContent() {
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
                   Awaiting Uplink Connection...
                 </p>
-                <div className="mt-4 flex gap-1">
-                  <div className="w-1 h-1 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                  <div className="w-1 h-1 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-1 h-1 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
-                </div>
               </div>
             )}
             
@@ -262,7 +272,6 @@ function ConsultationContent() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* INPUT AREA */}
           <div className="shrink-0 border-t border-white/5 bg-[#020617]/80 p-6 backdrop-blur-md">
             <form onSubmit={handleSendMessage} className="relative flex gap-4">
               <div className="relative flex-1">
@@ -294,72 +303,24 @@ function ConsultationContent() {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-
-        @keyframes pulse-gentle {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.01); opacity: 0.98; }
-        }
-
         @keyframes visualizer {
           0%, 100% { height: 4px; }
           50% { height: 16px; }
         }
-
         @keyframes shimmer {
           100% { transform: translateX(100%); }
         }
-
-        .animate-visualizer {
-          animation: visualizer 0.5s ease-in-out infinite;
-        }
-
-        .animate-shimmer {
-          animation: shimmer 1.5s infinite;
-        }
-
-        .animate-spin-slow {
-          animation: spin 8s linear infinite;
-        }
-
-        .animate-gradient-text {
-          animation: gradient-text 5s ease infinite;
-        }
-
-        .animate-pulse-gentle {
-          animation: pulse-gentle 4s ease-in-out infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 0.8s ease-out forwards;
-        }
-
-        .animate-fade-in-up {
-          animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .animate-fade-in-left {
-          animation: fadeInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInLeft {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-
+        .animate-visualizer { animation: visualizer 0.5s ease-in-out infinite; }
+        .animate-shimmer { animation: shimmer 1.5s infinite; }
+        .animate-spin-slow { animation: spin 8s linear infinite; }
+        .animate-gradient-text { animation: gradient-text 5s ease infinite; }
+        .animate-pulse-slow { animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        .animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-fade-in-left { animation: fadeInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
