@@ -3,24 +3,30 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   ArrowRight, 
-  Sparkles, 
   Home, 
   Mic, 
   FolderOpen, 
   TrendingUp,
   Building2,
-  CheckCircle2,
   ShieldCheck,
   Coins,
-  Lock,
   Zap,
   Activity
 } from "lucide-react";
+
+// Import komponent a hooků
+import { ScrollToTop } from "./components/ScrollToTop";
+import { useScrollDirection } from "./hooks/useScrollDirection";
+import { useIntersectionObserver } from "./hooks/useIntersectionObserver";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [lastAnalysis, setLastAnalysis] = useState<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Aktivace animací a sledování scrollu
+  useScrollDirection();
+  useIntersectionObserver('.reveal');
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("finance_history") || "[]");
@@ -39,7 +45,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] px-6 pt-16 pb-24 relative overflow-hidden selection:bg-cyan-500/30">
+    <div className="min-h-screen bg-[#020617] px-6 pt-16 pb-24 relative overflow-x-hidden selection:bg-cyan-500/30 no-scrollbar">
       
       {/* BACKGROUND ARCHITECTURE */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow" />
@@ -49,7 +55,7 @@ export default function DashboardPage() {
       <div className={`mx-auto max-w-6xl relative z-10 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         
         {/* HEADER SEKCE */}
-        <header className="mb-12 relative">
+        <header className="mb-12 relative text-left reveal">
           <div className="inline-flex items-center gap-2 rounded-full bg-indigo-950/50 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300 mb-6 shadow-xl ring-1 ring-indigo-500/30 backdrop-blur-md">
             <Zap size={12} className="text-cyan-400 animate-pulse" />
             Neural Financial Ecosystem 2.0
@@ -63,7 +69,7 @@ export default function DashboardPage() {
         </header>
 
         {/* HLAVNÍ AKČNÍ KARTY */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 reveal">
           
           {/* Analýza Hypotéky */}
           <div 
@@ -73,7 +79,7 @@ export default function DashboardPage() {
             <div className="absolute -right-4 -top-4 text-indigo-500/5 rotate-12 group-hover:text-indigo-500/10 transition-colors">
               <Home size={120} />
             </div>
-            <div className="relative z-10">
+            <div className="relative z-10 text-left">
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-400 ring-1 ring-indigo-500/20 group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-500">
                 <Home size={28} />
               </div>
@@ -81,7 +87,7 @@ export default function DashboardPage() {
               <p className="text-sm text-slate-500 leading-relaxed mb-8">Odhalte skryté poplatky a prostor pro úsporu ve vaší smlouvě.</p>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full text-cyan-400 bg-cyan-500/10 ring-1 ring-cyan-500/20">Active Scan</span>
-                <ArrowRight size={18} className="text-slate-700 group-hover:text-white group-hover:translate-x-2 transition-all" />
+                <ArrowRight size={18} className="text-slate-700 group-hover:text-indigo-400 group-hover:translate-x-2 transition-all duration-300" />
               </div>
             </div>
           </div>
@@ -89,12 +95,12 @@ export default function DashboardPage() {
           {/* Hlasová konzultace */}
           <div 
             onClick={goToConsultation}
-            className="group relative cursor-pointer overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40 p-8 transition-all hover:bg-slate-900/60 hover:border-emerald-500/50 hover:shadow-[0_0_40_rgba(16,185,129,0.2)]"
+            className="group relative cursor-pointer overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40 p-8 transition-all hover:bg-slate-900/60 hover:border-emerald-500/50 hover:shadow-[0_0_40px_rgba(16,185,129,0.2)]"
           >
             <div className="absolute -right-4 -top-4 text-emerald-500/5 rotate-12 group-hover:text-emerald-500/10 transition-colors">
               <Mic size={120} />
             </div>
-            <div className="relative z-10">
+            <div className="relative z-10 text-left">
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500">
                 <Mic size={28} />
               </div>
@@ -102,7 +108,7 @@ export default function DashboardPage() {
               <p className="text-sm text-slate-500 leading-relaxed mb-8">Proberte výsledky analýzy přirozeně hlasem v reálném čase.</p>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full text-emerald-400 bg-emerald-500/10 ring-1 ring-emerald-500/20">Live Connection</span>
-                <ArrowRight size={18} className="text-slate-700 group-hover:text-white group-hover:translate-x-2 transition-all" />
+                <ArrowRight size={18} className="text-slate-700 group-hover:text-emerald-400 group-hover:translate-x-2 transition-all duration-300" />
               </div>
             </div>
           </div>
@@ -115,7 +121,7 @@ export default function DashboardPage() {
             <div className="absolute -right-4 -top-4 text-fuchsia-500/5 rotate-12 group-hover:text-fuchsia-500/10 transition-colors">
               <FolderOpen size={120} />
             </div>
-            <div className="relative z-10">
+            <div className="relative z-10 text-left">
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-fuchsia-500/10 text-fuchsia-400 ring-1 ring-fuchsia-500/20 group-hover:scale-110 group-hover:bg-fuchsia-500 group-hover:text-white transition-all duration-500">
                 <FolderOpen size={28} />
               </div>
@@ -123,18 +129,18 @@ export default function DashboardPage() {
               <p className="text-sm text-slate-500 leading-relaxed mb-8">Kompletní archiv vašich dokumentů a vygenerovaných reportů.</p>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full text-fuchsia-400 bg-fuchsia-500/10 ring-1 ring-fuchsia-500/20">Cloud Archive</span>
-                <ArrowRight size={18} className="text-slate-700 group-hover:text-white group-hover:translate-x-2 transition-all" />
+                <ArrowRight size={18} className="text-slate-700 group-hover:text-fuchsia-400 group-hover:translate-x-2 transition-all duration-300" />
               </div>
             </div>
           </div>
         </div>
 
         {/* DYNAMICKÝ BANNER: MAIN INSIGHT */}
-        <div className="rounded-[3.5rem] bg-gradient-to-br from-slate-900 to-[#020617] p-10 text-white relative overflow-hidden shadow-2xl ring-1 ring-white/10 mb-12 group">
+        <div className="rounded-[3.5rem] bg-gradient-to-br from-slate-900 to-[#020617] p-10 text-white relative overflow-hidden shadow-2xl ring-1 ring-white/10 mb-12 group reveal">
           <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
-            <div className="flex-1">
+            <div className="flex-1 text-left">
               <div className="flex items-center gap-3 mb-8">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400 ring-1 ring-cyan-500/40">
                   <Activity size={16} className="animate-pulse" />
@@ -167,10 +173,10 @@ export default function DashboardPage() {
                     <div key={i} className="group/card relative rounded-2xl bg-white/5 p-5 border border-white/5 backdrop-blur-sm transition-all hover:bg-white/10 hover:border-cyan-500/50">
                       <div className="flex items-center gap-2 text-indigo-400 mb-2">
                         <Building2 size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-wider">{offer.banka}</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-left">{offer.banka}</span>
                       </div>
-                      <div className="text-2xl font-black text-white">{offer.sazba}</div>
-                      <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">Úspora {Number(offer.usp).toLocaleString()} Kč</div>
+                      <div className="text-2xl font-black text-white text-left">{offer.sazba}</div>
+                      <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight text-left">Úspora {Number(offer.usp).toLocaleString()} Kč</div>
                     </div>
                   ))}
                 </div>
@@ -180,9 +186,11 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-4 min-w-[300px]">
               <button 
                 onClick={goToConsultation}
-                className="group relative flex items-center justify-center gap-4 bg-white text-slate-950 px-8 py-6 rounded-[2rem] font-black text-lg transition-all hover:bg-cyan-400 active:scale-95 shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
+                className="group relative cursor-pointer flex items-center justify-center gap-4 bg-white text-slate-950 px-10 py-7 rounded-[2rem] font-black text-xl transition-all duration-300
+                           hover:bg-cyan-400 hover:-rotate-3 hover:scale-110 active:scale-95
+                           shadow-[0_15px_30px_rgba(34,211,238,0.2)] hover:shadow-[0_25px_60px_rgba(34,211,238,0.5)]"
               >
-                <TrendingUp size={20} className="group-hover:rotate-12 transition-transform" />
+                <TrendingUp size={24} className="group-hover:translate-y-[-4px] group-hover:translate-x-[4px] transition-transform duration-300" />
                 {lastAnalysis ? "Získat tuto úsporu" : "Spustit analýzu"}
               </button>
               
@@ -203,42 +211,58 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* BACKGROUND ELEMENTS */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] -mr-20 -mt-20 group-hover:bg-indigo-500/20 transition-all duration-1000" />
         </div>
 
         {/* SEKCE: BUDOUCÍ MODULY */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-60 hover:opacity-100 transition-opacity duration-500">
-          <div className="relative group overflow-hidden rounded-[3rem] border border-white/5 bg-slate-900/40 p-10 flex flex-col items-center justify-center text-center transition-all hover:border-indigo-500/30">
-             <div className="absolute top-6 right-8 bg-indigo-500/10 text-indigo-400 text-[9px] font-black px-3 py-1 rounded-full ring-1 ring-indigo-500/30 uppercase tracking-widest">
-               Soon
-             </div>
-             <div className="mb-6 h-20 w-20 rounded-[2rem] bg-slate-800/50 flex items-center justify-center ring-1 ring-white/5 group-hover:bg-indigo-500/10 group-hover:ring-indigo-500/30 transition-all duration-500">
-                <ShieldCheck size={40} className="text-slate-600 group-hover:text-indigo-400 transition-colors" />
-             </div>
-             <h3 className="text-xl font-bold text-slate-300 mb-2">Pojištění 2.0</h3>
-             <p className="text-sm text-slate-500 max-w-xs leading-relaxed font-medium">
-               Automatické hlídání podpojištění a optimalizace pojistného krytí pomocí AI.
-             </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 reveal">
+          <div className="relative group cursor-not-allowed overflow-hidden rounded-[3rem] border border-white/5 bg-slate-900/40 p-10 flex flex-col items-center justify-center text-center transition-all opacity-60 hover:opacity-100 hover:border-indigo-500/30">
+              <div className="absolute top-6 right-8 bg-indigo-500/10 text-indigo-400 text-[9px] font-black px-3 py-1 rounded-full ring-1 ring-indigo-500/30 uppercase tracking-widest">
+                Soon
+              </div>
+              <div className="mb-6 h-20 w-20 rounded-[2rem] bg-slate-800/50 flex items-center justify-center ring-1 ring-white/5 group-hover:bg-indigo-500/10 group-hover:ring-indigo-500/30 transition-all duration-500">
+                 <ShieldCheck size={40} className="text-slate-600 group-hover:text-indigo-400 transition-colors" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-300 mb-2">Pojištění 2.0</h3>
+              <p className="text-sm text-slate-500 max-w-xs leading-relaxed font-medium">
+                Automatické hlídání podpojištění a optimalizace pojistného krytí pomocí AI.
+              </p>
           </div>
 
-          <div className="relative group overflow-hidden rounded-[3rem] border border-white/5 bg-slate-900/40 p-10 flex flex-col items-center justify-center text-center transition-all hover:border-fuchsia-500/30">
-             <div className="absolute top-6 right-8 bg-fuchsia-500/10 text-fuchsia-400 text-[9px] font-black px-3 py-1 rounded-full ring-1 ring-fuchsia-500/30 uppercase tracking-widest">
-               Soon
-             </div>
-             <div className="mb-6 h-20 w-20 rounded-[2rem] bg-slate-800/50 flex items-center justify-center ring-1 ring-white/5 group-hover:bg-fuchsia-500/10 group-hover:ring-fuchsia-500/30 transition-all duration-500">
-                <Coins size={40} className="text-slate-600 group-hover:text-fuchsia-400 transition-colors" />
-             </div>
-             <h3 className="text-xl font-bold text-slate-300 mb-2">Wealth Management</h3>
-             <p className="text-sm text-slate-500 max-w-xs leading-relaxed font-medium">
-               Sledujte své investice, kryptoměny a majetek v jednom inteligentním feedu.
-             </p>
+          <div className="relative group cursor-not-allowed overflow-hidden rounded-[3rem] border border-white/5 bg-slate-900/40 p-10 flex flex-col items-center justify-center text-center transition-all opacity-60 hover:opacity-100 hover:border-fuchsia-500/30">
+              <div className="absolute top-6 right-8 bg-fuchsia-500/10 text-fuchsia-400 text-[9px] font-black px-3 py-1 rounded-full ring-1 ring-fuchsia-500/30 uppercase tracking-widest">
+                Soon
+              </div>
+              <div className="mb-6 h-20 w-20 rounded-[2rem] bg-slate-800/50 flex items-center justify-center ring-1 ring-white/5 group-hover:bg-fuchsia-500/10 group-hover:ring-fuchsia-500/30 transition-all duration-500">
+                 <Coins size={40} className="text-slate-600 group-hover:text-fuchsia-400 transition-colors" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-300 mb-2">Wealth Management</h3>
+              <p className="text-sm text-slate-500 max-w-xs leading-relaxed font-medium">
+                Sledujte své investice, kryptoměny a majetek v jednom inteligentním feedu.
+              </p>
           </div>
         </div>
-
       </div>
 
+      {/* TLAČÍTKO NAHORU (Teď jako samostatná komponenta) */}
+      <ScrollToTop />
+
       <style jsx global>{`
+        ::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+        * {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
+        html, body {
+          overflow-y: scroll;
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
+        }
+        
         @keyframes gradient-text {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
