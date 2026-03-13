@@ -1,115 +1,207 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FileText, Calendar, TrendingUp, Trash2, ChevronRight, Info, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { 
+  FileText, 
+  Calendar, 
+  TrendingUp, 
+  Trash2, 
+  ChevronRight, 
+  Info, 
+  X,
+  History,
+  Zap,
+  Layers
+} from "lucide-react";
 
 export default function HistoryPage() {
+  const router = useRouter();
   const [history, setHistory] = useState<any[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
+  
+  // FIX: Prevence Hydration Error (SSR vs Client)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("finance_history") || "[]");
-    setHistory(saved);
+    setMounted(true);
+    try {
+      const saved = JSON.parse(localStorage.getItem("finance_history") || "[]");
+      // Ujistíme se, že každý záznam má ID, pokud by náhodou chybělo
+      const validatedHistory = saved.map((item: any, index: number) => ({
+        ...item,
+        id: item.id || `fallback-id-${index}-${Date.now()}`
+      }));
+      setHistory(validatedHistory);
+    } catch (e) {
+      console.error("Chyba při načítání historie:", e);
+      setHistory([]);
+    }
   }, []);
 
-  const deleteEntry = (id: number, e: React.MouseEvent) => {
-    e.stopPropagation(); // Zabrání otevření detailu při mazání
+  const deleteEntry = (id: string | number, e: React.MouseEvent) => {
+    e.stopPropagation();
     const newHistory = history.filter(item => item.id !== id);
     setHistory(newHistory);
     localStorage.setItem("finance_history", JSON.stringify(newHistory));
     if (selectedEntry?.id === id) setSelectedEntry(null);
   };
 
+  // Pokud ještě nejsme na klientovi, vykreslíme prázdný kontejner (shodný se serverem)
+  if (!mounted) {
+    return <div className="min-h-screen bg-[#020617]" />;
+  }
+
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-3xl font-black text-slate-900 mb-8">Moje Historie</h1>
-      
-      {history.length === 0 ? (
-        <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-          <p className="text-slate-400">Zatím nemáte žádné uložené analýzy.</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {history.map((item) => (
-            <div 
-              key={item.id} 
-              onClick={() => setSelectedEntry(item)}
-              className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group cursor-pointer hover:border-blue-400 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-                  <FileText size={24} />
+    <div className="min-h-screen bg-[#020617] text-slate-200">
+      <div className="mx-auto max-w-4xl px-6 py-12 relative">
+        
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 bg-indigo-600/10 blur-[100px] pointer-events-none" />
+
+        <header className="mb-10 relative z-10">
+          <div className="inline-flex items-center gap-2 rounded-full bg-indigo-950/40 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-4 ring-1 ring-indigo-500/30">
+            <History size={12} className="text-cyan-400" />
+            Data Archive Protocol
+          </div>
+          <h1 className="text-4xl font-black tracking-tight text-white italic">
+            Moje <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 not-italic">Historie</span>
+          </h1>
+        </header>
+        
+        {history.length === 0 ? (
+          <div className="text-center py-24 bg-slate-900/40 backdrop-blur-xl rounded-[3rem] border-2 border-dashed border-white/5 flex flex-col items-center relative z-10">
+            <div className="h-20 w-20 rounded-3xl bg-white/5 flex items-center justify-center mb-6 text-slate-600">
+              <Layers size={32} />
+            </div>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Archiv je prázdný</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 relative z-10">
+            {history.map((item) => (
+              <div 
+                key={item.id} // FIX: Teď máme jistotu, že id existuje
+                onClick={() => setSelectedEntry(item)}
+                className="group relative overflow-hidden bg-slate-900/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/5 shadow-xl flex items-center justify-between cursor-pointer hover:border-indigo-500/40 transition-all hover:bg-slate-900/60 ring-1 ring-white/5"
+              >
+                <div className="flex items-center gap-5">
+                  <div className="h-14 w-14 bg-[#020617] rounded-2xl flex items-center justify-center text-indigo-400 ring-1 ring-white/10 group-hover:ring-cyan-500/50 transition-all shadow-inner">
+                    <FileText size={24} />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-black text-white tracking-tight text-lg group-hover:text-cyan-50 transition-colors">
+                      {item.fileName || "Textová analýza"}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-4 text-[10px] text-slate-500 mt-1.5 font-bold uppercase tracking-widest">
+                      <span className="flex items-center gap-1.5"><Calendar size={12} className="text-indigo-500"/> {item.date || "Neznámé datum"}</span>
+                      <span className="flex items-center gap-1.5 text-cyan-400 px-2 py-0.5 bg-cyan-500/10 rounded-md ring-1 ring-cyan-500/20">
+                        <TrendingUp size={12}/> Úspora: {Number(item.uspora || 0).toLocaleString()} Kč
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900">{item.fileName || "Textová analýza"}</h3>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                    <span className="flex items-center gap-1"><Calendar size={12}/> {item.date}</span>
-                    <span className="flex items-center gap-1 text-emerald-600 font-bold">
-                      <TrendingUp size={12}/> Úspora: {item.uspora} Kč
-                    </span>
+                
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={(e) => deleteEntry(item.id, e)}
+                    className="p-3 text-slate-600 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-500/5 relative z-20"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-500 group-hover:text-cyan-400 group-hover:bg-cyan-500/10 transition-all">
+                    <ChevronRight size={20} />
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+        )}
+
+        {/* MODÁLNÍ OKNO */}
+        {selectedEntry && (
+          <div className="fixed inset-0 bg-[#020617]/90 backdrop-blur-md z-50 flex items-center justify-center p-6 animate-in fade-in duration-300">
+            <div className="bg-slate-900 border border-white/10 w-full max-w-2xl max-h-[85vh] rounded-[2.5rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col ring-1 ring-white/10">
               
-              <div className="flex items-center gap-2">
+              <div className="p-7 border-b border-white/5 flex items-center justify-between bg-white/5">
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.4)]">
+                    <Zap size={20} className="text-white" />
+                  </div>
+                  <div className="text-left">
+                    <h2 className="font-black text-white uppercase tracking-widest text-sm">System Analysis Detail</h2>
+                    <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em]">{selectedEntry.date}</p>
+                  </div>
+                </div>
                 <button 
-                  onClick={(e) => deleteEntry(item.id, e)}
-                  className="p-2 text-slate-300 hover:text-red-500 transition"
+                  onClick={() => setSelectedEntry(null)} 
+                  className="h-10 w-10 flex items-center justify-center bg-white/5 hover:bg-rose-500/20 hover:text-rose-500 rounded-full transition-all text-slate-400"
                 >
-                  <Trash2 size={18} />
+                  <X size={20} />
                 </button>
-                <ChevronRight size={20} className="text-slate-300 group-hover:text-blue-500 transition" />
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* MODÁLNÍ OKNO S DETAILEM ANALÝZY */}
-      {selectedEntry && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl max-h-[80vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-3">
-                <Info className="text-blue-600" />
-                <h2 className="font-bold text-xl text-slate-900">Detail analýzy</h2>
-              </div>
-              <button onClick={() => setSelectedEntry(null)} className="p-2 hover:bg-slate-200 rounded-full transition">
-                <X size={24} />
-              </button>
-            </div>
-            
-            <div className="p-8 overflow-y-auto space-y-6 text-slate-700">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-emerald-50 p-4 rounded-2xl">
-                  <p className="text-xs text-emerald-600 font-bold uppercase">Měsíční úspora</p>
-                  <p className="text-2xl font-black text-emerald-700">{selectedEntry.uspora} Kč</p>
+              
+              <div className="p-8 overflow-y-auto space-y-8 scrollbar-hide text-slate-300">
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="bg-[#020617]/60 border border-cyan-500/20 p-5 rounded-[1.5rem] shadow-inner text-left">
+                    <p className="text-[9px] text-cyan-400 font-black uppercase tracking-widest mb-1">Měsíční úspora</p>
+                    <p className="text-3xl font-black text-white tracking-tighter">{Number(selectedEntry.uspora || 0).toLocaleString()} <span className="text-xs text-slate-500 font-medium">Kč</span></p>
+                  </div>
+                  <div className="bg-[#020617]/60 border border-indigo-500/20 p-5 rounded-[1.5rem] shadow-inner text-left">
+                    <p className="text-[9px] text-indigo-400 font-black uppercase tracking-widest mb-1">Konec fixace</p>
+                    <p className="text-3xl font-black text-white tracking-tighter">{selectedEntry.fixace || "—"}</p>
+                  </div>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-2xl">
-                  <p className="text-xs text-blue-600 font-bold uppercase">Konec fixace</p>
-                  <p className="text-2xl font-black text-blue-700">{selectedEntry.fixace}</p>
+
+                <div className="space-y-3">
+                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] px-1 text-left">AI Agent Briefing</h4>
+                  <div className="bg-white/5 border border-white/5 p-5 rounded-2xl text-[13px] leading-relaxed italic text-slate-400 shadow-inner text-left">
+                    "{selectedEntry.analyticky_duvod || "Bez komentáře."}"
+                  </div>
+                </div>
+
+                <div className="space-y-3 pb-4">
+                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] px-1 text-left">Generated Report Content</h4>
+                  <div 
+                    className="prose prose-invert prose-sm max-w-none bg-[#020617]/40 border border-white/5 p-6 rounded-2xl shadow-inner font-medium text-slate-400 text-left"
+                    dangerouslySetInnerHTML={{ __html: selectedEntry.textovy_obsah || "Obsah nebyl vygenerován." }}
+                  />
                 </div>
               </div>
 
-              <div>
-                <h4 className="font-bold text-slate-900 mb-2">Briefing pro hlasového asistenta:</h4>
-                <div className="bg-slate-50 p-4 rounded-2xl text-sm italic border-l-4 border-blue-500">
-                  "{selectedEntry.analyticky_duvod}"
+              <div className="p-6 bg-white/5 border-t border-white/5 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div className="hidden md:flex items-center gap-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                  <Info size={14} className="text-indigo-400" />
+                  Šifrovaný lokální archiv
                 </div>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-slate-900 mb-2">Obsah odeslaného reportu:</h4>
-                {/* Zde renderujeme HTML, které nám poslala Gemini */}
-                <div 
-                  className="prose prose-slate prose-sm max-w-none bg-white border border-slate-100 p-4 rounded-2xl shadow-inner"
-                  dangerouslySetInnerHTML={{ __html: selectedEntry.textovy_obsah }}
-                />
+                
+                <div className="flex gap-3 w-full md:w-auto">
+                  <button 
+                    onClick={() => setSelectedEntry(null)}
+                    className="flex-1 md:flex-none px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
+                  >
+                    Zavřít
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      router.push(`/consultation?uspora=${selectedEntry.uspora}&fixace=${selectedEntry.fixace}`);
+                    }}
+                    className="flex-1 md:flex-none px-8 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center justify-center gap-2 group"
+                  >
+                    <Zap size={14} className="group-hover:animate-pulse text-cyan-400" />
+                    Reaktivovat audit
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .prose strong { color: #fff; font-weight: 900; }
+        .prose h1, .prose h2, .prose h3 { color: #818cf8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+        .prose p { margin-bottom: 1rem; }
+      `}</style>
     </div>
   );
 }
