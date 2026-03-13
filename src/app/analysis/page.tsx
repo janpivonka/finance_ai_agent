@@ -12,35 +12,49 @@ import {
   Activity,
   CheckCircle2,
   TrendingUp,
-  AlertCircle,
-  RotateCcw
+  RotateCcw,
+  Wallet
 } from "lucide-react";
 
 // --- POMOCNÉ KOMPONENTY ---
 
-function SavingsChart({ currentUspora, totalUspora, banka }: { currentUspora: number, totalUspora: number, banka: string }) {
-  // Výpočet v horizontu 5 let (60 měsíců)
-  const fiveYearsTotal = totalUspora * 12 * 5;
+function SavingsChart({ currentUspora, totalUspora, banka, puvodniSplatka }: { currentUspora: number, totalUspora: number, banka: string, puvodniSplatka?: number }) {
   const animatedFiveYearsSavings = currentUspora * 12 * 5;
-  
-  // Poměr pro vizualizaci barů (0 až 100)
   const progressRatio = totalUspora > 0 ? (currentUspora / totalUspora) * 100 : 0;
+  
+  const novaSplatka = puvodniSplatka ? puvodniSplatka - currentUspora : null;
 
   return (
     <div className="mb-8 rounded-[2.5rem] bg-slate-900/40 backdrop-blur-xl p-8 md:p-10 text-white shadow-2xl relative overflow-hidden group border border-white/5 ring-1 ring-white/5 animate-in fade-in zoom-in duration-700">
       <div className="absolute inset-0 opacity-5 pointer-events-none animate-pulse-slow" 
            style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      
       <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
         <div className="flex-1 w-full text-left">
           <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-6 border border-indigo-500/20">
             <Activity size={12} className="text-cyan-400 animate-spin-slow" />
             Vizuální projekce nákladů
           </div>
+
           <div className="space-y-10">
-            {/* PRVNÍ ŘÁDEK: Načítá se od nuly k celkovému přeplatku */}
+            <div className="grid grid-cols-2 gap-4 p-6 rounded-3xl bg-white/5 border border-white/5">
+              <div className="space-y-1">
+                <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider">Aktuální splátka</span>
+                <div className="text-xl font-bold text-slate-300 line-through decoration-fuchsia-500/50">
+                  {puvodniSplatka ? `${puvodniSplatka.toLocaleString()} Kč` : "--- Kč"}
+                </div>
+              </div>
+              <div className="space-y-1 border-l border-white/10 pl-4">
+                <span className="text-[9px] font-black uppercase text-cyan-500 tracking-wider">Nová splátka</span>
+                <div className="text-2xl font-black text-white">
+                  {novaSplatka ? `${Math.round(novaSplatka).toLocaleString()} Kč` : "Sníženo"}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-3">
               <div className="flex justify-between items-end">
-                <span className="text-[11px] font-bold uppercase text-slate-500 tracking-widest">Stávající přeplatek (5 let)</span>
+                <span className="text-[11px] font-bold uppercase text-slate-500 tracking-widest">Kumulovaná úspora (5 let)</span>
                 <span className="text-xl font-black text-fuchsia-500">+{animatedFiveYearsSavings.toLocaleString()} Kč</span>
               </div>
               <div className="h-2.5 w-full rounded-full bg-slate-950 overflow-hidden ring-1 ring-white/5">
@@ -51,10 +65,9 @@ function SavingsChart({ currentUspora, totalUspora, banka }: { currentUspora: nu
               </div>
             </div>
 
-            {/* DRUHÝ ŘÁDEK: Načítá se od nuly k měsíční úspoře */}
             <div className="space-y-3">
               <div className="flex justify-between items-end">
-                <span className="text-[11px] font-bold uppercase text-slate-500 tracking-widest text-cyan-400">Vaše měsíční úspora ({banka})</span>
+                <span className="text-[11px] font-bold uppercase text-cyan-400 tracking-widest">Měsíční delta ({banka})</span>
                 <span className="text-xl font-black text-cyan-400">
                   +{Math.round(currentUspora).toLocaleString()} Kč / měsíc
                 </span>
@@ -68,6 +81,7 @@ function SavingsChart({ currentUspora, totalUspora, banka }: { currentUspora: nu
             </div>
           </div>
         </div>
+
         <div className="flex flex-col items-center justify-center p-10 bg-indigo-600/10 rounded-[2.5rem] border border-indigo-500/20 backdrop-blur-2xl text-center min-w-[280px] shadow-inner group-hover:border-cyan-500/30 transition-colors duration-500">
             <div className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-3">Celkem ušetříte</div>
             <div className="text-6xl font-black text-white tracking-tighter mb-1 drop-shadow-2xl">
@@ -110,7 +124,6 @@ export default function AnalysisPage() {
   const router = useRouter();
   const [contractText, setContractText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [loadingStage, setLoadingStage] = useState(0);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [analysis, setAnalysis] = useState<any>(null);
   const [displayUspora, setDisplayUspora] = useState(0);
@@ -122,7 +135,15 @@ export default function AnalysisPage() {
     setMounted(true);
   }, []);
 
-  // Logika animovaného počítadla - Načítá od nuly k maximální úspoře
+  const loadingMessages = [
+    "Identifikuji strukturu dokumentu...",
+    "Provádím screening bankovního trhu...",
+    "Počítám finanční metriky a ROI...",
+    "Generuji finální analytický report..."
+  ];
+
+  const currentStage = Math.min(Math.floor(loadingProgress / 25), 3);
+
   useEffect(() => {
     if (analysis && analysis.uspora) {
       const target = Number(analysis.uspora) || 0;
@@ -149,36 +170,21 @@ export default function AnalysisPage() {
     }
   }, [analysis]);
 
-  const loadingMessages = [
-    "Identifikuji strukturu dokumentu...",
-    "Provádím screening bankovního trhu...",
-    "Počítám finanční metriky a ROI...",
-    "Generuji finální analytický report..."
-  ];
-
-  // Efekt pro progress bar - Odstraněno umělé zpomalování pro okamžitý přechod
   useEffect(() => {
     let interval: any;
     if (loading) {
       setLoadingProgress(0);
       interval = setInterval(() => {
         setLoadingProgress(prev => {
-          if (prev >= 99) return 99; // Zůstane na 99, dokud nepřijdou data
-          return prev + 1.5;
+          if (prev < 30) return prev + 0.8; 
+          if (prev < 70) return prev + 0.4;
+          if (prev < 90) return prev + 0.2;
+          if (prev < 98) return prev + 0.05;
+          return prev;
         });
       }, 50);
     }
     return () => clearInterval(interval);
-  }, [loading]);
-
-  useEffect(() => {
-    let stageInterval: any;
-    if (loading) {
-      stageInterval = setInterval(() => {
-        setLoadingStage((prev) => (prev < 3 ? prev + 1 : prev));
-      }, 1500);
-    }
-    return () => clearInterval(stageInterval);
   }, [loading]);
 
   const handleProcess = async (formData: FormData, fileName: string) => {
@@ -186,7 +192,6 @@ export default function AnalysisPage() {
     setError(null);
     setAnalysis(null);
     setDisplayUspora(0);
-    setLoadingProgress(0);
     
     try {
       const result: any = await analyzeContract(formData);
@@ -194,17 +199,15 @@ export default function AnalysisPage() {
         setError(result.error);
         setLoading(false);
       } else if (result) {
-        // Okamžitě nastavíme 100% a vypneme loading pro okamžité vykreslení
         setLoadingProgress(100);
         setTimeout(() => {
           setAnalysis(result);
           setLoading(false);
           const history = JSON.parse(localStorage.getItem("finance_history") || "[]");
           localStorage.setItem("finance_history", JSON.stringify([result, ...history.slice(0, 9)]));
-        }, 100); 
+        }, 600);
       }
     } catch (err) {
-      console.error("Selhání analýzy:", err);
       setError("Nepodařilo se spojit s analytickou AI.");
       setLoading(false);
     }
@@ -215,11 +218,10 @@ export default function AnalysisPage() {
     setContractText("");
     setUploadedFileName(null);
     setDisplayUspora(0);
+    setLoadingProgress(0);
   };
 
-  if (!mounted) {
-    return <div className="min-h-screen bg-[#020617]" />;
-  }
+  if (!mounted) return <div className="min-h-screen bg-[#020617]" />;
 
   return (
     <div className={`min-h-screen bg-[#020617] text-slate-200 transition-all duration-1000 ${!analysis ? "h-screen overflow-hidden" : ""}`}>
@@ -310,13 +312,6 @@ export default function AnalysisPage() {
             </section>
           )}
 
-          {error && !loading && (
-            <div className="flex items-center gap-4 p-6 bg-red-500/10 border border-red-500/20 rounded-3xl animate-in fade-in slide-in-from-top-4 max-w-2xl mx-auto text-left">
-              <AlertCircle className="text-red-500 shrink-0" />
-              <p className="text-sm text-red-200 font-medium">{error}</p>
-            </div>
-          )}
-
           {loading && (
             <div className="flex flex-col items-center justify-center py-20 animate-fade-in text-center max-w-md mx-auto">
               <div className="relative mb-12">
@@ -324,21 +319,25 @@ export default function AnalysisPage() {
                 <Zap className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-cyan-400 animate-pulse" size={40} />
               </div>
               
-              <div className="w-full space-y-6">
+              <div className="w-full space-y-8">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-black">AI Analysis Progress</span>
+                    <span className="text-xs font-black text-cyan-400 tracking-tighter">{Math.round(loadingProgress)}%</span>
+                  </div>
+                  <div className="relative h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                    <div 
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-600 to-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all duration-300 ease-out"
+                      style={{ width: `${loadingProgress}%` }}
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-black text-white tracking-tight animate-pulse">{loadingMessages[loadingStage]}</h3>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-[0.4em] font-bold">Neural Core Processing</p>
-                </div>
-                
-                <div className="relative h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                  <div 
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-600 to-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.5)] transition-all duration-200 ease-out"
-                    style={{ width: `${loadingProgress}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[9px] font-black text-slate-600 uppercase tracking-widest">
-                  <span>Analýza dat</span>
-                  <span>{Math.floor(loadingProgress)}%</span>
+                  <h3 className="text-xl font-black text-white tracking-tight h-8 flex items-center justify-center transition-all duration-500">
+                    {loadingMessages[currentStage]}
+                  </h3>
+                  <p className="text-[9px] text-slate-600 uppercase tracking-[0.5em] font-bold animate-pulse">Neural Core Processing</p>
                 </div>
               </div>
             </div>
@@ -351,10 +350,10 @@ export default function AnalysisPage() {
               <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="text-left">
                   <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 mb-3 animate-pulse">Audit Report Complete</h2>
-                  <h3 className="text-4xl font-black text-white tracking-tight text-left animate-gradient-text bg-gradient-to-r from-white via-slate-400 to-white bg-[length:200%_auto] bg-clip-text text-transparent">Analytický výstup</h3>
+                  <h3 className="text-4xl font-black text-white tracking-tight text-left">Analytický výstup</h3>
                 </div>
                 <button 
-                  onClick={() => router.push(`/consultation?uspora=${analysis.uspora}`)}
+                  onClick={() => router.push(`/consultation?uspora=${analysis.uspora}&fixace=${analysis.fixace}`)}
                   className="group flex items-center justify-center gap-4 rounded-2xl bg-indigo-600 px-10 py-5 text-xs font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95 cursor-pointer"
                 >
                   Personalizovaná konzultace
@@ -366,15 +365,16 @@ export default function AnalysisPage() {
                 currentUspora={displayUspora} 
                 totalUspora={Number(analysis.uspora) || 0}
                 banka={analysis.top_nabidky?.[0]?.banka || "Tržní průměr"} 
+                puvodniSplatka={Number(analysis.aktualni_splatka) || undefined}
               />
 
               <div className="grid gap-6 md:grid-cols-3 mb-12">
                 <RecommendationCard icon={FileText} title="Termín Fixace" highlight={analysis.fixace} description="Otevřené okno pro bezpoplatkový transfer." badge="Datum" />
                 <RecommendationCard 
-                  icon={Zap} 
-                  title="Delta měsíčně" 
-                  highlight={`${Math.floor(displayUspora).toLocaleString()} Kč`} 
-                  description="Okamžitý vliv na měsíční cashflow." 
+                  icon={Wallet} 
+                  title="Měsíční cashflow" 
+                  highlight={`+${Math.floor(displayUspora).toLocaleString()} Kč`} 
+                  description="Čistá úspora uvolněná do vašeho rozpočtu." 
                   badge="Výnos" 
                 />
                 <RecommendationCard icon={ShieldCheck} title="Rating pojistky" highlight={analysis.pojisteni} description="Analýza rizikového krytí vůči jistině." badge="Bezpečí" />
@@ -419,12 +419,13 @@ export default function AnalysisPage() {
                     </table>
                   </div>
                   <div className="p-10 bg-white/5 border-t border-white/5 text-left">
-                    <div className="flex gap-5 p-7 bg-[#020617]/60 rounded-3xl border border-white/5 shadow-inner hover:border-indigo-500/20 transition-all">
-                       <TrendingUp className="text-indigo-500 shrink-0 animate-bounce-slow" size={24} />
-                       <div className="text-xs text-slate-400 leading-relaxed italic font-medium">
-                         <span className="text-white font-bold not-italic uppercase text-[10px] block mb-1">Analytický závěr:</span>
-                         {analysis.analyticky_duvod || "Analýza proběhla úspěšně."}
-                       </div>
+                    <div className="flex gap-5 p-7 bg-[#020617]/60 rounded-3xl border border-white/5 shadow-inner">
+                        <TrendingUp className="text-indigo-500 shrink-0" size={24} />
+                        <div className="text-xs text-slate-400 leading-relaxed italic font-medium">
+                          <span className="text-white font-bold not-italic uppercase text-[10px] block mb-1">Strategické doporučení AI:</span>
+                          {/* Zde je ta kreativní změna pro propisování AI výstupu */}
+                          {analysis.kreativni_vypocet || analysis.analyticky_duvod || "Vaše úspora je připravena k uvolnění."}
+                        </div>
                     </div>
                   </div>
               </div>
@@ -434,31 +435,20 @@ export default function AnalysisPage() {
       </div>
 
       <style jsx global>{`
-        button, label[cursor="pointer"], .cursor-pointer {
-          cursor: pointer !important;
-        }
-
         @keyframes gradient-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes pulse-gentle { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.01); opacity: 0.98; } }
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes pulse-slow { 0%, 100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.05); } }
         @keyframes reveal { from { opacity: 0; transform: translateY(20px); filter: blur(10px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
         
         .reveal-1 { animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .reveal-2 { animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
-        
         .animate-gradient-text { animation: gradient-text 5s ease infinite; }
         .animate-pulse-gentle { animation: pulse-gentle 4s ease-in-out infinite; }
         .animate-spin-slow { animation: spin-slow 12s linear infinite; }
-        .animate-bounce-slow { animation: bounce-slow 3s ease-in-out infinite; }
         .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         .animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        
         .scrollbar-hide::-webkit-scrollbar { display: none; }
       `}</style>
     </div>

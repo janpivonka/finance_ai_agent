@@ -7,9 +7,6 @@ const GEMINI_API_KEY =
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-/**
- * SIMULOVANÁ DATABÁZE BANKOVNÍHO TRHU
- */
 const BANK_MARKET_DATA = [
   { bank: "Moneta Money Bank", rate: 4.29, benefit: "Nejrychlejší schválení online" },
   { bank: "Banka Creditas", rate: 4.35, benefit: "Nulové poplatky za odhad" },
@@ -23,9 +20,6 @@ const BANK_MARKET_DATA = [
   { bank: "Fio banka", rate: 4.59, benefit: "Transparentní podmínky" }
 ];
 
-/**
- * DOSLOVNÝ PŘEVOD ČÍSLA NA TEXT (Pro Voice Agenta)
- */
 function numberToCzechWords(num: number): string {
   const jednotky = ["", "jedna", "dvě", "tři", "čtyři", "pět", "šest", "sedm", "osm", "devět"];
   const desitky = ["", "deset", "dvacet", "třicet", "čtyřicet", "padesát", "šedesát", "sedmdesát", "osmdesát", "devadesát"];
@@ -105,26 +99,40 @@ export async function analyzeContract(formData: FormData) {
     
     const model = genAI.getGenerativeModel({ 
         model: "gemini-2.5-flash", 
-        generationConfig: { temperature: 0, topP: 0.1 } 
+        generationConfig: { 
+          temperature: 0, 
+          topP: 0.1,
+          responseMimeType: "application/json"
+        } 
     });
 
     const prompt = `
-      Jsi elitní bankovní auditor. Analyzuj smlouvu a porovnej ji s těmito daty:
+      Jsi elitní bankovní auditor s lidskou tváří. Analyzuj smlouvu a trh:
       ${JSON.stringify(BANK_MARKET_DATA, null, 2)}
 
-      ### TVÉ CÍLE:
-      1. Extrahuj úrok, jistinu (default 3,5 mil), fixaci a pojištění.
-      2. Najdi 3 nejlepší nabídky.
-      3. Vypočítej měsíční úsporu.
-      4. Vytvoř "analyticky_duvod" - JEDNA úderná, lidská a edukativní věta, která klienta motivuje (např. "Přeplácíte bance o hodnotu nového auta").
+      ### TVÉ CÍLE (STRIKTNÍ LOGIKA):
+      1. Extrahuj: úrok (%), jistinu, datum fixace a stav pojištění.
+      2. AKTUÁLNÍ SPLÁTKA: (jistina * úrok / 100) / 12.
+      3. VÝPOČET ÚSPORY: ((Současný úrok - Nový úrok) / 100 / 12) * Jistina.
+      4. Do pole "uspora" dej nejvyšší úsporu z nabídek.
 
-      Vrať POUZE JSON:
+      ### KRITICKÁ INSTRUKCE PRO "analyticky_duvod":
+      Tento text slouží k tomu, aby uživatel pochopil HODNOTU svých peněz.
+      - PŘÍSNÝ ZÁKAZ používat slova: "klient", "přeplácí", "vzhledem k", "úroková sazba", "tržní nabídka".
+      - FORMÁT VĚTY: "Představte si, že za ušetřených [ČÁSTKA] měsíčně byste mohli mít [KREATIVNÍ PŘÍKLAD], místo abyste tyto peníze zbytečně nechávali bance."
+      - KREATIVNÍ PŘÍKLADY PODLE ČÁSTKY:
+        * 1 000 - 3 000 Kč: rodinná večeře, předplatné fitka, lístky do divadla.
+        * 3 001 - 7 000 Kč: splátka nového iPhonu, víkendový wellness, velký LEGO set pro děti.
+        * nad 7 000 Kč: splátka nového auta, luxusní dovolená v exotice, kompletní rekonstrukce koupelny (v horizontu fixace).
+
+      Vrať striktní JSON:
       {
         "fixace": "datum",
+        "aktualni_splatka": cislo,
         "uspora": cislo,
         "aktualni_trzni_sazba": "X.XX%",
         "pojisteni": "ano/ne",
-        "analyticky_duvod": "Úderná věta pro dashboard.",
+        "analyticky_duvod": "Představte si, že za ušetřených...",
         "top_nabidky": [
           { "banka": "Název", "sazba": "X.XX%", "usp": cislo, "vyhoda": "Text" }
         ]
@@ -139,22 +147,22 @@ export async function analyzeContract(formData: FormData) {
         { text: prompt }
       ]);
     } else {
-      result = await model.generateContent(`${prompt}\n\nTEXT:\n${rawTextFromArea}`);
+      result = await model.generateContent(`${prompt}\n\nTEXT SMLOUVY K ANALÝZE:\n${rawTextFromArea}`);
     }
 
     const response = await result.response;
-    const jsonText = response.text().replace(/```json|```/g, "").trim();
+    const jsonText = response.text().trim();
     const analysisResult = JSON.parse(jsonText);
 
-    // VOICE OPTIMALIZACE
-    const usporaCislo = Math.round(Number(analysisResult.uspora));
-    const usporaSlovy = numberToCzechWords(usporaCislo);
-
+    const usporaCislo = Math.round(Number(analysisResult.uspora || 0));
+    const splatkaCislo = Math.round(Number(analysisResult.aktualni_splatka || 0));
+    
     const finalData = {
       ...analysisResult,
+      aktualni_splatka: splatkaCislo,
       uspora: usporaCislo,
-      uspora_slovy: usporaSlovy, // Pro Voice Agenta
-      textovy_obsah: generateReportHTML(analysisResult),
+      uspora_slovy: numberToCzechWords(usporaCislo),
+      textovy_obsah: generateReportHTML({ ...analysisResult, uspora: usporaCislo }),
       timestamp: new Date().toISOString(),
       date: new Date().toLocaleString('cs-CZ'),
       clientPhone: process.env.MAKE_DEFAULT_PHONE || ""
@@ -164,7 +172,7 @@ export async function analyzeContract(formData: FormData) {
     return finalData;
 
   } catch (error: any) {
-    console.error("🔥 ERROR:", error);
+    console.error("🔥 ANALÝZA ERROR:", error);
     return { error: `Analýza selhala: ${error.message}` };
   }
 }
