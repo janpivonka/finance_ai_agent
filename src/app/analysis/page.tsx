@@ -13,8 +13,15 @@ import {
   CheckCircle2,
   TrendingUp,
   RotateCcw,
-  Wallet
+  Wallet,
+  Mail,
+  History
 } from "lucide-react";
+import { ScrollToTop } from "../components/ScrollToTop";
+
+// --- IMPORT TVÝCH HOOKŮ ---
+import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
+import { useScrollDirection } from "../hooks/useScrollDirection";
 
 // --- POMOCNÉ KOMPONENTY ---
 
@@ -25,7 +32,7 @@ function SavingsChart({ currentUspora, totalUspora, banka, puvodniSplatka }: { c
   const novaSplatka = puvodniSplatka ? puvodniSplatka - currentUspora : null;
 
   return (
-    <div className="mb-8 rounded-[2.5rem] bg-slate-900/40 backdrop-blur-xl p-8 md:p-10 text-white shadow-2xl relative overflow-hidden group border border-white/5 ring-1 ring-white/5 animate-in fade-in zoom-in duration-700">
+    <div className="mb-8 rounded-[2.5rem] bg-slate-900/40 backdrop-blur-xl p-8 md:p-10 text-white shadow-2xl relative overflow-hidden group border border-white/5 ring-1 ring-white/5">
       <div className="absolute inset-0 opacity-5 pointer-events-none animate-pulse-slow" 
            style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       
@@ -131,6 +138,9 @@ export default function AnalysisPage() {
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  useScrollDirection();
+  useIntersectionObserver(analysis ? '.reveal' : '.nothing');
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -192,6 +202,7 @@ export default function AnalysisPage() {
     setError(null);
     setAnalysis(null);
     setDisplayUspora(0);
+    setUploadedFileName(fileName);
     
     try {
       const result: any = await analyzeContract(formData);
@@ -225,20 +236,27 @@ export default function AnalysisPage() {
 
   return (
     <div className={`min-h-screen bg-[#020617] text-slate-200 transition-all duration-1000 ${!analysis ? "h-screen overflow-hidden" : ""}`}>
-      <div className="mx-auto max-w-6xl px-8 h-full flex flex-col relative py-12 md:px-12">
+      <div className="mx-auto max-w-6xl px-8 h-full flex flex-col relative py-8 md:px-12">
         
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-cyan-600/5 rounded-full blur-[120px] pointer-events-none animate-pulse-slow" style={{ animationDelay: '2s' }} />
 
-        <header className="mb-8 relative z-10 shrink-0 reveal-1 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-indigo-950/40 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-4 ring-1 ring-indigo-500/30">
+        {/* HEADER */}
+        <header className="mb-6 relative z-10 shrink-0 reveal-header flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-indigo-950/40 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 ring-1 ring-indigo-500/30">
               <Activity size={12} className="text-cyan-400 animate-spin-slow" />
               AI Analytics Protocol v3
             </div>
             <h1 className="text-4xl font-black tracking-tight text-white md:text-6xl animate-pulse-gentle">
               Analýza <span className="animate-gradient-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] bg-clip-text text-transparent italic">Potenciálu</span>
             </h1>
+            
+            {!analysis && !loading && (
+               <p className="text-lg text-slate-400 max-w-2xl leading-relaxed font-medium border-l-2 border-indigo-500/30 pl-6 animate-fade-in">
+                 Nahrajte dokument pro hloubkovou kontrolu skrytých poplatků a identifikaci úsporných příležitostí v reálném čase.
+               </p>
+            )}
           </div>
 
           {analysis && (
@@ -252,36 +270,35 @@ export default function AnalysisPage() {
           )}
         </header>
 
-        <div className={`relative z-10 flex-1 flex flex-col gap-8 transition-all duration-700 ${!analysis ? "justify-center -mt-12" : ""}`}>
+        <div className={`relative z-10 flex-1 flex flex-col gap-4 transition-all duration-700 ${!analysis ? "justify-center" : ""}`}>
           
           {!analysis && !loading && (
-            <section className="reveal-2 rounded-[3.5rem] border border-white/5 bg-slate-900/60 backdrop-blur-2xl p-2 md:p-3 shadow-2xl ring-1 ring-white/10 transition-all duration-500 max-w-5xl mx-auto w-full group/main">
-              <div className="grid gap-2 md:grid-cols-[1fr_auto_1fr] items-center bg-slate-950/50 rounded-[3.2rem] p-6 md:p-10">
-                <label className="group relative flex cursor-pointer flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-white/5 bg-white/5 p-12 transition-all duration-500 hover:border-cyan-500/50 hover:bg-cyan-500/5 overflow-hidden min-h-[300px]">
+            <section className="reveal-init rounded-[3.5rem] border border-white/5 bg-slate-900/60 backdrop-blur-2xl p-2 md:p-3 shadow-2xl ring-1 ring-white/10 transition-all duration-500 max-w-5xl mx-auto w-full group/main">
+              <div className="grid gap-2 md:grid-cols-[1fr_auto_1fr] items-center bg-slate-950/50 rounded-[3.2rem] p-6 md:p-8">
+                <label className="group relative flex cursor-pointer flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-white/5 bg-white/5 p-8 transition-all duration-500 hover:border-cyan-500/50 hover:bg-cyan-500/5 overflow-hidden min-h-[220px]">
                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-600 text-white shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:bg-cyan-500 group-hover:shadow-cyan-500/40">
-                    <UploadCloud size={32} className="group-hover:animate-bounce" />
+                  <div className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:bg-cyan-500 group-hover:shadow-cyan-500/40">
+                    <UploadCloud size={28} className="group-hover:animate-bounce" />
                   </div>
                   <div className="relative text-center">
                     <p className="text-sm font-black text-white tracking-widest uppercase mb-1">
-                      {uploadedFileName || "Nahrát PDF smlouvu"}
+                      Nahrát PDF smlouvu
                     </p>
                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest opacity-60">Neural OCR Scan</p>
                   </div>
                   <input type="file" className="hidden" accept=".pdf" onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) {
-                      setUploadedFileName(f.name);
                       const fd = new FormData(); fd.append("file", f);
                       handleProcess(fd, f.name);
                     }
                   }} />
                 </label>
 
-                <div className="flex md:flex-col items-center gap-4 py-4 md:py-0">
-                  <div className="h-px md:h-24 w-full md:w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
-                  <span className="text-[10px] font-black text-slate-600 uppercase tracking-tighter border border-white/5 rounded-full p-2.5 bg-slate-900 shadow-xl">NEBO</span>
-                  <div className="h-px md:h-24 w-full md:w-px bg-gradient-to-t from-transparent via-white/10 to-transparent" />
+                <div className="flex md:flex-col items-center gap-4 py-2 md:py-0">
+                  <div className="h-px md:h-20 w-full md:w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+                  <span className="text-[10px] font-black text-slate-600 uppercase tracking-tighter border border-white/5 rounded-full p-2 bg-slate-900 shadow-xl">NEBO</span>
+                  <div className="h-px md:h-20 w-full md:w-px bg-gradient-to-t from-transparent via-white/10 to-transparent" />
                 </div>
 
                 <div className="flex flex-col gap-4 h-full text-left">
@@ -291,16 +308,16 @@ export default function AnalysisPage() {
                       placeholder="Vložte text smlouvy pro rychlý screening..."
                       value={contractText}
                       onChange={(e) => setContractText(e.target.value)}
-                      className="relative w-full h-[200px] md:h-full rounded-[1.8rem] border border-white/5 bg-slate-950/80 p-7 text-sm text-indigo-100 outline-none focus:ring-1 focus:ring-white/20 resize-none font-medium transition-all placeholder:text-slate-600"
+                      className="relative w-full h-[180px] md:h-full rounded-[1.8rem] border border-white/5 bg-slate-950/80 p-6 text-sm text-indigo-100 outline-none focus:ring-1 focus:ring-white/20 resize-none font-medium transition-all placeholder:text-slate-600"
                     />
                   </div>
                   <button
                     onClick={() => {
                       const fd = new FormData(); fd.append("text", contractText);
-                      handleProcess(fd, "Manuální vstup");
+                      handleProcess(fd, "Manuální vstup textu");
                     }}
                     disabled={loading || !contractText.trim()}
-                    className="group relative overflow-hidden rounded-[1.5rem] bg-white px-8 py-5 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-10 shadow-2xl cursor-pointer"
+                    className="group relative overflow-hidden rounded-[1.5rem] bg-white px-8 py-4 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-10 shadow-2xl cursor-pointer"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <span className="relative flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-[#020617] group-hover:text-white transition-colors">
@@ -344,14 +361,45 @@ export default function AnalysisPage() {
           )}
 
           {analysis && !loading && (
-            <section className="animate-fade-in-up pb-20">
-              <div className="mb-10 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <section className="pb-20 space-y-12">
+              <div className="reveal mb-10 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
               
-              <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
+              <div className="reveal mb-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="text-left">
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 mb-3 animate-pulse">Audit Report Complete</h2>
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 mb-2 animate-pulse">Audit Report Complete</h2>
                   <h3 className="text-4xl font-black text-white tracking-tight text-left">Analytický výstup</h3>
+                  
+                  <div className="mt-6 space-y-3">
+                    {/* 1. ŘÁDEK: ZDROJ - Samostatně pro dlouhé názvy */}
+                    <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/5 border border-white/10 shadow-sm animate-fade-in">
+                      <div className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-500/20">
+                        <FileText size={12} className="text-indigo-400" />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Zdroj:</span>
+                      <span className="text-[11px] font-black text-white truncate max-w-[250px] md:max-w-md">
+                        {uploadedFileName || "Manuální vstup dat"}
+                      </span>
+                    </div>
+
+                    {/* 2. ŘÁDEK: STAVOVÉ INDIKÁTORY */}
+                    <div className="flex flex-wrap gap-3">
+                      <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                        <Mail size={12} className="text-emerald-400" />
+                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider">Odesláno na email</span>
+                      </div>
+
+                      <button 
+                        onClick={() => router.push('/history')}
+                        className="flex items-center gap-2 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer group/badge animate-fade-in"
+                        style={{ animationDelay: '0.2s' }}
+                      >
+                        <History size={12} className="text-indigo-300 group-hover/badge:rotate-[-45deg] transition-transform" />
+                        <span className="text-[9px] font-black text-indigo-300 uppercase tracking-wider">Dostupné v historii</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
+
                 <button 
                   onClick={() => router.push(`/consultation?uspora=${analysis.uspora}&fixace=${analysis.fixace}`)}
                   className="group flex items-center justify-center gap-4 rounded-2xl bg-indigo-600 px-10 py-5 text-xs font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95 cursor-pointer"
@@ -361,31 +409,35 @@ export default function AnalysisPage() {
                 </button>
               </div>
 
-              <SavingsChart 
-                currentUspora={displayUspora} 
-                totalUspora={Number(analysis.uspora) || 0}
-                banka={analysis.top_nabidky?.[0]?.banka || "Tržní průměr"} 
-                puvodniSplatka={Number(analysis.aktualni_splatka) || undefined}
-              />
-
-              <div className="grid gap-6 md:grid-cols-3 mb-12">
-                <RecommendationCard icon={FileText} title="Termín Fixace" highlight={analysis.fixace} description="Otevřené okno pro bezpoplatkový transfer." badge="Datum" />
-                <RecommendationCard 
-                  icon={Wallet} 
-                  title="Měsíční cashflow" 
-                  highlight={`+${Math.floor(displayUspora).toLocaleString()} Kč`} 
-                  description="Čistá úspora uvolněná do vašeho rozpočtu." 
-                  badge="Výnos" 
+              <div className="reveal">
+                <SavingsChart 
+                  currentUspora={displayUspora} 
+                  totalUspora={Number(analysis.uspora) || 0}
+                  banka={analysis.top_nabidky?.[0]?.banka || "Tržní průměr"} 
+                  puvodniSplatka={Number(analysis.aktualni_splatka) || undefined}
                 />
-                <RecommendationCard icon={ShieldCheck} title="Rating pojistky" highlight={analysis.pojisteni} description="Analýza rizikového krytí vůči jistině." badge="Bezpečí" />
               </div>
 
-              <div className="overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl ring-1 ring-white/5 group transition-all duration-500 hover:border-indigo-500/20">
+              <div className="grid gap-6 md:grid-cols-3 mb-12">
+                <div className="reveal"><RecommendationCard icon={FileText} title="Termín Fixace" highlight={analysis.fixace} description="Otevřené okno pro bezpoplatkový transfer." badge="Datum" /></div>
+                <div className="reveal">
+                  <RecommendationCard 
+                    icon={Wallet} 
+                    title="Měsíční cashflow" 
+                    highlight={`+${Math.floor(displayUspora).toLocaleString()} Kč`} 
+                    description="Čistá úspora uvolněná do vašeho rozpočtu." 
+                    badge="Výnos" 
+                  />
+                </div>
+                <div className="reveal"><RecommendationCard icon={ShieldCheck} title="Rating pojistky" highlight={analysis.pojisteni} description="Analýza rizikového krytí vůči jistině." badge="Bezpečí" /></div>
+              </div>
+
+              <div className="reveal overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl ring-1 ring-white/5 group transition-all duration-500 hover:border-indigo-500/20">
                   <div className="px-10 py-7 bg-white/5 border-b border-white/5 flex items-center justify-between">
-                     <h3 className="font-black text-white tracking-widest uppercase text-xs">Benchmark Top nabídek</h3>
-                     <div className="flex items-center gap-2 text-[9px] font-black text-cyan-400 uppercase bg-cyan-400/10 px-4 py-1.5 rounded-full ring-1 ring-cyan-500/20 animate-pulse">
-                       <CheckCircle2 size={12}/> Market Verified
-                     </div>
+                      <h3 className="font-black text-white tracking-widest uppercase text-xs">Benchmark Top nabídek</h3>
+                      <div className="flex items-center gap-2 text-[9px] font-black text-cyan-400 uppercase bg-cyan-400/10 px-4 py-1.5 rounded-full ring-1 ring-cyan-500/20 animate-pulse">
+                        <CheckCircle2 size={12}/> Market Verified
+                      </div>
                   </div>
                   <div className="overflow-x-auto scrollbar-hide">
                     <table className="w-full text-sm">
@@ -423,7 +475,6 @@ export default function AnalysisPage() {
                         <TrendingUp className="text-indigo-500 shrink-0" size={24} />
                         <div className="text-xs text-slate-400 leading-relaxed italic font-medium">
                           <span className="text-white font-bold not-italic uppercase text-[10px] block mb-1">Strategické doporučení AI:</span>
-                          {/* Zde je ta kreativní změna pro propisování AI výstupu */}
                           {analysis.kreativni_vypocet || analysis.analyticky_duvod || "Vaše úspora je připravena k uvolnění."}
                         </div>
                     </div>
@@ -433,23 +484,25 @@ export default function AnalysisPage() {
           )}
         </div>
       </div>
-
+      <ScrollToTop />
       <style jsx global>{`
         @keyframes gradient-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes pulse-gentle { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.01); opacity: 0.98; } }
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes pulse-slow { 0%, 100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.05); } }
-        @keyframes reveal { from { opacity: 0; transform: translateY(20px); filter: blur(10px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+        @keyframes reveal-css { from { opacity: 0; transform: translateY(20px); filter: blur(10px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        .reveal-1 { animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .reveal-2 { animation: reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
+        .reveal-header { animation: reveal-css 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .reveal-init { animation: reveal-css 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
+        
         .animate-gradient-text { animation: gradient-text 5s ease infinite; }
         .animate-pulse-gentle { animation: pulse-gentle 4s ease-in-out infinite; }
         .animate-spin-slow { animation: spin-slow 12s linear infinite; }
         .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
-        .animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+        
+        ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
       `}</style>
     </div>
   );
