@@ -141,8 +141,26 @@ export default function AnalysisPage() {
   useScrollDirection();
   useIntersectionObserver(analysis ? '.reveal' : '.nothing');
 
+  // --- HOOK PRO NAČTENÍ Z HISTORIE ---
   useEffect(() => {
     setMounted(true);
+    
+    const savedData = localStorage.getItem("last_analysis_data");
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setAnalysis(parsed);
+        setUploadedFileName(parsed.fileName || "Záznam z historie");
+        
+        // Vyčistit data, aby se nenačítala při refreshu
+        localStorage.removeItem("last_analysis_data");
+        
+        // Scroll na začátek výsledků
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (e) {
+        console.error("Chyba při parsování dat z historie:", e);
+      }
+    }
   }, []);
 
   const loadingMessages = [
@@ -212,10 +230,19 @@ export default function AnalysisPage() {
       } else if (result) {
         setLoadingProgress(100);
         setTimeout(() => {
-          setAnalysis(result);
+          // Obohatíme výsledek o název souboru a datum pro historii
+          const resultWithMeta = { 
+            ...result, 
+            fileName: fileName,
+            id: `anl-${Date.now()}`,
+            date: new Date().toLocaleDateString('cs-CZ') 
+          };
+          
+          setAnalysis(resultWithMeta);
           setLoading(false);
+          
           const history = JSON.parse(localStorage.getItem("finance_history") || "[]");
-          localStorage.setItem("finance_history", JSON.stringify([result, ...history.slice(0, 9)]));
+          localStorage.setItem("finance_history", JSON.stringify([resultWithMeta, ...history.slice(0, 9)]));
         }, 600);
       }
     } catch (err) {
@@ -248,8 +275,11 @@ export default function AnalysisPage() {
               <Activity size={12} className="text-cyan-400 animate-spin-slow" />
               AI Analytics Protocol v3
             </div>
-            <h1 className="text-4xl font-black tracking-tight text-white md:text-6xl animate-pulse-gentle">
-              Analýza <span className="animate-gradient-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] bg-clip-text text-transparent italic">Potenciálu</span>
+            <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-white md:text-6xl animate-pulse-gentle overflow-visible">
+              Analýza{" "}
+              <span className="inline-block align-baseline pb-1 pr-1 animate-gradient-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] bg-clip-text text-transparent italic">
+                Potenciálu
+              </span>
             </h1>
             
             {!analysis && !loading && (
@@ -370,7 +400,6 @@ export default function AnalysisPage() {
                   <h3 className="text-4xl font-black text-white tracking-tight text-left">Analytický výstup</h3>
                   
                   <div className="mt-6 space-y-3">
-                    {/* 1. ŘÁDEK: ZDROJ - Samostatně pro dlouhé názvy */}
                     <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/5 border border-white/10 shadow-sm animate-fade-in">
                       <div className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-500/20">
                         <FileText size={12} className="text-indigo-400" />
@@ -381,7 +410,6 @@ export default function AnalysisPage() {
                       </span>
                     </div>
 
-                    {/* 2. ŘÁDEK: STAVOVÉ INDIKÁTORY */}
                     <div className="flex flex-wrap gap-3">
                       <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 animate-fade-in" style={{ animationDelay: '0.1s' }}>
                         <Mail size={12} className="text-emerald-400" />

@@ -135,8 +135,12 @@ function ConsultationContent() {
             <Zap size={12} className={`text-cyan-400 ${isCalling ? 'animate-bounce' : 'animate-pulse'}`} />
             Neural Consultation 2.0
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white md:text-5xl">
-            AI <span className="animate-gradient-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] bg-clip-text text-transparent italic">Bankovní</span> specialista
+          <h1 className="text-3xl font-black leading-[1.05] tracking-tight text-white md:text-5xl overflow-visible">
+            AI{" "}
+            <span className="inline-block align-baseline pb-1 pr-1 animate-gradient-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] bg-clip-text text-transparent italic">
+              Bankovní
+            </span>{" "}
+            specialista
           </h1>
         </div>
         
