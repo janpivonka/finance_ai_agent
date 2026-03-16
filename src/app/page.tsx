@@ -29,16 +29,26 @@ export default function DashboardPage() {
   useIntersectionObserver('.reveal');
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("finance_history") || "[]");
-    if (saved.length > 0) {
-      setLastAnalysis(saved[0]);
+    try {
+      const raw = localStorage.getItem("finance_history");
+      const saved = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(saved) && saved.length > 0) {
+        setLastAnalysis(saved[0]);
+      }
+    } catch (e) {
+      console.error("Chyba při načítání finance_history:", e);
     }
     setIsLoaded(true);
   }, []);
 
   const goToConsultation = () => {
     if (lastAnalysis) {
-      router.push(`/consultation?uspora=${lastAnalysis.uspora}&fixace=${lastAnalysis.fixace}`);
+      const idParam = encodeURIComponent(String(lastAnalysis.id || ""));
+      const usporaParam = encodeURIComponent(String(lastAnalysis.uspora));
+      const fixaceParam = encodeURIComponent(String(lastAnalysis.fixace));
+      router.push(
+        `/consultation?id=${idParam}&uspora=${usporaParam}&fixace=${fixaceParam}`,
+      );
     } else {
       router.push('/analysis');
     }
@@ -118,7 +128,22 @@ export default function DashboardPage() {
 
           {/* Moje Historie */}
           <div 
-            onClick={() => router.push('/history')}
+            onClick={() => {
+              try {
+                if (lastAnalysis?.id) {
+                  localStorage.setItem(
+                    "last_analysis_data",
+                    JSON.stringify({ id: lastAnalysis.id }),
+                  );
+                }
+              } catch (e) {
+                console.error(
+                  "Nepodařilo se uložit last_analysis_data pro historii z dashboardu:",
+                  e,
+                );
+              }
+              router.push("/history");
+            }}
             className="group relative cursor-pointer overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40 p-8 transition-all hover:bg-slate-900/60 hover:border-fuchsia-500/50 hover:shadow-[0_0_40px_rgba(217,70,219,0.2)]"
           >
             <div className="absolute -right-4 -top-4 text-fuchsia-500/5 rotate-12 group-hover:text-fuchsia-500/10 transition-colors">
@@ -189,9 +214,7 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-4 min-w-[300px]">
               <button 
                 onClick={goToConsultation}
-                className="group relative cursor-pointer flex items-center justify-center gap-4 bg-white text-slate-950 px-10 py-7 rounded-[2rem] font-black text-xl transition-all duration-300
-                           hover:bg-cyan-400 hover:-rotate-3 hover:scale-110 active:scale-95
-                           shadow-[0_15px_30px_rgba(34,211,238,0.2)] hover:shadow-[0_25px_60px_rgba(34,211,238,0.5)]"
+                className="group relative cursor-pointer flex items-center justify-center gap-4 bg-white text-slate-950 px-10 py-7 rounded-[2rem] font-black text-xl transition-all duration-300 hover:bg-cyan-400 hover:-rotate-3 hover:scale-110 active:scale-95 shadow-[0_15px_30px_rgba(34,211,238,0.2)] hover:shadow-[0_25px_60px_rgba(34,211,238,0.5)]"
               >
                 <TrendingUp size={24} className="group-hover:translate-y-[-4px] group-hover:translate-x-[4px] transition-transform duration-300" />
                 {lastAnalysis ? "Získat tuto úsporu" : "Spustit analýzu"}

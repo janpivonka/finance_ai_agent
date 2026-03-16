@@ -145,7 +145,7 @@ export default function AnalysisPage() {
   useEffect(() => {
     setMounted(true);
     
-    const savedData = localStorage.getItem("last_analysis_data");
+    const savedData = localStorage.getItem("analysis_entry_data");
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
@@ -153,7 +153,7 @@ export default function AnalysisPage() {
         setUploadedFileName(parsed.fileName || "Záznam z historie");
         
         // Vyčistit data, aby se nenačítala při refreshu
-        localStorage.removeItem("last_analysis_data");
+        localStorage.removeItem("analysis_entry_data");
         
         // Scroll na začátek výsledků
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -417,7 +417,22 @@ export default function AnalysisPage() {
                       </div>
 
                       <button 
-                        onClick={() => router.push('/history')}
+                        onClick={() => {
+                          try {
+                            if (analysis?.id) {
+                              localStorage.setItem(
+                                "last_analysis_data",
+                                JSON.stringify({ id: analysis.id }),
+                              );
+                            }
+                          } catch (e) {
+                            console.error(
+                              "Nepodařilo se uložit last_analysis_data pro historii:",
+                              e,
+                            );
+                          }
+                          router.push("/history");
+                        }}
                         className="flex items-center gap-2 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer group/badge animate-fade-in"
                         style={{ animationDelay: '0.2s' }}
                       >
@@ -429,7 +444,12 @@ export default function AnalysisPage() {
                 </div>
 
                 <button 
-                  onClick={() => router.push(`/consultation?uspora=${analysis.uspora}&fixace=${analysis.fixace}`)}
+                  onClick={() => {
+                    const idParam = encodeURIComponent(String(analysis.id || ""));
+                    const usporaParam = encodeURIComponent(String(analysis.uspora));
+                    const fixaceParam = encodeURIComponent(String(analysis.fixace));
+                    router.push(`/consultation?id=${idParam}&uspora=${usporaParam}&fixace=${fixaceParam}`);
+                  }}
                   className="group flex items-center justify-center gap-4 rounded-2xl bg-indigo-600 px-10 py-5 text-xs font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95 cursor-pointer"
                 >
                   Personalizovaná konzultace

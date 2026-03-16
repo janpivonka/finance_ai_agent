@@ -180,7 +180,8 @@ export default function HistoryPage() {
   };
 
   const handleReturnToAnalysis = (entry: any) => {
-    localStorage.setItem("last_analysis_data", JSON.stringify(entry));
+    // full entry pro otevření detailu v /analysis
+    localStorage.setItem("analysis_entry_data", JSON.stringify(entry));
     router.push("/analysis");
   };
 
@@ -335,7 +336,34 @@ export default function HistoryPage() {
                   <button onClick={closeModal} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors cursor-pointer">Zavřít</button>
                   <div className="flex flex-col md:flex-row gap-3 flex-1">
                     <button onClick={() => handleReturnToAnalysis(selectedEntry)} className="flex-1 px-6 py-3 bg-[#020617] border border-indigo-500/30 text-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/10 hover:border-indigo-500/60 transition-all flex items-center justify-center gap-2 group cursor-pointer"><Search size={14} className="group-hover:scale-110 transition-transform duration-300" /> Zobrazit analýzu</button>
-                    <button onClick={() => router.push(`/consultation?uspora=${selectedEntry.uspora}&fixace=${selectedEntry.fixace}`)} className="flex-1 px-8 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center justify-center gap-2 group cursor-pointer"><Zap size={14} className="group-hover:animate-pulse text-cyan-400" /> Přejít na konzultaci</button>
+                    <button
+                      onClick={() => {
+                        try {
+                          if (selectedEntry?.id) {
+                            localStorage.setItem(
+                              "last_analysis_data",
+                              JSON.stringify({ id: selectedEntry.id }),
+                            );
+                          }
+                        } catch (e) {
+                          console.error(
+                            "Nepodařilo se uložit last_analysis_data při přechodu do consultation:",
+                            e,
+                          );
+                        }
+
+                        router.push(
+                          `/consultation?id=${encodeURIComponent(String(selectedEntry.id))}&uspora=${encodeURIComponent(String(selectedEntry.uspora))}&fixace=${encodeURIComponent(String(selectedEntry.fixace))}`,
+                        );
+                      }}
+                      className="flex-1 px-8 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                    >
+                      <Zap
+                        size={14}
+                        className="group-hover:animate-pulse text-cyan-400"
+                      />{" "}
+                      Přejít na konzultaci
+                    </button>
                   </div>
                 </div>
               </div>
