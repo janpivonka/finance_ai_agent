@@ -28,6 +28,8 @@ function ConsultationContent() {
   const [inputValue, setInputValue] = useState("");
   const [extraContext, setExtraContext] = useState<string | null>(null);
   const [fullHistoryEntry, setFullHistoryEntry] = useState<any>(null);
+  // Fullscreen overlay after start, until the first transcript appears in chat
+  const [awaitingFirstTranscript, setAwaitingFirstTranscript] = useState(false);
   
   // State pro chytrý scroll (auto-scroll běží, jen když je uživatel dole)
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -112,6 +114,8 @@ function ConsultationContent() {
         const role = message.role === "user" ? "user" : "assistant";
         const text = message.transcript || "";
 
+        if (text.trim() !== "") setAwaitingFirstTranscript(false);
+
         setMessages((prev) => {
           const lastMsg = prev[prev.length - 1];
           if (lastMsg && lastMsg.role === role && !lastMsg.isFinal) {
@@ -135,6 +139,7 @@ function ConsultationContent() {
 
     vapi.on("call-end", () => {
       setIsCalling(false);
+      setAwaitingFirstTranscript(false);
       setMessages(prev => prev.map(m => ({ ...m, isFinal: true })));
     });
 
@@ -146,6 +151,7 @@ function ConsultationContent() {
     if (!vapiRef.current) return;
     try {
       setStarting(true);
+      setAwaitingFirstTranscript(true);
       await vapiRef.current.start("4c32087f-c5e7-48db-b775-10a47b12e912", {
         variableValues: { 
           uspora: usporaParam, 
@@ -156,6 +162,7 @@ function ConsultationContent() {
     } catch (error) {
       console.error("Vapi start error:", error);
       setIsCalling(false);
+      setAwaitingFirstTranscript(false);
     } finally {
       setStarting(false);
     }
@@ -164,6 +171,7 @@ function ConsultationContent() {
   const handleStopCall = () => {
     vapiRef.current?.stop();
     setIsCalling(false);
+    setAwaitingFirstTranscript(false);
   };
 
   const handleSendMessage = (event: React.FormEvent) => {
@@ -189,6 +197,31 @@ function ConsultationContent() {
       {/* Background Glows */}
       <div className={`absolute top-0 left-1/4 w-96 h-96 rounded-full blur-[120px] pointer-events-none transition-colors duration-1000 ${isCalling ? 'bg-fuchsia-600/20 animate-pulse' : 'bg-indigo-500/10'}`} />
       <div className={`absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-[120px] pointer-events-none transition-colors duration-1000 ${isCalling ? 'bg-cyan-500/20 animate-pulse' : 'bg-cyan-500/5'}`} />
+
+      {(starting || awaitingFirstTranscript) && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#020617]/85 backdrop-blur-md">
+          <div className="mx-6 w-full max-w-md rounded-[2.5rem] border border-white/10 bg-slate-900/40 p-10 shadow-2xl ring-1 ring-white/10">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-fuchsia-500/10 ring-1 ring-fuchsia-500/20 shadow-[0_0_40px_rgba(217,70,219,0.12)]">
+              <span className="h-8 w-8 animate-spin rounded-full border-2 border-fuchsia-500/30 border-t-fuchsia-400" />
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-200">
+                Navazuji spojení…
+              </p>
+              <p className="mt-3 text-sm text-slate-400 leading-relaxed">
+                Hovor začne každou chvíli. Jakmile se objeví první přepis, pokračujeme.
+              </p>
+              <button
+                type="button"
+                onClick={handleStopCall}
+                className="mt-8 inline-flex items-center justify-center rounded-2xl border border-fuchsia-500/30 bg-fuchsia-950/20 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-fuchsia-200 hover:bg-fuchsia-500/10 transition-all"
+              >
+                Zrušit připojení
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* HEADER */}
       <header className="mb-6 flex shrink-0 items-start justify-between gap-4 relative z-10 animate-fade-in">
@@ -233,7 +266,6 @@ function ConsultationContent() {
                 router.push("/history");
               }}
               className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-              title="Historie"
             >
               <History size={14} />
               <span className="hidden md:inline">Archiv</span>
@@ -241,7 +273,6 @@ function ConsultationContent() {
             <button 
               onClick={handleBackToAnalysis}
               className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/20 transition-all cursor-pointer"
-              title="Zpět na analýzu"
             >
               <Search size={14} />
               <span className="hidden md:inline">Analýza</span>
