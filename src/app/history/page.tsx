@@ -132,34 +132,26 @@ export default function HistoryPage() {
     const idToScroll = pendingScrollIdRef.current;
     if (!idToScroll) return;
 
-    let attempts = 0;
-    const maxAttempts = 20;
+    // Počkáme na dokončení animace nadpisu
+    const el = itemsRef.current[idToScroll];
+    if (el) {
+      // Plynulý smooth scroll až po animaci
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      
+      const highlightId = pendingHighlightIdRef.current || idToScroll;
 
-    const tryScroll = () => {
-      attempts += 1;
-      const el = itemsRef.current[idToScroll];
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        pendingScrollIdRef.current = null;
-        const highlightId = pendingHighlightIdRef.current || idToScroll;
-        pendingHighlightIdRef.current = null;
+      if (highlightStartTimeoutRef.current) window.clearTimeout(highlightStartTimeoutRef.current);
+      if (highlightTimeoutRef.current) window.clearTimeout(highlightTimeoutRef.current);
 
-        if (highlightStartTimeoutRef.current) window.clearTimeout(highlightStartTimeoutRef.current);
-        if (highlightTimeoutRef.current) window.clearTimeout(highlightTimeoutRef.current);
-
-        highlightStartTimeoutRef.current = window.setTimeout(() => {
-          setHighlightedId(highlightId);
-          highlightTimeoutRef.current = window.setTimeout(() => {
-            setHighlightedId((current) => current === highlightId ? null : current);
-          }, 3400);
-        }, 1100);
-        return;
-      }
-      if (attempts < maxAttempts) window.setTimeout(tryScroll, 50);
-    };
-
-    window.requestAnimationFrame(() => { window.setTimeout(tryScroll, 0); });
-  }, [history.length, isLoaded, isHeaderReady]);
+      // Highlight začíná krátce po dokončení scrollu
+      highlightStartTimeoutRef.current = window.setTimeout(() => {
+        setHighlightedId(highlightId);
+        highlightTimeoutRef.current = window.setTimeout(() => {
+          setHighlightedId((current) => current === highlightId ? null : current);
+        }, 2500);
+      }, 500); // Malé zpoždění pro plynulý přechod po scrollu
+    }
+  }, [isLoaded, isHeaderReady]);
 
   const closeModal = () => {
     setIsClosing(true);
