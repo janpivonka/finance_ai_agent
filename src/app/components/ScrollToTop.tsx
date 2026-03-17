@@ -1,11 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronUp } from "lucide-react";
 import { useScrollDirection } from "../hooks/useScrollDirection";
 
-export const ScrollToTop = () => {
+export const ScrollToTop = ({ forceShow }: { forceShow?: boolean }) => {
   const { showScrollTop } = useScrollDirection();
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    // Trigger scroll event after a tiny delay to ensure hook is listening
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event('scroll'));
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Hybrid logic: 
+  // If forceShow is provided (History), it MUST be true AND we must be scrolled down.
+  // If forceShow is undefined (Dashboard), we just rely on the scroll hook.
+  const shouldShow = mounted && (forceShow !== undefined ? (forceShow && showScrollTop) : showScrollTop);
 
   const scrollToTop = (e: React.MouseEvent) => {
     // Zastavíme šíření eventu dál, aby se s ničím netloukl
@@ -39,8 +54,8 @@ export const ScrollToTop = () => {
                  bg-indigo-600 text-white shadow-2xl
                  flex items-center justify-center cursor-pointer
                  transition-all duration-500 hover:scale-110 active:scale-95
-                 ${showScrollTop 
-                   ? "opacity-100 translate-y-0 z-[99999] pointer-events-auto" 
+                 ${shouldShow 
+                   ? "opacity-100 translate-y-0 z-[9999] pointer-events-auto" 
                    : "opacity-0 translate-y-20 z-[-1] pointer-events-none"
                  }`}
       style={{ isolation: 'isolate' }} // Vytvoří nový stacking context

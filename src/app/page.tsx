@@ -29,14 +29,17 @@ export default function DashboardPage() {
   useIntersectionObserver('.reveal');
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("finance_history");
-      const saved = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(saved) && saved.length > 0) {
-        setLastAnalysis(saved[0]);
+    // Kontrola zda jsme na klientovi před přístupem k localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem("finance_history");
+        const saved = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(saved) && saved.length > 0) {
+          setLastAnalysis(saved[0]);
+        }
+      } catch (e) {
+        console.error("Chyba při načítání finance_history:", e);
       }
-    } catch (e) {
-      console.error("Chyba při načítání finance_history:", e);
     }
     setIsLoaded(true);
   }, []);
@@ -129,18 +132,20 @@ export default function DashboardPage() {
           {/* Moje Historie */}
           <div 
             onClick={() => {
-              try {
-                if (lastAnalysis?.id) {
-                  localStorage.setItem(
-                    "last_analysis_data",
-                    JSON.stringify({ id: lastAnalysis.id }),
+              if (typeof window !== 'undefined') {
+                try {
+                  if (lastAnalysis?.id) {
+                    localStorage.setItem(
+                      "last_analysis_data",
+                      JSON.stringify({ id: lastAnalysis.id }),
+                    );
+                  }
+                } catch (e) {
+                  console.error(
+                    "Nepodařilo se uložit last_analysis_data pro historii z dashboardu:",
+                    e,
                   );
                 }
-              } catch (e) {
-                console.error(
-                  "Nepodařilo se uložit last_analysis_data pro historii z dashboardu:",
-                  e,
-                );
               }
               router.push("/history");
             }}
