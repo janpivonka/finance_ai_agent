@@ -151,7 +151,7 @@ export default function HistoryPage() {
         }, 2500);
       }, 500); // Malé zpoždění pro plynulý přechod po scrollu
     }
-  }, [isLoaded, isHeaderReady]);
+  }, [isLoaded, isHeaderReady, history.length]);
 
   const closeModal = () => {
     setIsClosing(true);
@@ -206,7 +206,7 @@ export default function HistoryPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-indigo-600/10 blur-[120px] pointer-events-none animate-pulse-slow" />
 
         <header
-          className={`mb-12 relative z-10 transition-all duration-1000 transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+          className={`mb-12 relative z-10 reveal transition-all duration-1000 transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
         >
           <div className="inline-flex items-center gap-2 rounded-full bg-indigo-950/40 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-4 ring-1 ring-indigo-500/30 backdrop-blur-md">
             <History size={12} className="text-cyan-400" />

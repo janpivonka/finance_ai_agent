@@ -20,23 +20,20 @@ export const useIntersectionObserver = (className = '.reveal', dependency: any =
         entries.forEach(entry => {
           const el = entry.target as HTMLElement;
           
-          if (entry.isIntersecting) {
-            // Když je prvek vidět, spustíme animaci
+          if (entry.isIntersecting && entry.intersectionRatio > 0.3) {
+            // Když je prvek vidět alespoň z 30%, spustíme animaci
             el.style.opacity = "1";
             el.style.transform = 'translateY(0)';
-            
-            // Jakmile se prvek jednou ukáže, můžeme ho přestat sledovat (volitelné)
-            // observer.unobserve(el); 
-          } else {
-            // Pokud chceš, aby prvky mizely při odscrollování nahoru, nech tohle:
+          } else if (!entry.isIntersecting && entry.intersectionRatio < 0.2) {
+            // Skryjeme až když je méně než 20% viditelnosti
             el.style.opacity = "0";
             el.style.transform = 'translateY(20px)';
           }
         });
       },
       { 
-        threshold: 0.1, // Prvek se aktivuje, když je aspoň 10 % vidět
-        rootMargin: '0px 0px -50px 0px' // Aktivuje se o 50px dříve, než vyleze na obrazovku
+        threshold: [0, 0.3, 0.7, 1], // Vyšší threshold pro méně časté změny
+        rootMargin: '0px 0px -100px 0px' // Větší rezerva - aktivuje se 100px dříve
       }
     );
 
