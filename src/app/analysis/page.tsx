@@ -15,7 +15,10 @@ import {
   RotateCcw,
   Wallet,
   Mail,
-  History
+  History,
+  Pencil,
+  Check,
+  X
 } from "lucide-react";
 import { ScrollToTop } from "../components/ScrollToTop";
 
@@ -136,6 +139,8 @@ export default function AnalysisPage() {
   const [displayUspora, setDisplayUspora] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [isEditingFileName, setIsEditingFileName] = useState(false);
+  const [tempFileName, setTempFileName] = useState("");
   const [mounted, setMounted] = useState(false);
 
   useScrollDirection();
@@ -162,6 +167,25 @@ export default function AnalysisPage() {
       }
     }
   }, []);
+
+  const handleRenameFile = (newName: string) => {
+    setUploadedFileName(newName);
+    setIsEditingFileName(false);
+    
+    // Uložení změny do localStorage napříč celou aplikací
+    if (typeof window !== 'undefined') {
+      try {
+        const savedHistory = JSON.parse(localStorage.getItem("finance_history") || "[]");
+        // Najdeme aktuální záznam a aktualizujeme název
+        const updatedHistory = savedHistory.map((item: any) => 
+          item.fileName === uploadedFileName ? { ...item, fileName: newName } : item
+        );
+        localStorage.setItem("finance_history", JSON.stringify(updatedHistory));
+      } catch (e) {
+        console.error("Chyba při ukládání přejmenování souboru do localStorage:", e);
+      }
+    }
+  };
 
   const loadingMessages = [
     "Identifikuji strukturu dokumentu...",
@@ -405,9 +429,55 @@ export default function AnalysisPage() {
                         <FileText size={12} className="text-indigo-400" />
                       </div>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Zdroj:</span>
-                      <span className="text-[11px] font-black text-white truncate max-w-[250px] md:max-w-md">
-                        {uploadedFileName || "Manuální vstup dat"}
-                      </span>
+                      {isEditingFileName ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={tempFileName}
+                            onChange={(e) => setTempFileName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleRenameFile(tempFileName);
+                              } else if (e.key === 'Escape') {
+                                setIsEditingFileName(false);
+                                setTempFileName(uploadedFileName || "");
+                              }
+                            }}
+                            autoFocus
+                            className="bg-slate-800/50 border border-indigo-500/50 rounded-lg px-2 py-1 text-xs font-black text-white outline-none focus:border-indigo-400 max-w-[200px]"
+                          />
+                          <button
+                            onClick={() => handleRenameFile(tempFileName)}
+                            className="h-5 w-5 flex items-center justify-center bg-green-600 hover:bg-green-500 rounded transition-colors"
+                          >
+                            <Check size={12} className="text-white" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setIsEditingFileName(false);
+                              setTempFileName(uploadedFileName || "");
+                            }}
+                            className="h-5 w-5 flex items-center justify-center bg-rose-600 hover:bg-rose-500 rounded transition-colors"
+                          >
+                            <X size={12} className="text-white" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-black text-white truncate max-w-[250px] md:max-w-md">
+                            {uploadedFileName || "Manuální vstup dat"}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setIsEditingFileName(true);
+                              setTempFileName(uploadedFileName || "");
+                            }}
+                            className="h-5 w-5 flex items-center justify-center hover:text-indigo-400 transition-colors"
+                          >
+                            <Pencil size={12} />
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap gap-3">

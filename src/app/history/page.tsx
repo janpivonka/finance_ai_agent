@@ -14,6 +14,8 @@ import {
   Search,
   AlertTriangle,
   X,
+  Pencil,
+  Check,
   ArrowUpNarrowWide,
   ArrowDownWideNarrow
 } from "lucide-react";
@@ -39,6 +41,8 @@ export default function HistoryPage() {
   const [deleteId, setDeleteId] = useState<string | number | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState("");
   const [mounted, setMounted] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isHeaderReady, setIsHeaderReady] = useState(false);
@@ -188,6 +192,18 @@ export default function HistoryPage() {
       localStorage.setItem("analysis_entry_data", JSON.stringify(entry));
     }
     router.push("/analysis");
+  };
+
+  const handleRename = (id: string, newName: string) => {
+    const updatedHistory = history.map(item => 
+      item.id === id ? { ...item, fileName: newName } : item
+    );
+    setHistory(updatedHistory);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("finance_history", JSON.stringify(updatedHistory));
+    }
+    setSelectedEntry((prev: any) => ({ ...prev, fileName: newName }));
+    setIsEditingName(false);
   };
 
   if (!mounted) return <div className="min-h-screen bg-[#020617]" />;
@@ -367,7 +383,57 @@ export default function HistoryPage() {
                     <Zap size={20} className="text-white" />
                   </div>
                   <div className="text-left">
-                    <h2 className="font-black text-white uppercase tracking-widest text-sm">Analýza Detail</h2>
+                    <div className="flex items-center gap-2 mb-1">
+                      {isEditingName ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={tempName}
+                            onChange={(e) => setTempName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleRename(selectedEntry.id, tempName);
+                              } else if (e.key === 'Escape') {
+                                setIsEditingName(false);
+                                setTempName(selectedEntry.fileName || "");
+                              }
+                            }}
+                            autoFocus
+                            className="bg-slate-800/50 border border-indigo-500/50 rounded-lg px-2 py-1 text-sm font-black text-white uppercase tracking-widest outline-none focus:border-indigo-400"
+                          />
+                          <button
+                            onClick={() => handleRename(selectedEntry.id, tempName)}
+                            className="h-6 w-6 flex items-center justify-center bg-green-600 hover:bg-green-500 rounded transition-colors"
+                          >
+                            <Check size={14} className="text-white" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setIsEditingName(false);
+                              setTempName(selectedEntry.fileName || "");
+                            }}
+                            className="h-6 w-6 flex items-center justify-center bg-rose-600 hover:bg-rose-500 rounded transition-colors"
+                          >
+                            <X size={14} className="text-white" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <h2 className="font-black text-white uppercase tracking-widest text-sm">
+                            {selectedEntry.fileName || "Textová analýza"}
+                          </h2>
+                          <button
+                            onClick={() => {
+                              setIsEditingName(true);
+                              setTempName(selectedEntry.fileName || "");
+                            }}
+                            className="h-6 w-6 flex items-center justify-center hover:text-indigo-400 transition-colors"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                     <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em]">{selectedEntry.date}</p>
                   </div>
                 </div>
