@@ -37,8 +37,8 @@ export default function HistoryPage() {
   
   // --- NOVÉ STATES PRO FILTRY ---
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortField>("name");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [sortBy, setSortBy] = useState<SortField>("date");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
   const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -201,6 +201,7 @@ export default function HistoryPage() {
 
       // 3. Po krátké pauze (animace modálu a lišty) smažeme položky, čímž spustíme jejich exit animaci
       setTimeout(() => {
+        const idsToDelete = isBulkDelete ? [...selectedIds] : [String(deleteId)];
         const newHistory = history.filter(item => !idsToDelete.includes(String(item.id)));
         
         setHistory(newHistory);
@@ -210,6 +211,13 @@ export default function HistoryPage() {
         
         if (selectedEntry && idsToDelete.includes(String(selectedEntry.id))) {
           setSelectedEntry(null);
+        }
+
+        // --- OPRAVA: Pokud mažeme jednotlivou položku, která byla v multiselectu, odstraníme ji z výběru ---
+        if (!isBulkDelete) {
+          setSelectedIds(prev => prev.filter(id => id !== String(deleteId)));
+        } else {
+          setSelectedIds([]);
         }
         
         // Reset stavů
