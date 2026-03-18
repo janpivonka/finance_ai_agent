@@ -26,7 +26,8 @@ export default function Sidebar() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           whileHover={{ rotate: 5, scale: 1.05 }}
-          className="mb-12 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900/50 p-2.5 ring-1 ring-white/10 shadow-inner group cursor-pointer hover:border-indigo-500/50 transition-all"
+          onClick={() => router.push("/")}
+          className="mb-12 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900/50 p-2.5 ring-1 ring-white/10 shadow-inner group cursor-pointer hover:bg-rose-500/20 hover:border-rose-500/50 transition-all"
         >
           <img 
             src="/logo.png" 

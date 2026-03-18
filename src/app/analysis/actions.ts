@@ -97,6 +97,11 @@ export async function analyzeContract(formData: FormData) {
     const file = formData.get("file") as File;
     const rawTextFromArea = formData.get("text") as string;
     
+    // --- KONTROLA PŘIPOJENÍ NÁSTROJE ---
+    if (!GEMINI_API_KEY) {
+      return { error: "Není připojen analytický nástroj (chybí API klíč)." };
+    }
+
     // --- KROK 1: PŘESNÝ VÝPOČET (Temperature 0) ---
     const mathModel = genAI.getGenerativeModel({ 
         model: "gemini-3.1-flash-lite-preview", 
@@ -131,17 +136,40 @@ export async function analyzeContract(formData: FormData) {
     `;
 
     let result;
-    if (file && file.size > 0) {
-      const bytes = await file.arrayBuffer();
-      result = await mathModel.generateContent([
-        { inlineData: { data: Buffer.from(bytes).toString("base64"), mimeType: "application/pdf" } },
-        { text: mathPrompt }
-      ]);
-    } else {
-      result = await mathModel.generateContent(`${mathPrompt}\n\nTEXT SMLOUVY K ANALÝZE:\n${rawTextFromArea}`);
+    try {
+      if (file && file.size > 0) {
+        const bytes = await file.arrayBuffer();
+        result = await mathModel.generateContent([
+          { inlineData: { data: Buffer.from(bytes).toString("base64"), mimeType: "application/pdf" } },
+          { text: mathPrompt }
+        ]);
+      } else {
+        result = await mathModel.generateContent(`${mathPrompt}\n\nTEXT SMLOUVY K ANALÝZE:\n${rawTextFromArea}`);
+      }
+    } catch (genError: any) {
+      console.error("❌ Gemini API Error:", genError);
+      return { error: "Analytický nástroj neodpověděl včas nebo je přetížen. Zkuste to prosím znovu za chvíli." };
     }
 
-    const mathData = JSON.parse(result.response.text().trim());
+    const responseText = result.response.text().trim();
+    if (!responseText) {
+      return { error: "Analytický nástroj vrátil prázdnou odpověď. Zkuste prosím vložit text znovu." };
+    }
+
+    const mathData = JSON.parse(responseText);
+
+    // --- VALIDACE VÝSLEDKŮ ---
+    // Kontrolujeme, zda AI našla alespoň základní parametry (úspora nebo splátka nesmí být 0 nebo neplatná)
+    const isValid = 
+      mathData && 
+      (Number(mathData.uspora) > 0 || Number(mathData.aktualni_splatka) > 0) &&
+      mathData.fixace && 
+      mathData.fixace !== "N/A" && 
+      mathData.fixace !== "neznámé";
+
+    if (!isValid) {
+      return { error: "V zadaném textu nebyly nalezeny platné parametry smlouvy (úrok, jistina nebo fixace). Zkuste prosím vložit jiný text nebo čitelnější dokument." };
+    }
 
     // --- KROK 2: KREATIVNÍ DOPORUČENÍ (Temperature 1) ---
     const creativeModel = genAI.getGenerativeModel({ 
@@ -162,8 +190,13 @@ export async function analyzeContract(formData: FormData) {
       - Mluv přímo k uživateli.
     `;
 
-    const creativeResult = await creativeModel.generateContent(creativePrompt);
-    const analytickyDuvod = creativeResult.response.text().trim();
+    let analytickyDuvod = "Vaše úspora je připravena k uvolnění.";
+    try {
+      const creativeResult = await creativeModel.generateContent(creativePrompt);
+      analytickyDuvod = creativeResult.response.text().trim();
+    } catch (e) {
+      console.warn("⚠️ Creative model failed, using fallback reason.");
+    }
 
     // --- FINÁLNÍ ZPRACOVÁNÍ ---
     const usporaCislo = Math.round(Number(mathData.uspora || 0));
@@ -186,6 +219,9 @@ export async function analyzeContract(formData: FormData) {
 
   } catch (error: any) {
     console.error("🔥 ANALÝZA ERROR:", error);
-    return { error: `Analýza selhala: ${error.message}` };
+    if (error instanceof SyntaxError) {
+      return { error: "Nepodařilo se zpracovat výsledek analýzy. Dokument může být poškozen nebo nečitelný." };
+    }
+    return { error: `Došlo k neočekávané chybě: ${error.message}` };
   }
 }
