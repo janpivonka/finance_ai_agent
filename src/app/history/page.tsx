@@ -88,8 +88,8 @@ export default function HistoryPage() {
       return sortOrder === "asc" ? comparison : -comparison;
     });
 
-  // Observer sleduje počet vyfiltrovaných položek
-  useIntersectionObserver('.reveal', filteredAndSortedHistory.length);
+  // Observer sleduje počet vyfiltrovaných položek (používáme isLoaded jako pojistku pro prázdnou historii)
+  useIntersectionObserver('.reveal', isLoaded ? filteredAndSortedHistory.length : -1);
 
   useEffect(() => {
     setMounted(true);
