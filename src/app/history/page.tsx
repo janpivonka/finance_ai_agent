@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   FileText, 
   Calendar, 
@@ -17,7 +18,9 @@ import {
   Pencil,
   Check,
   ArrowUpNarrowWide,
-  ArrowDownWideNarrow
+  ArrowDownWideNarrow,
+  Square,
+  CheckSquare
 } from "lucide-react";
 import { ScrollToTop } from "../components/ScrollToTop";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
@@ -38,7 +41,9 @@ export default function HistoryPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
 
   const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | number | null>(null);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
@@ -158,6 +163,7 @@ export default function HistoryPage() {
     setTimeout(() => {
       setSelectedEntry(null);
       setDeleteId(null);
+      setIsBulkDelete(false);
       setIsClosing(false);
     }, 300);
   };
@@ -167,15 +173,50 @@ export default function HistoryPage() {
     setSelectedEntry(item);
   };
 
+  const toggleSelect = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredAndSortedHistory.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredAndSortedHistory.map(item => String(item.id)));
+    }
+  };
+
   const confirmDelete = () => {
-    if (deleteId) {
-      const newHistory = history.filter(item => item.id !== deleteId);
-      setHistory(newHistory);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem("finance_history", JSON.stringify(newHistory));
+    if (deleteId || isBulkDelete) {
+      // 1. Spustíme zavírací animaci modálu
+      setIsClosing(true);
+      
+      // 2. Pokud jde o hromadné mazání, nejprve necháme zmizet lištu (směrem nahoru)
+      const idsToDelete = isBulkDelete ? [...selectedIds] : [String(deleteId)];
+      if (isBulkDelete) {
+        setSelectedIds([]);
       }
-      if (selectedEntry?.id === deleteId) setSelectedEntry(null);
-      setDeleteId(null);
+
+      // 3. Po krátké pauze (animace modálu a lišty) smažeme položky, čímž spustíme jejich exit animaci
+      setTimeout(() => {
+        const newHistory = history.filter(item => !idsToDelete.includes(String(item.id)));
+        
+        setHistory(newHistory);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("finance_history", JSON.stringify(newHistory));
+        }
+        
+        if (selectedEntry && idsToDelete.includes(String(selectedEntry.id))) {
+          setSelectedEntry(null);
+        }
+        
+        // Reset stavů
+        setDeleteId(null);
+        setIsBulkDelete(false);
+        setIsClosing(false);
+      }, 400);
     }
   };
 
@@ -267,86 +308,171 @@ export default function HistoryPage() {
           </div>
         </header>
         
-        {filteredAndSortedHistory.length === 0 ? (
-          <div className="text-center py-24 bg-slate-900/40 backdrop-blur-xl rounded-[3rem] border-2 border-dashed border-white/5 flex flex-col items-center relative z-10 reveal">
-            <div className="h-20 w-20 rounded-3xl bg-white/5 flex items-center justify-center mb-6 text-slate-700">
-              <Layers size={32} />
-            </div>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
-              {searchQuery ? "Nebylo nic nalezeno" : "Archiv je prázdný"}
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-4 relative z-10">
-            {filteredAndSortedHistory.map((item, index) => {
-              const isHighlighted = highlightedId === String(item.id);
-              return (
-                <div 
-                  key={item.id}
-                  onClick={() => handleEntryClick(item)}
-                  ref={(el) => { itemsRef.current[String(item.id)] = el; }}
-                  className={`reveal group relative overflow-hidden backdrop-blur-xl p-6 rounded-[2rem] border shadow-xl flex items-center justify-between cursor-pointer transition-all duration-700 ease-out ring-1 hover:scale-[1.01] active:scale-[0.99] ${
-                    isHighlighted 
-                    ? 'history-highlight bg-fuchsia-500/10 border-fuchsia-500/60 shadow-[0_0_40px_rgba(217,70,219,0.18)] ring-fuchsia-500/40 z-20' 
-                    : 'bg-slate-900/40 border-white/5 hover:border-indigo-500/40 hover:bg-slate-900/60 ring-white/5'
-                  }`}
-                  style={{ transitionDelay: `${index * 80}ms` }}
+        <AnimatePresence mode="wait">
+          {filteredAndSortedHistory.length === 0 ? (
+            <motion.div 
+              key="empty-state"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="text-center py-24 bg-slate-900/40 backdrop-blur-xl rounded-[3rem] border-2 border-dashed border-white/5 flex flex-col items-center relative z-10 reveal"
+            >
+              <div className="h-20 w-20 rounded-3xl bg-white/5 flex items-center justify-center mb-6 text-slate-700">
+                <Layers size={32} />
+              </div>
+              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
+                {searchQuery ? "Nebylo nic nalezeno" : "Archiv je prázdný"}
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div layout key="history-list" className="flex flex-col gap-6 relative z-10">
+            {/* BULK ACTIONS BAR */}
+            <AnimatePresence>
+              {selectedIds.length > 0 && (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex items-center justify-between p-4 bg-indigo-600/10 border border-indigo-500/30 rounded-2xl backdrop-blur-xl sticky top-4 z-30 shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
                 >
-                  <div className="flex items-center gap-5">
-                    <div className={`h-14 w-14 rounded-2xl flex items-center justify-center transition-all shadow-inner duration-500 ${
-                      isHighlighted 
-                      ? 'bg-fuchsia-500 text-white ring-2 ring-fuchsia-300/50' 
-                      : 'bg-[#020617] text-indigo-400 ring-1 ring-white/10 group-hover:ring-cyan-500/50 group-hover:bg-indigo-600 group-hover:text-white'
-                    }`}>
-                      <FileText size={24} />
+                    <div className="flex items-center gap-4">
+                      <button 
+                        onClick={toggleSelectAll}
+                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors cursor-pointer"
+                      >
+                        {selectedIds.length === filteredAndSortedHistory.length ? <CheckSquare size={16} /> : <Square size={16} />}
+                        {selectedIds.length === filteredAndSortedHistory.length ? "Zrušit vše" : "Vybrat vše"}
+                      </button>
+                      <span className="h-4 w-px bg-white/10" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+                        Vybráno: <span className="text-white">{selectedIds.length}</span>
+                      </span>
                     </div>
-                    <div className="text-left">
-                      <h3 className={`font-black tracking-tight text-lg group-hover:text-cyan-50 transition-colors ${
-                        sortBy === 'name' ? 'text-fuchsia-400' : 'text-white'
-                      }`}>
-                        {item.fileName || "Textová analýza"}
-                      </h3>
-                      <div className="flex flex-wrap items-center gap-4 text-[10px] text-slate-500 mt-1.5 font-bold uppercase tracking-widest">
-                        <span className={`flex items-center gap-1.5 ${
-                          sortBy === 'date' ? 'text-fuchsia-400' : ''
-                        }`}>
-                          <Calendar size={12} className={sortBy === 'date' ? 'text-fuchsia-400' : 'text-indigo-500'}/> {item.date}
-                        </span>
-                        <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md ring-1 transition-colors ${
-                          sortBy === 'uspora' 
-                            ? 'text-fuchsia-400 bg-fuchsia-500/10 ring-fuchsia-500/20' 
-                            : 'text-cyan-400 bg-cyan-500/10 ring-cyan-500/20'
-                        }`}>
-                          <TrendingUp size={12} className={sortBy === 'uspora' ? 'text-fuchsia-400' : 'text-cyan-400'}/> {Number(item.uspora || 0).toLocaleString()} Kč / měsíc
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => setSelectedIds([])}
+                        className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors cursor-pointer"
+                      >
+                        Zrušit
+                      </button>
+                      <button 
+                        onClick={() => setIsBulkDelete(true)}
+                        className="flex items-center gap-2 px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-600/20 transition-all cursor-pointer"
+                      >
+                        <Trash2 size={14} /> Smazat vybrané
+                      </button>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteId(item.id);
-                      }} 
-                      className="p-3 text-slate-600 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-500/10 relative z-20 cursor-pointer"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                    <div className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all ${
-                      isHighlighted ? 'bg-fuchsia-500/20 text-fuchsia-300' : 'bg-white/5 text-slate-500 group-hover:text-cyan-400 group-hover:bg-cyan-500/10'
-                    }`}>
-                      <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              <div className="grid gap-4">
+                <AnimatePresence initial={false}>
+                  {filteredAndSortedHistory.map((item, index) => {
+                    const isHighlighted = highlightedId === String(item.id);
+                    const isSelected = selectedIds.includes(String(item.id));
+                    return (
+                      <motion.div 
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ 
+                          opacity: 0, 
+                          x: 100, // Výraznější posun vpravo
+                          scale: 0.95,
+                          transition: { 
+                            duration: 0.4,
+                            delay: index * 0.05, // Postupné mizení jedna za druhou
+                            ease: [0.16, 1, 0.3, 1]
+                          } 
+                        }}
+                        onClick={() => handleEntryClick(item)}
+                        ref={(el) => { itemsRef.current[String(item.id)] = el; }}
+                        className={`reveal group relative overflow-hidden backdrop-blur-xl p-6 rounded-[2rem] border shadow-xl flex items-center justify-between cursor-pointer transition-all duration-700 ease-out ring-1 hover:scale-[1.01] active:scale-[0.99] ${
+                          isHighlighted 
+                          ? 'history-highlight bg-fuchsia-500/10 border-fuchsia-500/60 shadow-[0_0_40px_rgba(217,70,219,0.18)] ring-fuchsia-500/40 z-20' 
+                          : isSelected
+                          ? 'bg-indigo-500/10 border-indigo-500/50 shadow-[0_0_30px_rgba(79,70,229,0.1)] ring-indigo-500/30'
+                          : 'bg-slate-900/40 border-white/5 hover:border-indigo-500/40 hover:bg-slate-900/60 ring-white/5'
+                        }`}
+                        style={{ transitionDelay: `${index * 80}ms` }}
+                      >
+                        <div className="flex items-center gap-5">
+                          <button 
+                            onClick={(e) => toggleSelect(e, String(item.id))}
+                            className={`h-10 w-10 shrink-0 flex items-center justify-center rounded-xl transition-all ${
+                              isSelected 
+                              ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' 
+                              : 'bg-[#020617] text-slate-600 hover:text-indigo-400 ring-1 ring-white/10 group-hover:border-indigo-500/30'
+                            }`}
+                          >
+                            {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+                          </button>
+                          
+                          <div className={`h-14 w-14 rounded-2xl flex items-center justify-center transition-all shadow-inner duration-500 ${
+                            isHighlighted 
+                            ? 'bg-fuchsia-500 text-white ring-2 ring-fuchsia-300/50' 
+                            : isSelected
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-[#020617] text-indigo-400 ring-1 ring-white/10 group-hover:ring-cyan-500/50 group-hover:bg-indigo-600 group-hover:text-white'
+                          }`}>
+                            <FileText size={24} />
+                          </div>
+                          <div className="text-left">
+                            <h3 className={`font-black tracking-tight text-lg group-hover:text-cyan-50 transition-colors ${
+                              sortBy === 'name' ? 'text-fuchsia-400' : 'text-white'
+                            }`}>
+                              {item.fileName || "Textová analýza"}
+                            </h3>
+                            <div className="flex flex-wrap items-center gap-4 text-[10px] text-slate-500 mt-1.5 font-bold uppercase tracking-widest">
+                              <span className={`flex items-center gap-1.5 ${
+                                sortBy === 'date' ? 'text-fuchsia-400' : ''
+                              }`}>
+                                <Calendar size={12} className={sortBy === 'date' ? 'text-fuchsia-400' : 'text-indigo-500'}/> {item.date}
+                              </span>
+                              <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md ring-1 transition-colors ${
+                                sortBy === 'uspora' 
+                                  ? 'text-fuchsia-400 bg-fuchsia-500/10 ring-fuchsia-500/20' 
+                                  : 'text-cyan-400 bg-cyan-500/10 ring-cyan-500/20'
+                              }`}>
+                                <TrendingUp size={12} className={sortBy === 'uspora' ? 'text-fuchsia-400' : 'text-cyan-400'}/> {Number(item.uspora || 0).toLocaleString()} Kč / měsíc
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteId(item.id);
+                            }} 
+                            className="p-3 text-slate-600 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-500/10 relative z-20 cursor-pointer"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                          <div className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all ${
+                            isHighlighted ? 'bg-fuchsia-500/20 text-fuchsia-300' : isSelected ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/5 text-slate-500 group-hover:text-cyan-400 group-hover:bg-cyan-500/10'
+                          }`}>
+                            <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ... MODALY ZŮSTÁVAJÍ STEJNÉ ... */}
-        {deleteId && (
+        {/* MODÁL PRO MAZÁNÍ */}
+        {(deleteId || isBulkDelete) && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
             <div className="absolute inset-0 bg-[#020617]/90 backdrop-blur-sm" style={{ animation: `${isClosing ? 'ui-fadeOut' : 'ui-fadeIn'} 0.3s ease-out forwards` }} onClick={closeModal} />
             <div className="bg-slate-900 border border-white/10 w-full max-w-sm rounded-[2rem] p-8 relative z-10 shadow-2xl" style={{ animation: `${isClosing ? 'ui-slideDown' : 'ui-slideUp'} 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards` }}>
@@ -354,8 +480,12 @@ export default function HistoryPage() {
                 <div className="h-16 w-16 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-500 mb-6 ring-1 ring-rose-500/20 shadow-[0_0_20px_rgba(244,63,94,0.2)]">
                   <AlertTriangle size={32} />
                 </div>
-                <h3 className="text-xl font-black text-white italic mb-2">Smazat záznam?</h3>
-                <p className="text-sm text-slate-400 leading-relaxed mb-8">Tato akce je nevratná. Analýza bude trvale odstraněna.</p>
+                <h3 className="text-xl font-black text-white italic mb-2">
+                  {isBulkDelete ? `Smazat ${selectedIds.length} záznamů?` : "Smazat záznam?"}
+                </h3>
+                <p className="text-sm text-slate-400 leading-relaxed mb-8">
+                  Tato akce je nevratná. {isBulkDelete ? "Všechny vybrané analýzy budou" : "Analýza bude"} trvale odstraněna.
+                </p>
                 <div className="flex gap-3 w-full">
                   <button onClick={closeModal} className="flex-1 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-white/5 transition-all cursor-pointer">Zrušit</button>
                   <button onClick={confirmDelete} className="flex-1 px-4 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-600/20 transition-all cursor-pointer">Odstranit</button>
