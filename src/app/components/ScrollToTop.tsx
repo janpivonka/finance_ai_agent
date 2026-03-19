@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ChevronUp } from "lucide-react";
-import { useScrollDirection } from "../hooks/useScrollDirection";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 export const ScrollToTop = ({ forceShow }: { forceShow?: boolean }) => {
   const { showScrollTop } = useScrollDirection();

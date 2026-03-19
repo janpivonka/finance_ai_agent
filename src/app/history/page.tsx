@@ -1,250 +1,78 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  FileText, 
-  Calendar, 
-  TrendingUp, 
-  Trash2, 
-  ChevronRight, 
-  History,
-  Zap,
-  Layers,
-  Search,
-  AlertTriangle,
-  X,
-  Pencil,
-  Check,
-  ArrowUpNarrowWide,
-  ArrowDownWideNarrow,
-  Square,
-  CheckSquare
-} from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import { ScrollToTop } from "../components/ScrollToTop";
-import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
-import { useScrollDirection } from "../hooks/useScrollDirection";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
+import { useHistoryPage } from "@/hooks/useHistoryPage";
+import { HistoryItem } from "@/types";
 
-// Definice typů pro řazení
-type SortField = "date" | "uspora" | "name";
-type SortOrder = "asc" | "desc";
+// Import modular components
+import { HistoryHeader } from "../components/history/HistoryHeader";
+import { HistoryList } from "../components/history/HistoryList";
+import { HistoryEmptyState } from "../components/history/HistoryEmptyState";
+import { HistoryDeleteModal } from "../components/history/HistoryDeleteModal";
+import { HistoryDetailModal } from "../components/history/HistoryDetailModal";
 
 export default function HistoryPage() {
   const router = useRouter();
-  const [history, setHistory] = useState<any[]>([]);
-  const { showScrollTop } = useScrollDirection();
-  
-  // --- NOVÉ STATES PRO FILTRY ---
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortField>("date");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-
-  const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [deleteId, setDeleteId] = useState<string | number | null>(null);
-  const [isBulkDelete, setIsBulkDelete] = useState(false);
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const [isClosing, setIsClosing] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [tempName, setTempName] = useState("");
-  const [mounted, setMounted] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isHeaderReady, setIsHeaderReady] = useState(false);
-  const itemsRef = useRef<Record<string, HTMLDivElement | null>>({});
-  const pendingScrollIdRef = useRef<string | null>(null);
-  const pendingHighlightIdRef = useRef<string | null>(null);
-  const highlightStartTimeoutRef = useRef<number | null>(null);
-  const highlightTimeoutRef = useRef<number | null>(null);
+  const {
+    isLoaded,
+    searchQuery,
+    setSearchQuery,
+    sortBy,
+    sortOrder,
+    filteredAndSortedHistory,
+    selectedEntry,
+    setSelectedEntry,
+    selectedIds,
+    setSelectedIds,
+    deleteId,
+    setDeleteId,
+    isBulkDelete,
+    setIsBulkDelete,
+    highlightedId,
+    isEditingName,
+    setIsEditingName,
+    tempName,
+    setTempName,
+    mounted,
+    itemsRef,
+    handleSort,
+    handleRename,
+    toggleSelect,
+    toggleSelectAll,
+    confirmDelete,
+    closeModal
+  } = useHistoryPage();
 
   useScrollDirection();
-
-  // --- LOGIKA FILTROVÁNÍ A ŘAZENÍ ---
-  const handleSort = (field: SortField) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(field);
-      // Pro název chceme výchozí řazení asc (A-Z), pro ostatní desc
-      setSortOrder(field === "name" ? "asc" : "desc");
-    }
-  };
-
-  const filteredAndSortedHistory = history
-    .filter((item) => {
-      if (!searchQuery) return true;
-      const s = searchQuery.toLowerCase();
-      return (
-        String(item?.fileName || "").toLowerCase().includes(s) ||
-        String(item?.date || "").toLowerCase().includes(s) ||
-        String(item?.uspora || "").toLowerCase().includes(s)
-      );
-    })
-    .sort((a, b) => {
-      let comparison = 0;
-      if (sortBy === "uspora") {
-        comparison = Number(a.uspora || 0) - Number(b.uspora || 0);
-      } else if (sortBy === "name") {
-        comparison = (a.fileName || "").localeCompare(b.fileName || "");
-      } else {
-        // Fallback na ID/Datum
-        comparison = (a.id || "").toString().localeCompare((b.id || "").toString());
-      }
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
-
-  // Observer sleduje počet vyfiltrovaných položek (používáme isLoaded jako pojistku pro prázdnou historii)
+  
+  // Intersection observer for title reveal
   useIntersectionObserver('.reveal', isLoaded ? filteredAndSortedHistory.length : -1);
 
-  useEffect(() => {
-    setMounted(true);
+  const handleReturnToAnalysis = (item: HistoryItem) => {
     if (typeof window !== 'undefined') {
-      let validatedHistory: any[] = [];
       try {
-        const saved = JSON.parse(localStorage.getItem("finance_history") || "[]");
-        validatedHistory = saved.map((item: any, index: number) => ({
-          ...item,
-          id: item.id || `id-${index}-${Date.now()}`
-        }));
-        setHistory(validatedHistory);
-      } catch (e) { console.error("Chyba archivu:", e); }
-
-      try {
-        const last = localStorage.getItem("last_analysis_data");
-        if (last) {
-          const parsed = JSON.parse(last);
-          const idToHighlight = parsed?.id ? String(parsed.id) : null;
-          if (idToHighlight) {
-            pendingScrollIdRef.current = idToHighlight;
-            pendingHighlightIdRef.current = idToHighlight;
-          }
-          localStorage.removeItem("last_analysis_data");
-        }
-      } catch (e) { console.error("Chyba last_analysis_data:", e); }
-    }
-    
-    setTimeout(() => setIsLoaded(true), 100);
-  }, []);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    const t = window.setTimeout(() => setIsHeaderReady(true), 1200);
-    return () => window.clearTimeout(t);
-  }, [isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded || !isHeaderReady) return;
-    const idToScroll = pendingScrollIdRef.current;
-    if (!idToScroll) return;
-
-    // Počkáme na dokončení animace nadpisu
-    const el = itemsRef.current[idToScroll];
-    if (el) {
-      // Plynulý smooth scroll až po animaci
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      
-      const highlightId = pendingHighlightIdRef.current || idToScroll;
-
-      if (highlightStartTimeoutRef.current) window.clearTimeout(highlightStartTimeoutRef.current);
-      if (highlightTimeoutRef.current) window.clearTimeout(highlightTimeoutRef.current);
-
-      // Highlight začíná krátce po dokončení scrollu
-      highlightStartTimeoutRef.current = window.setTimeout(() => {
-        setHighlightedId(highlightId);
-        highlightTimeoutRef.current = window.setTimeout(() => {
-          setHighlightedId((current) => current === highlightId ? null : current);
-        }, 2500);
-      }, 500); // Malé zpoždění pro plynulý přechod po scrollu
-    }
-  }, [isLoaded, isHeaderReady, history.length]);
-
-  const closeModal = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setSelectedEntry(null);
-      setDeleteId(null);
-      setIsBulkDelete(false);
-      setIsClosing(false);
-    }, 300);
-  };
-
-  const handleEntryClick = (item: any) => {
-    setHighlightedId(null);
-    setSelectedEntry(item);
-  };
-
-  const toggleSelect = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    setSelectedIds(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.length === filteredAndSortedHistory.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(filteredAndSortedHistory.map(item => String(item.id)));
-    }
-  };
-
-  const confirmDelete = () => {
-    if (deleteId || isBulkDelete) {
-      // 1. Spustíme zavírací animaci modálu
-      setIsClosing(true);
-      
-      // 2. Pokud jde o hromadné mazání, nejprve necháme zmizet lištu (směrem nahoru)
-      const idsToDelete = isBulkDelete ? [...selectedIds] : [String(deleteId)];
-      if (isBulkDelete) {
-        setSelectedIds([]);
+        localStorage.setItem("analysis_entry_data", JSON.stringify(item));
+      } catch (e) { 
+        console.error("Chyba při ukládání dat pro návrat na analýzu:", e); 
       }
-
-      // 3. Po krátké pauze (animace modálu a lišty) smažeme položky, čímž spustíme jejich exit animaci
-      setTimeout(() => {
-        const idsToDelete = isBulkDelete ? [...selectedIds] : [String(deleteId)];
-        const newHistory = history.filter(item => !idsToDelete.includes(String(item.id)));
-        
-        setHistory(newHistory);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem("finance_history", JSON.stringify(newHistory));
-        }
-        
-        if (selectedEntry && idsToDelete.includes(String(selectedEntry.id))) {
-          setSelectedEntry(null);
-        }
-
-        // --- OPRAVA: Pokud mažeme jednotlivou položku, která byla v multiselectu, odstraníme ji z výběru ---
-        if (!isBulkDelete) {
-          setSelectedIds(prev => prev.filter(id => id !== String(deleteId)));
-        } else {
-          setSelectedIds([]);
-        }
-        
-        // Reset stavů
-        setDeleteId(null);
-        setIsBulkDelete(false);
-        setIsClosing(false);
-      }, 400);
     }
+    router.push('/analysis');
   };
 
-  const handleReturnToAnalysis = (entry: any) => {
+  const handleConsultation = (item: HistoryItem) => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem("analysis_entry_data", JSON.stringify(entry));
+      try {
+        localStorage.setItem("last_analysis_data", JSON.stringify({ id: item.id }));
+      } catch (e) { 
+        console.error(e); 
+      }
     }
-    router.push("/analysis");
-  };
-
-  const handleRename = (id: string, newName: string) => {
-    const updatedHistory = history.map(item => 
-      item.id === id ? { ...item, fileName: newName } : item
-    );
-    setHistory(updatedHistory);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem("finance_history", JSON.stringify(updatedHistory));
-    }
-    setSelectedEntry((prev: any) => ({ ...prev, fileName: newName }));
-    setIsEditingName(false);
+    router.push(`/consultation?id=${encodeURIComponent(String(item.id))}&uspora=${encodeURIComponent(String(item.uspora))}&fixace=${encodeURIComponent(String(item.fixace))}`);
   };
 
   if (!mounted) return <div className="min-h-screen bg-[#020617]" />;
@@ -254,363 +82,60 @@ export default function HistoryPage() {
       <div className="mx-auto max-w-4xl px-6 py-12 relative">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-indigo-600/10 blur-[120px] pointer-events-none animate-pulse-slow" />
 
-        <header
-          className={`mb-12 relative z-10 reveal transition-all duration-1000 transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
-        >
-          <div className="inline-flex items-center gap-2 rounded-full bg-indigo-950/40 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-4 ring-1 ring-indigo-500/30 backdrop-blur-md">
-            <History size={12} className="text-cyan-400" />
-            Data Archive Protocol
-          </div>
-          <h1 className="text-4xl font-black tracking-tight text-white italic md:text-5xl mb-6">
-            Moje <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] animate-gradient-text not-italic">Historie</span>
-          </h1>
-
-          {/* PODNADPIS */}
-          <div className="border-l border-indigo-500/40 pl-6 py-1 mb-10">
-             <p className="text-slate-400 text-sm leading-relaxed font-medium max-w-xl">
-               Kompletní přehled vašich finančních analýz. Data jsou ukládána lokálně a synchronizována pro okamžitý přístup.
-             </p>
-          </div>
-
-          {/* FILTRY A VYHLEDÁVÁNÍ */}
-          <div className="flex flex-col md:flex-row gap-4 mb-2">
-            <div className="relative flex-1 group">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-400 transition-colors z-10" />
-              <input
-                type="text"
-                placeholder="Hledat v archivu..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-900/40 border border-white/5 rounded-2xl py-4 pl-12 pr-10 text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-xl transition-all"
-              />
-              {searchQuery && (
-                <X 
-                  size={16} 
-                  onClick={() => setSearchQuery("")} 
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white cursor-pointer" 
-                />
-              )}
-            </div>
-
-            <div className="flex bg-slate-900/40 p-1 rounded-2xl border border-white/5 backdrop-blur-xl">
-              {(['date', 'uspora', 'name'] as SortField[]).map((field) => {
-                const isActive = sortBy === field;
-                return (
-                  <button
-                    key={field}
-                    onClick={() => handleSort(field)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                      isActive 
-                      ? 'bg-fuchsia-600 text-white shadow-lg shadow-fuchsia-600/20' 
-                      : 'text-slate-500 hover:text-slate-300'
-                    }`}
-                  >
-                    {field === 'date' ? 'Datum' : field === 'uspora' ? 'Úspora' : 'Název'}
-                    {isActive && (
-                      sortOrder === 'asc' ? <ArrowUpNarrowWide size={14} /> : <ArrowDownWideNarrow size={14} />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </header>
+        <HistoryHeader
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+        />
         
         <AnimatePresence mode="wait">
           {filteredAndSortedHistory.length === 0 ? (
-            <motion.div 
-              key="empty-state"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="text-center py-24 bg-slate-900/40 backdrop-blur-xl rounded-[3rem] border-2 border-dashed border-white/5 flex flex-col items-center relative z-10 reveal"
-            >
-              <div className="h-20 w-20 rounded-3xl bg-white/5 flex items-center justify-center mb-6 text-slate-700">
-                <Layers size={32} />
-              </div>
-              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">
-                {searchQuery ? "Nebylo nic nalezeno" : "Archiv je prázdný"}
-              </p>
-            </motion.div>
+            <HistoryEmptyState searchQuery={searchQuery} />
           ) : (
-            <motion.div layout key="history-list" className="flex flex-col gap-6 relative z-10">
-            {/* BULK ACTIONS BAR */}
-            <AnimatePresence>
-              {selectedIds.length > 0 && (
-                <motion.div 
-                  layout
-                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex items-center justify-between p-4 bg-indigo-600/10 border border-indigo-500/30 rounded-2xl backdrop-blur-xl sticky top-4 z-30 shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
-                >
-                    <div className="flex items-center gap-4">
-                      <button 
-                        onClick={toggleSelectAll}
-                        className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors cursor-pointer"
-                      >
-                        {selectedIds.length === filteredAndSortedHistory.length ? <CheckSquare size={16} /> : <Square size={16} />}
-                        {selectedIds.length === filteredAndSortedHistory.length ? "Zrušit vše" : "Vybrat vše"}
-                      </button>
-                      <span className="h-4 w-px bg-white/10" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
-                        Vybráno: <span className="text-white">{selectedIds.length}</span>
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => setSelectedIds([])}
-                        className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors cursor-pointer"
-                      >
-                        Zrušit
-                      </button>
-                      <button 
-                        onClick={() => setIsBulkDelete(true)}
-                        className="flex items-center gap-2 px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-600/20 transition-all cursor-pointer"
-                      >
-                        <Trash2 size={14} /> Smazat vybrané
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
-              <div className="grid gap-4">
-                <AnimatePresence initial={false}>
-                  {filteredAndSortedHistory.map((item, index) => {
-                    const isHighlighted = highlightedId === String(item.id);
-                    const isSelected = selectedIds.includes(String(item.id));
-                    return (
-                      <motion.div 
-                        key={item.id}
-                        layout
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ 
-                          opacity: 0, 
-                          x: 100, // Výraznější posun vpravo
-                          scale: 0.95,
-                          transition: { 
-                            duration: 0.4,
-                            delay: index * 0.05, // Postupné mizení jedna za druhou
-                            ease: [0.16, 1, 0.3, 1]
-                          } 
-                        }}
-                        onClick={() => handleEntryClick(item)}
-                        ref={(el) => { itemsRef.current[String(item.id)] = el; }}
-                        className={`reveal group relative overflow-hidden backdrop-blur-xl p-6 rounded-[2rem] border shadow-xl flex items-center justify-between cursor-pointer transition-all duration-700 ease-out ring-1 hover:scale-[1.01] active:scale-[0.99] ${
-                          isHighlighted 
-                          ? 'history-highlight bg-fuchsia-500/10 border-fuchsia-500/60 shadow-[0_0_40px_rgba(217,70,219,0.18)] ring-fuchsia-500/40 z-20' 
-                          : isSelected
-                          ? 'bg-indigo-500/10 border-indigo-500/50 shadow-[0_0_30px_rgba(79,70,229,0.1)] ring-indigo-500/30'
-                          : 'bg-slate-900/40 border-white/5 hover:border-indigo-500/40 hover:bg-slate-900/60 ring-white/5'
-                        }`}
-                        style={{ transitionDelay: `${index * 80}ms` }}
-                      >
-                        <div className="flex items-center gap-5">
-                          <button 
-                            onClick={(e) => toggleSelect(e, String(item.id))}
-                            className={`h-10 w-10 shrink-0 flex items-center justify-center rounded-xl transition-all ${
-                              isSelected 
-                              ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' 
-                              : 'bg-[#020617] text-slate-600 hover:text-indigo-400 ring-1 ring-white/10 group-hover:border-indigo-500/30'
-                            }`}
-                          >
-                            {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
-                          </button>
-                          
-                          <div className={`h-14 w-14 rounded-2xl flex items-center justify-center transition-all shadow-inner duration-500 ${
-                            isHighlighted 
-                            ? 'bg-fuchsia-500 text-white ring-2 ring-fuchsia-300/50' 
-                            : isSelected
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-[#020617] text-indigo-400 ring-1 ring-white/10 group-hover:ring-cyan-500/50 group-hover:bg-indigo-600 group-hover:text-white'
-                          }`}>
-                            <FileText size={24} />
-                          </div>
-                          <div className="text-left">
-                            <h3 className={`font-black tracking-tight text-lg group-hover:text-cyan-50 transition-colors ${
-                              sortBy === 'name' ? 'text-fuchsia-400' : 'text-white'
-                            }`}>
-                              {item.fileName || "Textová analýza"}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-4 text-[10px] text-slate-500 mt-1.5 font-bold uppercase tracking-widest">
-                              <span className={`flex items-center gap-1.5 ${
-                                sortBy === 'date' ? 'text-fuchsia-400' : ''
-                              }`}>
-                                <Calendar size={12} className={sortBy === 'date' ? 'text-fuchsia-400' : 'text-indigo-500'}/> {item.date}
-                              </span>
-                              <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md ring-1 transition-colors ${
-                                sortBy === 'uspora' 
-                                  ? 'text-fuchsia-400 bg-fuchsia-500/10 ring-fuchsia-500/20' 
-                                  : 'text-cyan-400 bg-cyan-500/10 ring-cyan-500/20'
-                              }`}>
-                                <TrendingUp size={12} className={sortBy === 'uspora' ? 'text-fuchsia-400' : 'text-cyan-400'}/> {Number(item.uspora || 0).toLocaleString()} Kč / měsíc
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-3">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteId(item.id);
-                            }} 
-                            className="p-3 text-slate-600 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-500/10 relative z-20 cursor-pointer"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                          <div className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all ${
-                            isHighlighted ? 'bg-fuchsia-500/20 text-fuchsia-300' : isSelected ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/5 text-slate-500 group-hover:text-cyan-400 group-hover:bg-cyan-500/10'
-                          }`}>
-                            <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-            </motion.div>
+            <HistoryList
+              items={filteredAndSortedHistory}
+              selectedIds={selectedIds}
+              highlightedId={highlightedId}
+              sortBy={sortBy}
+              onToggleSelect={toggleSelect}
+              onToggleSelectAll={toggleSelectAll}
+              onClearSelection={() => setSelectedIds([])}
+              onBulkDelete={() => setIsBulkDelete(true)}
+              onEntryClick={(item) => setSelectedEntry(item)}
+              onDeleteClick={(id) => setDeleteId(id)}
+              itemsRef={itemsRef}
+            />
           )}
         </AnimatePresence>
 
-        {/* ... MODALY ZŮSTÁVAJÍ STEJNÉ ... */}
-        {/* MODÁL PRO MAZÁNÍ */}
-        {(deleteId || isBulkDelete) && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <div className="absolute inset-0 bg-[#020617]/90 backdrop-blur-sm" style={{ animation: `${isClosing ? 'ui-fadeOut' : 'ui-fadeIn'} 0.3s ease-out forwards` }} onClick={closeModal} />
-            <div className="bg-slate-900 border border-white/10 w-full max-w-sm rounded-[2rem] p-8 relative z-10 shadow-2xl" style={{ animation: `${isClosing ? 'ui-slideDown' : 'ui-slideUp'} 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards` }}>
-              <div className="flex flex-col items-center text-center">
-                <div className="h-16 w-16 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-500 mb-6 ring-1 ring-rose-500/20 shadow-[0_0_20px_rgba(244,63,94,0.2)]">
-                  <AlertTriangle size={32} />
-                </div>
-                <h3 className="text-xl font-black text-white italic mb-2">
-                  {isBulkDelete ? `Smazat ${selectedIds.length} záznamů?` : "Smazat záznam?"}
-                </h3>
-                <p className="text-sm text-slate-400 leading-relaxed mb-8">
-                  Tato akce je nevratná. {isBulkDelete ? "Všechny vybrané analýzy budou" : "Analýza bude"} trvale odstraněna.
-                </p>
-                <div className="flex gap-3 w-full">
-                  <button onClick={closeModal} className="flex-1 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-white/5 transition-all cursor-pointer">Zrušit</button>
-                  <button onClick={confirmDelete} className="flex-1 px-4 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-600/20 transition-all cursor-pointer">Odstranit</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {!!(deleteId || isBulkDelete) && (
+            <HistoryDeleteModal
+              isBulk={isBulkDelete}
+              selectedCount={selectedIds.length}
+              onClose={closeModal}
+              onConfirm={confirmDelete}
+            />
+          )}
+        </AnimatePresence>
 
-        {selectedEntry && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
-            <div className="absolute inset-0 bg-[#020617]/95 backdrop-blur-md" style={{ animation: `${isClosing ? 'ui-fadeOut' : 'ui-fadeIn'} 0.3s ease-out forwards` }} onClick={closeModal} />
-            <div className="bg-slate-900 border border-white/10 w-full max-w-2xl max-h-[85vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative z-10 ring-1 ring-white/10" style={{ animation: `${isClosing ? 'ui-slideDown' : 'ui-slideUp'} 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards` }}>
-              <div className="p-7 border-b border-white/5 flex items-center justify-between bg-slate-900/50">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.4)]">
-                    <Zap size={20} className="text-white" />
-                  </div>
-                  <div className="text-left">
-                    <div className="flex items-center gap-2 mb-1">
-                      {isEditingName ? (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={tempName}
-                            onChange={(e) => setTempName(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handleRename(selectedEntry.id, tempName);
-                              } else if (e.key === 'Escape') {
-                                setIsEditingName(false);
-                                setTempName(selectedEntry.fileName || "");
-                              }
-                            }}
-                            autoFocus
-                            className="bg-slate-800/50 border border-indigo-500/50 rounded-lg px-2 py-1 text-sm font-black text-white uppercase tracking-widest outline-none focus:border-indigo-400"
-                          />
-                          <button
-                            onClick={() => handleRename(selectedEntry.id, tempName)}
-                            className="h-6 w-6 flex items-center justify-center bg-green-600 hover:bg-green-500 rounded transition-colors"
-                          >
-                            <Check size={14} className="text-white" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setIsEditingName(false);
-                              setTempName(selectedEntry.fileName || "");
-                            }}
-                            className="h-6 w-6 flex items-center justify-center bg-rose-600 hover:bg-rose-500 rounded transition-colors"
-                          >
-                            <X size={14} className="text-white" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <h2 className="font-black text-white uppercase tracking-widest text-sm">
-                            {selectedEntry.fileName || "Textová analýza"}
-                          </h2>
-                          <button
-                            onClick={() => {
-                              setIsEditingName(true);
-                              setTempName(selectedEntry.fileName || "");
-                            }}
-                            className="h-6 w-6 flex items-center justify-center hover:text-indigo-400 transition-colors"
-                          >
-                            <Pencil size={16} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-slate-500 font-bold tracking-[0.2em]">{selectedEntry.date}</p>
-                  </div>
-                </div>
-                <button onClick={closeModal} className="h-10 w-10 flex items-center justify-center bg-slate-800/50 hover:bg-rose-500/20 hover:text-rose-500 rounded-full transition-all text-slate-400 cursor-pointer"><X size={20} /></button>
-              </div>
-              <div className="p-8 overflow-y-auto space-y-8 scrollbar-hide text-slate-300">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="bg-[#020617]/60 border border-cyan-500/20 p-5 rounded-[1.5rem] shadow-inner text-left">
-                    <p className="text-[9px] text-cyan-400 font-black uppercase tracking-widest mb-1">Měsíční úspora</p>
-                    <p className="text-3xl font-black text-white tracking-tighter">{Number(selectedEntry.uspora || 0).toLocaleString()} <span className="text-xs text-slate-500 font-medium">Kč</span></p>
-                  </div>
-                  <div className="bg-[#020617]/60 border border-indigo-500/20 p-5 rounded-[1.5rem] shadow-inner text-left">
-                    <p className="text-[9px] text-indigo-400 font-black uppercase tracking-widest mb-1">Konec fixace</p>
-                    <p className="text-3xl font-black text-white tracking-tighter">{selectedEntry.fixace || "—"}</p>
-                  </div>
-                </div>
-                <div className="space-y-3 pb-4 text-left">
-                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] px-1">Podrobný Report</h4>
-                  <div className="report-container prose prose-invert prose-sm max-w-none bg-[#020617]/40 border border-white/5 p-6 rounded-2xl shadow-inner font-medium text-slate-300" dangerouslySetInnerHTML={{ __html: selectedEntry.textovy_obsah || "Obsah nebyl vygenerován." }} />
-                </div>
-              </div>
-              <div className="p-6 bg-slate-900/50 border-t border-white/5 flex flex-col gap-4">
-                <div className="flex flex-col md:flex-row gap-3 w-full">
-                  <button onClick={closeModal} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors cursor-pointer">Zavřít</button>
-                  <div className="flex flex-col md:flex-row gap-3 flex-1">
-                    <button onClick={() => handleReturnToAnalysis(selectedEntry)} className="flex-1 px-6 py-3 bg-[#020617] border border-indigo-500/30 text-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/10 hover:border-indigo-500/60 transition-all flex items-center justify-center gap-2 group cursor-pointer"><Search size={14} className="group-hover:scale-110 transition-transform duration-300" /> Zobrazit analýzu</button>
-                    <button
-                      onClick={() => {
-                        if (typeof window !== 'undefined') {
-                          try {
-                            if (selectedEntry?.id) {
-                              localStorage.setItem("last_analysis_data", JSON.stringify({ id: selectedEntry.id }));
-                            }
-                          } catch (e) { console.error(e); }
-                        }
-                        router.push(`/consultation?id=${encodeURIComponent(String(selectedEntry.id))}&uspora=${encodeURIComponent(String(selectedEntry.uspora))}&fixace=${encodeURIComponent(String(selectedEntry.fixace))}`);
-                      }}
-                      className="flex-1 px-8 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
-                    >
-                      <Zap size={14} className="group-hover:animate-pulse text-cyan-400" /> Přejít na konzultaci
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {selectedEntry && (
+            <HistoryDetailModal
+              item={selectedEntry}
+              isEditingName={isEditingName}
+              tempName={tempName}
+              onClose={closeModal}
+              onRename={handleRename}
+              onEditToggle={setIsEditingName}
+              onTempNameChange={setTempName}
+              onReturnToAnalysis={handleReturnToAnalysis}
+              onConsultation={handleConsultation}
+            />
+          )}
+        </AnimatePresence>
       </div>
 
       <ScrollToTop forceShow={!selectedEntry && !deleteId} />

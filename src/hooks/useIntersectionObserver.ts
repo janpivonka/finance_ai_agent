@@ -1,4 +1,4 @@
-// hooks/useIntersectionObserver.ts
+// src/hooks/useIntersectionObserver.ts
 import { useLayoutEffect } from 'react';
 
 /**
@@ -20,20 +20,23 @@ export const useIntersectionObserver = (className = '.reveal', dependency: any =
         entries.forEach(entry => {
           const el = entry.target as HTMLElement;
           
-          if (entry.isIntersecting && entry.intersectionRatio > 0.3) {
-            // Když je prvek vidět alespoň z 30%, spustíme animaci
+          if (entry.isIntersecting) {
+            // Prvek vstupuje do viewportu (při scrollu dolů zdola, nebo při scrollu nahoru shora)
             el.style.opacity = "1";
             el.style.transform = 'translateY(0)';
-          } else if (!entry.isIntersecting && entry.intersectionRatio < 0.2) {
-            // Skryjeme až když je méně než 20% viditelnosti
-            el.style.opacity = "0";
-            el.style.transform = 'translateY(20px)';
+          } else {
+            // Prvek zcela opustil viewport (respektive zmenšenou zónu rootMarginu)
+            // Necháme ho zmizet jen pokud je opravdu mimo (ratio blízko 0)
+            if (entry.intersectionRatio <= 0) {
+              el.style.opacity = "0";
+              el.style.transform = 'translateY(20px)';
+            }
           }
         });
       },
       { 
-        threshold: [0, 0.3, 0.7, 1], // Vyšší threshold pro méně časté změny
-        rootMargin: '0px 0px -100px 0px' // Větší rezerva - aktivuje se 100px dříve
+        threshold: [0, 0.1, 0.9, 1], // Širší threshold pro větší stabilitu
+        rootMargin: '100px 0px -150px 0px' // Aktivuje se 150px před spodní hranou, nahoře zůstane vidět i kousek za hranou
       }
     );
 

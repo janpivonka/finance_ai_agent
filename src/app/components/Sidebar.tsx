@@ -15,6 +15,16 @@ const navItems = [
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Vrátíme placeholder se stejnou šířkou, aby obsah neposkočil při hydrataci
+  if (!mounted) {
+    return <aside className="hidden md:flex h-screen w-24 border-r border-white/5 bg-[#020617] shrink-0" />;
+  }
 
   return (
     <>
@@ -92,17 +102,6 @@ export default function Sidebar() {
             );
           })}
         </nav>
-
-        {/* UŽIVATELSKÝ AVATAR */}
-        <motion.div 
-          whileHover={{ y: -2 }}
-          className="mt-auto relative group cursor-pointer"
-        >
-          <div className="h-10 w-10 rounded-2xl bg-gradient-to-t from-slate-900 to-slate-800 flex items-center justify-center text-[10px] font-black text-indigo-400 border border-white/10 shadow-inner group-hover:border-indigo-500/50 transition-all">
-            JD
-          </div>
-          <div className="absolute bottom-0 right-0 h-3 w-3 bg-emerald-500 rounded-full border-2 border-[#020617] shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-        </motion.div>
       </aside>
 
       {/* --- MOBILE BOTTOM NAVIGATION --- */}

@@ -1,0 +1,69 @@
+// src/hooks/useHistory.ts
+import { useState, useEffect, useCallback } from 'react';
+import { HistoryItem } from '@/types';
+
+const STORAGE_KEY = "finance_history";
+
+export const useHistory = () => {
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Načtení historie
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const parsed = saved ? JSON.parse(saved) : [];
+        
+        // Validace a přidání ID pokud chybí
+        const validated = parsed.map((item: any, index: number) => ({
+          ...item,
+          id: item.id || `id-${index}-${Date.now()}`
+        }));
+        
+        setHistory(validated);
+      } catch (e) {
+        console.error("Chyba při načítání historie:", e);
+        setHistory([]);
+      }
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Uložení historie
+  const saveHistory = useCallback((newHistory: HistoryItem[]) => {
+    setHistory(newHistory);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
+    }
+  }, []);
+
+  // Přidání záznamu
+  const addEntry = useCallback((entry: HistoryItem) => {
+    const newHistory = [entry, ...history];
+    saveHistory(newHistory);
+  }, [history, saveHistory]);
+
+  // Smazání záznamů podle ID
+  const deleteEntries = useCallback((idsToDelete: string[]) => {
+    const newHistory = history.filter(item => !idsToDelete.includes(String(item.id)));
+    saveHistory(newHistory);
+  }, [history, saveHistory]);
+
+  // Přejmenování záznamu
+  const renameEntry = useCallback((id: string, newName: string) => {
+    const newHistory = history.map(item => 
+      String(item.id) === id ? { ...item, fileName: newName } : item
+    );
+    saveHistory(newHistory);
+  }, [history, saveHistory]);
+
+  return {
+    history,
+    isLoaded,
+    addEntry,
+    deleteEntries,
+    renameEntry,
+    setHistory: saveHistory
+  };
+};

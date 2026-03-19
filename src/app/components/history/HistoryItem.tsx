@@ -1,0 +1,113 @@
+import React from "react";
+import { motion } from "framer-motion";
+import { FileText, Calendar, TrendingUp, Trash2, ChevronRight, CheckSquare, Square } from "lucide-react";
+import { HistoryItem as HistoryItemType, SortField } from "@/types";
+import { formatCurrency } from "@/lib/utils";
+
+interface HistoryItemProps {
+  item: HistoryItemType;
+  isHighlighted: boolean;
+  isSelected: boolean;
+  sortBy: SortField;
+  onEntryClick: (item: HistoryItemType) => void;
+  onToggleSelect: (id: string) => void;
+  onDeleteClick: (id: string | number) => void;
+  innerRef?: (el: HTMLDivElement | null) => void;
+}
+
+export const HistoryItem: React.FC<HistoryItemProps> = ({
+  item,
+  isHighlighted,
+  isSelected,
+  sortBy,
+  onEntryClick,
+  onToggleSelect,
+  onDeleteClick,
+  innerRef
+}) => (
+  <motion.div
+    layout
+    ref={innerRef}
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: false, margin: "100px 0px -150px 0px", amount: 0.1 }}
+    exit={{ opacity: 0, x: 100, scale: 0.95 }}
+    transition={{ 
+      duration: 0.8, 
+      ease: [0.16, 1, 0.3, 1],
+      layout: { duration: 0.4 }
+    }}
+    onClick={() => onEntryClick(item)}
+    className={`relative flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 cursor-pointer ${
+      isHighlighted 
+      ? 'history-highlight bg-fuchsia-500/10 border-fuchsia-500/60 shadow-[0_0_40px_rgba(217,70,219,0.18)] ring-fuchsia-500/40 z-20' 
+      : isSelected
+      ? 'bg-indigo-500/10 border-indigo-500/50 shadow-[0_0_30px_rgba(79,70,229,0.1)] ring-indigo-500/30'
+      : 'bg-slate-900/40 border-white/5 hover:border-indigo-500/40 hover:bg-slate-900/60 ring-white/5'
+    }`}
+  >
+    <div className="flex items-center gap-5">
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleSelect(String(item.id));
+        }}
+        className={`h-10 w-10 shrink-0 flex items-center justify-center rounded-xl transition-all ${
+          isSelected 
+          ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' 
+          : 'bg-[#020617] text-slate-600 hover:text-indigo-400 ring-1 ring-white/10'
+        }`}
+      >
+        {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+      </button>
+      
+      <div className={`h-14 w-14 rounded-2xl flex items-center justify-center transition-all shadow-inner duration-500 ${
+        isHighlighted 
+        ? 'bg-fuchsia-500 text-white ring-2 ring-fuchsia-300/50' 
+        : isSelected
+        ? 'bg-indigo-600 text-white'
+        : 'bg-[#020617] text-indigo-400 ring-1 ring-white/10 group-hover:ring-cyan-500/50 group-hover:bg-indigo-600 group-hover:text-white'
+      }`}>
+        <FileText size={24} />
+      </div>
+      <div className="text-left">
+        <h3 className={`font-black tracking-tight text-lg group-hover:text-cyan-50 transition-colors ${
+          sortBy === 'name' ? 'text-fuchsia-400' : 'text-white'
+        }`}>
+          {item.fileName || "Textová analýza"}
+        </h3>
+        <div className="flex flex-wrap items-center gap-4 text-[10px] text-slate-500 mt-1.5 font-bold uppercase tracking-widest">
+          <span className={`flex items-center gap-1.5 ${
+            sortBy === 'date' ? 'text-fuchsia-400' : ''
+          }`}>
+            <Calendar size={12} className={sortBy === 'date' ? 'text-fuchsia-400' : 'text-indigo-500'}/> {item.date}
+          </span>
+          <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md ring-1 transition-colors ${
+            sortBy === 'uspora' 
+              ? 'text-fuchsia-400 bg-fuchsia-500/10 ring-fuchsia-500/20' 
+              : 'text-cyan-400 bg-cyan-500/10 ring-cyan-500/20'
+          }`}>
+            <TrendingUp size={12} className={sortBy === 'uspora' ? 'text-fuchsia-400' : 'text-cyan-400'}/> {formatCurrency(item.uspora)} / měsíc
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <div className="flex items-center gap-3">
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          onDeleteClick(item.id);
+        }} 
+        className="p-3 text-slate-600 hover:text-rose-500 transition-colors rounded-xl hover:bg-rose-500/10 relative z-20 cursor-pointer"
+      >
+        <Trash2 size={18} />
+      </button>
+      <div className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all ${
+        isHighlighted ? 'bg-fuchsia-500/20 text-fuchsia-300' : isSelected ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/5 text-slate-500 group-hover:text-cyan-400 group-hover:bg-cyan-500/10'
+      }`}>
+        <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+      </div>
+    </div>
+  </motion.div>
+);
