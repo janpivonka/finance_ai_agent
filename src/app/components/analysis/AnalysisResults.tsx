@@ -1,21 +1,21 @@
 import React from "react";
-import { 
-  Zap, 
-  FileText, 
-  Pencil, 
-  Check, 
-  X, 
-  Mail, 
-  History, 
-  ArrowRight, 
-  Wallet, 
-  ShieldCheck, 
-  CheckCircle2, 
-  TrendingUp 
+import {
+  Zap,
+  FileText,
+  Pencil,
+  Check,
+  X,
+  Mail,
+  History,
+  ArrowRight,
+  Wallet,
+  ShieldCheck,
+  CheckCircle2,
+  TrendingUp
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { AnalysisResult } from "@/types";
 import { formatCurrency } from "@/lib/utils";
+import { useAppNavigation } from "@/hooks/useAppNavigation";
 import { SavingsChart } from "./SavingsChart";
 import { RecommendationCard } from "./RecommendationCard";
 
@@ -40,7 +40,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   setTempFileName,
   handleRenameFile
 }) => {
-  const router = useRouter();
+  const { goToHistory, goToConsultation } = useAppNavigation();
 
   return (
     <section className="pb-20 space-y-12">
@@ -133,7 +133,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
                   } catch (e) {
                     console.error("Nepodařilo se uložit last_analysis_data pro historii:", e);
                   }
-                  router.push("/history");
+                  goToHistory();
                 }}
                 className="flex items-center gap-2 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer group/badge animate-fade-in"
                 style={{ animationDelay: '0.2s' }}
@@ -147,11 +147,8 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
 
         <button 
           onClick={() => {
-            const idParam = encodeURIComponent(String(analysis.id || ""));
-            const usporaParam = encodeURIComponent(String(analysis.uspora));
-            const fixaceParam = encodeURIComponent(String(analysis.fixace));
-            router.push(`/consultation?id=${idParam}&uspora=${usporaParam}&fixace=${fixaceParam}`);
-          }}
+              goToConsultation(analysis as any);
+            }}
           className="group flex items-center justify-center gap-4 rounded-2xl bg-indigo-600 px-10 py-5 text-xs font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95 cursor-pointer"
         >
           Personalizovaná konzultace

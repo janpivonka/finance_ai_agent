@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutDashboard, FileSearch, Mic2, History } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAppNavigation } from "@/hooks/useAppNavigation";
 
 const navItems = [
   { label: "Domů", href: "/", icon: LayoutDashboard },
@@ -14,8 +15,17 @@ const navItems = [
 
 export default function Sidebar() {
   const router = useRouter();
+  const { goToHome, goToAnalysis, goToConsultation, goToHistory } = useAppNavigation();
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
+
+  const handleNavigate = (href: string) => {
+    if (href === "/") goToHome();
+    else if (href === "/analysis") goToAnalysis();
+    else if (href === "/consultation") goToConsultation({ id: "", uspora: 0, fixace: "" } as any);
+    else if (href === "/history") goToHistory();
+    else router.push(href);
+  };
 
   React.useEffect(() => {
     setMounted(true);
@@ -36,7 +46,7 @@ export default function Sidebar() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           whileHover={{ rotate: 5, scale: 1.05 }}
-          onClick={() => router.push("/")}
+          onClick={() => goToHome()}
           className="mb-12 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900/50 p-2.5 ring-1 ring-white/10 shadow-inner group cursor-pointer hover:bg-rose-500/20 hover:border-rose-500/50 transition-all"
         >
           <img 
@@ -61,7 +71,7 @@ export default function Sidebar() {
                 className="relative"
               >
                 <button
-                  onClick={() => router.push(item.href)}
+                  onClick={() => handleNavigate(item.href)}
                   className={`group relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] transition-colors duration-300 ${
                     isActive ? "text-white" : "text-slate-500 hover:text-slate-200"
                   }`}
@@ -117,7 +127,7 @@ export default function Sidebar() {
           return (
             <button
               key={item.label}
-              onClick={() => router.push(item.href)}
+              onClick={() => handleNavigate(item.href)}
               className="relative flex flex-col items-center justify-center w-12 h-12"
             >
               {isActive && (

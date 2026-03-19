@@ -7,6 +7,7 @@ import { ScrollToTop } from "../components/ScrollToTop";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useHistoryPage } from "@/hooks/useHistoryPage";
+import { useAppNavigation } from "@/hooks/useAppNavigation";
 import { HistoryItem } from "@/types";
 
 import { HistoryList } from "../components/history/HistoryList";
@@ -21,7 +22,7 @@ import { History as HistoryIcon, Search, X, ArrowUpNarrowWide, ArrowDownWideNarr
 import { SortField } from "@/types";
 
 export default function HistoryPage() {
-  const router = useRouter();
+  const { goToAnalysis, goToConsultation } = useAppNavigation();
   const {
     isLoaded,
     searchQuery,
@@ -58,25 +59,11 @@ export default function HistoryPage() {
   useIntersectionObserver('.reveal', isLoaded ? filteredAndSortedHistory.length : -1);
 
   const handleReturnToAnalysis = (item: HistoryItem) => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem("analysis_entry_data", JSON.stringify(item));
-      } catch (e) { 
-        console.error("Chyba při ukládání dat pro návrat na analýzu:", e); 
-      }
-    }
-    router.push('/analysis');
+    goToAnalysis(item);
   };
 
   const handleConsultation = (item: HistoryItem) => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem("last_analysis_data", JSON.stringify({ id: item.id }));
-      } catch (e) { 
-        console.error(e); 
-      }
-    }
-    router.push(`/consultation?id=${encodeURIComponent(String(item.id))}&uspora=${encodeURIComponent(String(item.uspora))}&fixace=${encodeURIComponent(String(item.fixace))}`);
+    goToConsultation(item);
   };
 
   if (!mounted) return <div className="min-h-screen bg-[#020617]" />;

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Vapi from "@vapi-ai/web";
+import { useAppNavigation } from "./useAppNavigation";
 
 export const useConsultation = () => {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const { goToAnalysis, goToHistory } = useAppNavigation();
   const [isMounted, setIsMounted] = useState(false);
   
   const [starting, setStarting] = useState(false);
@@ -110,10 +111,7 @@ export const useConsultation = () => {
   }, [isMounted]);
 
   const handleBackToAnalysis = () => {
-    if (fullHistoryEntry) {
-      localStorage.setItem("analysis_entry_data", JSON.stringify(fullHistoryEntry));
-    }
-    router.push("/analysis");
+    goToAnalysis(fullHistoryEntry);
   };
 
   const handleScroll = () => {
@@ -166,17 +164,7 @@ export const useConsultation = () => {
   };
 
   const handleToHistory = () => {
-    try {
-      if (fullHistoryEntry?.id) {
-        localStorage.setItem(
-          "last_analysis_data",
-          JSON.stringify({ id: fullHistoryEntry.id }),
-        );
-      }
-    } catch (e) {
-      console.error("Nepodařilo se uložit last_analysis_data pro návrat do historie z consultation:", e);
-    }
-    router.push("/history");
+    goToHistory(fullHistoryEntry?.id);
   };
 
   return {

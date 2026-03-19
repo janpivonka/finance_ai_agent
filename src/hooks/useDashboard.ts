@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { HistoryItem } from "@/types";
+import { useAppNavigation } from "./useAppNavigation";
 
 export const useDashboard = () => {
-  const router = useRouter();
+  const { goToAnalysis, goToHistory, goToConsultation } = useAppNavigation();
   const [lastAnalysis, setLastAnalysis] = useState<HistoryItem | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -22,47 +22,27 @@ export const useDashboard = () => {
     setIsLoaded(true);
   }, []);
 
-  const goToConsultation = () => {
+  const handleConsultation = () => {
     if (lastAnalysis) {
-      const idParam = encodeURIComponent(String(lastAnalysis.id || ""));
-      const usporaParam = encodeURIComponent(String(lastAnalysis.uspora));
-      const fixaceParam = encodeURIComponent(String(lastAnalysis.fixace));
-      router.push(
-        `/consultation?id=${idParam}&uspora=${usporaParam}&fixace=${fixaceParam}`,
-      );
+      goToConsultation(lastAnalysis);
     } else {
-      router.push('/analysis');
+      goToAnalysis();
     }
   };
 
-  const goToHistory = () => {
-    if (typeof window !== 'undefined') {
-      try {
-        if (lastAnalysis?.id) {
-          localStorage.setItem(
-            "last_analysis_data",
-            JSON.stringify({ id: lastAnalysis.id }),
-          );
-        }
-      } catch (e) {
-        console.error(
-          "Nepodařilo se uložit last_analysis_data pro historii z dashboardu:",
-          e,
-        );
-      }
-    }
-    router.push("/history");
+  const handleHistory = () => {
+    goToHistory(lastAnalysis?.id);
   };
 
-  const goToAnalysis = () => {
-    router.push('/analysis');
+  const handleAnalysis = () => {
+    goToAnalysis();
   };
 
   return {
     lastAnalysis,
     isLoaded,
-    goToConsultation,
-    goToHistory,
-    goToAnalysis
+    goToConsultation: handleConsultation,
+    goToHistory: handleHistory,
+    goToAnalysis: handleAnalysis
   };
 };
