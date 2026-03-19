@@ -9,12 +9,16 @@ import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useHistoryPage } from "@/hooks/useHistoryPage";
 import { HistoryItem } from "@/types";
 
-// Import modular components
-import { HistoryHeader } from "../components/history/HistoryHeader";
 import { HistoryList } from "../components/history/HistoryList";
 import { HistoryEmptyState } from "../components/history/HistoryEmptyState";
 import { HistoryDeleteModal } from "../components/history/HistoryDeleteModal";
 import { HistoryDetailModal } from "../components/history/HistoryDetailModal";
+
+// Shared UI Components
+import { PageBackground } from "../components/ui/PageBackground";
+import { PageHeader } from "../components/ui/PageHeader";
+import { History as HistoryIcon, Search, X, ArrowUpNarrowWide, ArrowDownWideNarrow } from "lucide-react";
+import { SortField } from "@/types";
 
 export default function HistoryPage() {
   const router = useRouter();
@@ -80,14 +84,64 @@ export default function HistoryPage() {
   return (
     <div className={`min-h-screen bg-[#020617] text-slate-200 selection:bg-indigo-500/30 transition-all duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="mx-auto max-w-4xl px-6 py-12 relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-96 bg-indigo-600/10 blur-[120px] pointer-events-none animate-pulse-slow" />
+        <PageBackground 
+          glows={[
+            { position: "top-left", color: "bg-indigo-600", size: "w-full h-96", opacity: "opacity-10", animate: true }
+          ]}
+        />
 
-        <HistoryHeader
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          onSort={handleSort}
+        <PageHeader 
+          badgeIcon={HistoryIcon}
+          badgeText="Data Archive Protocol"
+          title={
+            <>
+              Moje <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] animate-gradient-text not-italic">Historie</span>
+            </>
+          }
+          description="Kompletní přehled vašich finančních analýz. Data jsou ukládána lokálně a synchronizována pro okamžitý přístup."
+          rightElement={
+            <div className="flex flex-col md:flex-row gap-4 mb-2">
+              <div className="relative flex-1 group min-w-[300px]">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-400 transition-colors z-10" />
+                <input
+                  type="text"
+                  placeholder="Hledat v archivu..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-900/40 border border-white/5 rounded-2xl py-4 pl-12 pr-10 text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-xl transition-all"
+                />
+                {searchQuery && (
+                  <X 
+                    size={16} 
+                    onClick={() => setSearchQuery("")} 
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white cursor-pointer" 
+                  />
+                )}
+              </div>
+
+              <div className="flex bg-slate-900/40 p-1 rounded-2xl border border-white/5 backdrop-blur-xl">
+                {(['date', 'uspora', 'name'] as SortField[]).map((field) => {
+                  const isActive = sortBy === field;
+                  return (
+                    <button
+                      key={field}
+                      onClick={() => handleSort(field)}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                        isActive 
+                        ? 'bg-fuchsia-600 text-white shadow-lg shadow-fuchsia-600/20' 
+                        : 'text-slate-500 hover:text-slate-300'
+                      }`}
+                    >
+                      {field === 'date' ? 'Datum' : field === 'uspora' ? 'Úspora' : 'Název'}
+                      {isActive && (
+                        sortOrder === 'asc' ? <ArrowUpNarrowWide size={14} /> : <ArrowDownWideNarrow size={14} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          }
         />
         
         <AnimatePresence mode="wait">

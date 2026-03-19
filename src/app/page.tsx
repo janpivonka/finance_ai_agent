@@ -16,12 +16,15 @@ import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useDashboard } from "@/hooks/useDashboard";
 
-// Dashboard Components
-import { DashboardBackground } from "./components/dashboard/DashboardBackground";
-import { DashboardHeader } from "./components/dashboard/DashboardHeader";
 import { ActionCard } from "./components/dashboard/ActionCard";
 import { MainInsightBanner } from "./components/dashboard/MainInsightBanner";
 import { FutureModuleCard } from "./components/dashboard/FutureModuleCard";
+
+// Shared UI Components
+import { PageBackground } from "./components/ui/PageBackground";
+import { PageHeader } from "./components/ui/PageHeader";
+import { Badge } from "./components/ui/Badge";
+import { Zap } from "lucide-react";
 
 export default function DashboardPage() {
   const { 
@@ -39,11 +42,29 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#020617] px-6 pt-16 pb-24 relative overflow-x-hidden selection:bg-cyan-500/30 no-scrollbar">
       
-      <DashboardBackground />
+      <PageBackground 
+        glows={[
+          { position: "top-left", color: "bg-indigo-600", size: "w-[500px] h-[500px]", opacity: "opacity-10", animate: true },
+          { position: "bottom-right", color: "bg-fuchsia-600", size: "w-[600px] h-[600px]", opacity: "opacity-5" }
+        ]}
+        withNoise
+      />
 
       <div className={`mx-auto max-w-6xl relative z-10 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         
-        <DashboardHeader />
+        <PageHeader 
+          badgeIcon={Zap}
+          badgeText="Neural Financial Ecosystem 2.0"
+          title={
+            <>
+              Vítejte,{" "}
+              <span className="inline-block align-baseline pb-1 pr-1 animate-gradient-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-fuchsia-400 bg-[length:200%_auto] bg-clip-text text-transparent">
+                Peony
+              </span>
+            </>
+          }
+          description="Váš inteligentní kokpit je online. Synchronizovali jsme data z trhu a připravili analýzu vašich aktiv."
+        />
 
         {/* HLAVNÍ AKČNÍ KARTY */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 reveal">
