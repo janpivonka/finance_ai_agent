@@ -39,7 +39,7 @@ export default function AnalysisPage() {
   } = useAnalysis();
 
   useScrollDirection();
-  useIntersectionObserver('.reveal', analysis ? 1 : 0);
+  useIntersectionObserver('.reveal', `${mounted}-${analysis ? 1 : 0}`);
 
   if (!mounted) return <div className="min-h-screen bg-[#020617]" />;
 
@@ -112,26 +112,6 @@ export default function AnalysisPage() {
       </div>
       
       <ScrollToTop />
-      
-      <style jsx global>{`
-        @keyframes gradient-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes pulse-gentle { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.01); opacity: 0.98; } }
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes pulse-slow { 0%, 100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.05); } }
-        @keyframes reveal-css { from { opacity: 0; transform: translateY(20px); filter: blur(10px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
-        @keyframes fade-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .reveal-header { animation: reveal-css 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .reveal-init { animation: reveal-css 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
-        
-        .animate-gradient-text { animation: gradient-text 5s ease infinite; }
-        .animate-pulse-gentle { animation: pulse-gentle 4s ease-in-out infinite; }
-        .animate-spin-slow { animation: spin-slow 12s linear infinite; }
-        .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
-        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
-        
-        ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-      `}</style>
     </div>
   );
 }

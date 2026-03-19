@@ -35,8 +35,8 @@ export const useIntersectionObserver = (className = '.reveal', dependency: any =
         });
       },
       { 
-        threshold: [0, 0.1, 0.9, 1], // Širší threshold pro větší stabilitu
-        rootMargin: '100px 0px -150px 0px' // Aktivuje se 150px před spodní hranou, nahoře zůstane vidět i kousek za hranou
+        threshold: [0, 0.1, 0.9, 1], // Vyšší threshold pro stabilitu
+        rootMargin: '100px 0px -150px 0px' // Původní nastavení uživatele
       }
     );
 

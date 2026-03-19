@@ -1,26 +1,166 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617;
+  --foreground: #f8fafc;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* --- GLOBAL UTILITIES --- */
+
+/* Hide scrollbars globally */
+* {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Base reveal class for IntersectionObserver */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  will-change: transform, opacity;
+}
+
+/* --- KEYFRAMES & ANIMATIONS --- */
+
+@keyframes gradient-text {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.1; transform: scale(1); }
+  50% { opacity: 0.15; transform: scale(1.05); }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.01); opacity: 0.98; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes reveal-css {
+  from { opacity: 0; transform: translateY(20px); filter: blur(10px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes visualizer {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@keyframes history-highlight-pulse {
+  0%   { box-shadow: 0 0 0 rgba(217,70,219,0); transform: scale(1); }
+  10%  { box-shadow: 0 0 28px rgba(217,70,219,0.22); transform: scale(1.015); }
+  52%  { box-shadow: 0 0 34px rgba(217,70,219,0.24); transform: scale(1.015); }
+  100% { box-shadow: 0 0 0 rgba(217,70,219,0); transform: scale(1); }
+}
+
+/* --- UTILITY CLASSES --- */
+
+.animate-gradient-text { animation: gradient-text 5s ease infinite; }
+.animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
+.animate-pulse-gentle { animation: pulse-gentle 4s ease-in-out infinite; }
+.animate-spin-slow { animation: spin-slow 12s linear infinite; }
+.animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+.animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fade-in-left { animation: fade-in-left 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-visualizer { animation: visualizer 0.5s ease-in-out infinite; }
+.animate-shimmer { animation: shimmer 1.5s infinite; }
+.history-highlight { animation: history-highlight-pulse 3s ease-out 1; }
+
+/* On-load animations (independent of IntersectionObserver) */
+.reveal-header { 
+  animation: reveal-css 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+}
+
+.reveal-init { 
+  animation: reveal-css 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; 
+  opacity: 0; 
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- REPORT CONTENT STYLING --- */
+
+.report-container, .report-container * {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+.report-container strong { color: #fff !important; }
+.report-container h1, .report-container h2, .report-container h3 { color: #f8fafc !important; font-weight: 800; }
+.report-container p, .report-container li { color: #cbd5e1 !important; }
+.report-container table { border-collapse: collapse; width: 100%; }
+.report-container td { color: #e2e8f0 !important; font-size: 0.85rem; }
+.report-container th { 
+  color: #38bdf8 !important; 
+  text-transform: uppercase; 
+  font-size: 0.75rem; 
+  letter-spacing: 0.05em;
+  background-color: rgba(255,255,255,0.03) !important;
+}
+.report-container td:nth-child(2) { color: #ec4899 !important; font-weight: 700; }
+.report-container td:nth-child(3) { color: #4ade80 !important; font-weight: 700; }
+.report-container table, .report-container td, .report-container th {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }

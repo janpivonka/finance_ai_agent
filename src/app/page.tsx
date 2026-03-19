@@ -37,7 +37,7 @@ export default function DashboardPage() {
 
   // Aktivace animací a sledování scrollu
   useScrollDirection();
-  useIntersectionObserver('.reveal');
+  useIntersectionObserver('.reveal', isLoaded);
 
   return (
     <div className="min-h-screen bg-[#020617] px-6 pt-16 pb-24 relative overflow-x-hidden selection:bg-cyan-500/30 no-scrollbar">
@@ -130,39 +130,6 @@ export default function DashboardPage() {
       </div>
 
       <ScrollToTop />
-
-      <style jsx global>{`
-        ::-webkit-scrollbar {
-          display: none !important;
-          width: 0 !important;
-          height: 0 !important;
-        }
-        * {
-          -ms-overflow-style: none !important;
-          scrollbar-width: none !important;
-        }
-        html, body {
-          overflow-y: scroll;
-          scrollbar-width: none !important;
-          -ms-overflow-style: none !important;
-        }
-        
-        @keyframes gradient-text {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .animate-gradient-text {
-          animation: gradient-text 5s ease infinite;
-        }
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.1; transform: scale(1); }
-          50% { opacity: 0.15; transform: scale(1.05); }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 8s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }

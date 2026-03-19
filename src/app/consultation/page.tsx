@@ -2,6 +2,7 @@
 
 import React, { Suspense } from "react";
 import { useConsultation } from "@/hooks/useConsultation";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 
 import { ConsultationContext } from "../components/consultation/ConsultationContext";
 import { ConsultationChat } from "../components/consultation/ConsultationChat";
@@ -32,6 +33,8 @@ function ConsultationContent() {
     handleBackToAnalysis,
     handleToHistory
   } = useConsultation();
+
+  useIntersectionObserver('.reveal', isMounted);
 
   if (!isMounted) return <div className="bg-[#020617] min-h-screen" />;
 
@@ -129,23 +132,6 @@ function ConsultationContent() {
         </div>
       </div>
 
-      <style jsx global>{`
-        @keyframes gradient-text { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes visualizer { 0%, 100% { height: 4px; } 50% { height: 16px; } }
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
-        .animate-visualizer { animation: visualizer 0.5s ease-in-out infinite; }
-        .animate-shimmer { animation: shimmer 1.5s infinite; }
-        .animate-gradient-text { animation: gradient-text 5s ease infinite; }
-        .animate-pulse-slow { animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
-        .animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-fade-in-left { animation: fadeInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </div>
   );
 }
