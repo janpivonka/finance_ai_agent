@@ -74,14 +74,18 @@ export const useAnalysis = () => {
   const handleRenameFile = (newName: string) => {
     setUploadedFileName(newName);
     setIsEditingFileName(false);
+    setAnalysis((prev) => (prev ? { ...prev, fileName: newName } : prev));
     if (typeof window !== 'undefined') {
       try {
+        const targetId = analysis?.id ? String(analysis.id) : null;
         const raw = localStorage.getItem("finance_history");
         const parsed = raw ? (JSON.parse(raw) as unknown) : [];
         const savedHistory = (Array.isArray(parsed) ? parsed : []) as HistoryItem[];
-        const updatedHistory = savedHistory.map((item) =>
-          item.fileName === uploadedFileName ? { ...item, fileName: newName } : item,
-        );
+        const updatedHistory = targetId
+          ? savedHistory.map((item) =>
+              String(item.id) === targetId ? { ...item, fileName: newName } : item,
+            )
+          : savedHistory;
         localStorage.setItem("finance_history", JSON.stringify(updatedHistory as HistoryItem[]));
       } catch (e) {
         console.error("Chyba při ukládání přejmenování souboru do localStorage:", e);
