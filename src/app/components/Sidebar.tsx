@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, FileSearch, Mic2, History } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
+import { ThemeToggle } from "./ui/ThemeToggle";
 
 const navItems = [
   { label: "Domů", href: "/", icon: LayoutDashboard },
@@ -32,13 +33,13 @@ export default function Sidebar() {
 
   // Vrátíme placeholder se stejnou šířkou, aby obsah neposkočil při hydrataci
   if (!mounted) {
-    return <aside className="hidden md:flex h-screen w-24 border-r border-white/5 bg-[#020617] shrink-0" />;
+    return <aside className="hidden md:flex h-screen w-24 border-r border-[color:var(--panel-border)] bg-[var(--background)] shrink-0" />;
   }
 
   return (
     <>
       {/* --- DESKTOP SIDEBAR --- */}
-      <aside className="hidden md:flex h-screen w-24 flex-col items-center border-r border-white/5 bg-[#020617] py-8 shrink-0 z-50">
+      <aside className="hidden md:flex h-screen w-24 flex-col items-center border-r border-[color:var(--panel-border)] bg-[var(--background)] py-8 shrink-0 z-50">
         
         {/* LOGO BOX */}
         <motion.div 
@@ -46,7 +47,7 @@ export default function Sidebar() {
           animate={{ opacity: 1, scale: 1 }}
           whileHover={{ rotate: 5, scale: 1.05 }}
           onClick={() => goToHome()}
-          className="mb-12 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900/50 p-2.5 ring-1 ring-white/10 shadow-inner group cursor-pointer hover:bg-rose-500/20 hover:border-rose-500/50 transition-all"
+          className="mb-12 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--panel)] p-2.5 ring-1 ring-[color:var(--panel-border)] shadow-inner group cursor-pointer hover:bg-rose-500/20 hover:border-rose-500/50 transition-all"
         >
           <img 
             src="/logo.png" 
@@ -54,6 +55,8 @@ export default function Sidebar() {
             className="max-h-full max-w-full object-contain" 
           />
         </motion.div>
+
+        <ThemeToggle className="mb-10" />
         
         {/* NAVIGACE */}
         <nav className="flex flex-1 flex-col items-center gap-8">
@@ -72,7 +75,7 @@ export default function Sidebar() {
                 <button
                   onClick={() => handleNavigate(item.href)}
                   className={`group relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] transition-colors duration-300 ${
-                    isActive ? "text-white" : "text-slate-500 hover:text-slate-200"
+                    isActive ? "text-white" : "text-[color:var(--muted)] hover:text-[color:var(--foreground)]"
                   }`}
                 >
                   {/* ANIMOVANÉ POZADÍ AKTIVNÍHO PRVKU */}
@@ -117,7 +120,7 @@ export default function Sidebar() {
       <motion.nav 
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] h-16 bg-[#020617]/80 backdrop-blur-2xl rounded-[2.2rem] border border-white/10 flex items-center justify-around px-4 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/5"
+        className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[460px] h-16 bg-[color:var(--panel)] backdrop-blur-2xl rounded-[2.2rem] border border-[color:var(--panel-border)] flex items-center justify-around px-4 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/5"
       >
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -155,6 +158,8 @@ export default function Sidebar() {
             </button>
           );
         })}
+
+        <ThemeToggle className="h-12 w-12 rounded-2xl" />
       </motion.nav>
     </>
   );

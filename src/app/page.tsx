@@ -38,7 +38,7 @@ export default function DashboardPage() {
   useIntersectionObserver('.reveal', isLoaded);
 
   return (
-    <div className="min-h-screen bg-[#020617] px-6 pt-16 pb-24 relative overflow-x-hidden selection:bg-cyan-500/30 no-scrollbar">
+    <div className="min-h-screen bg-[var(--background)] px-6 pt-16 pb-24 relative overflow-x-hidden selection:bg-cyan-500/30 no-scrollbar">
       
       <PageBackground 
         glows={[

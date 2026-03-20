@@ -37,12 +37,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             <Badge icon={badgeIcon} text={badgeText} variant={badgeVariant} animate />
           </div>
         )}
-        <h1 className="text-4xl font-black tracking-tight text-white italic md:text-5xl">
+        <h1 className="text-4xl font-black tracking-tight text-[color:var(--foreground)] italic md:text-5xl">
           {title}
         </h1>
         {description && (
-          <div className="mt-6 border-l border-white/10 pl-6 py-1">
-            <p className="text-slate-400 text-sm leading-relaxed font-medium max-w-xl">
+          <div className="mt-6 border-l border-[color:var(--panel-border)] pl-6 py-1">
+            <p className="text-[color:var(--muted)] text-sm leading-relaxed font-medium max-w-xl">
               {description}
             </p>
           </div>

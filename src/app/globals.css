@@ -3,17 +3,160 @@
 :root {
   --background: #020617;
   --foreground: #f8fafc;
+  --foreground-muted: #94a3b8;
+  --panel: rgba(15, 23, 42, 0.6);
+  --panel-strong: rgba(2, 6, 23, 0.72);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-border-strong: rgba(255, 255, 255, 0.12);
+  --muted: #94a3b8;
+  --muted-2: #64748b;
+  --button-primary-bg: #ffffff;
+  --button-primary-text: #0f172a;
+  --button-primary-hover-bg: #22d3ee;
+  
+  --card-bg: rgba(15, 23, 42, 0.4);
+  --card-border: rgba(255, 255, 255, 0.05);
+  --card-hover-bg: rgba(15, 23, 42, 0.6);
+  --card-hover-border: rgba(99, 102, 241, 0.3);
+  
+  --accent-primary: #6366f1; /* Indigo-500 */
+  --accent-secondary: #22d3ee; /* Cyan-400 */
+}
+
+:root.theme-dark {
+  --background: #020617;
+  --foreground: #f8fafc;
+  --foreground-muted: #94a3b8;
+  --panel: rgba(15, 23, 42, 0.6);
+  --panel-strong: rgba(2, 6, 23, 0.72);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-border-strong: rgba(255, 255, 255, 0.12);
+  --muted: #94a3b8;
+  --muted-2: #64748b;
+  --button-primary-bg: #ffffff;
+  --button-primary-text: #0f172a;
+  --button-primary-hover-bg: #22d3ee;
+
+  --card-bg: rgba(15, 23, 42, 0.4);
+  --card-border: rgba(255, 255, 255, 0.05);
+  --card-hover-bg: rgba(15, 23, 42, 0.6);
+  --card-hover-border: rgba(99, 102, 241, 0.3);
+}
+
+:root.theme-light {
+  --background: #f1f5f9; /* Soft slate-100 */
+  --foreground: #020617; /* Slate-950 */
+  --foreground-muted: #0f172a; /* Slate-900 - even darker for maximum readability */
+  --panel: rgba(255, 255, 255, 0.7);
+  --panel-strong: rgba(255, 255, 255, 0.9);
+  --panel-border: rgba(15, 23, 42, 0.08);
+  --panel-border-strong: rgba(15, 23, 42, 0.12);
+  --muted: #475569; /* Slate-600 */
+  --muted-2: #64748b; /* Slate-500 */
+  --button-primary-bg: #db2777; /* Fuchsia-600 */
+  --button-primary-text: #ffffff;
+  --button-primary-hover-bg: #be185d; /* Fuchsia-700 */
+
+  --card-bg: rgba(255, 255, 255, 0.5);
+  --card-border: rgba(15, 23, 42, 0.05);
+  --card-hover-bg: rgba(255, 255, 255, 0.85);
+  --card-hover-border: rgba(79, 70, 229, 0.15);
+
+  /* Light mode tints based on original colors */
+  --tint-blue: rgba(59, 130, 246, 0.05);
+  --tint-cyan: rgba(6, 182, 212, 0.05);
+  --tint-pink: rgba(217, 70, 239, 0.05);
+  --tint-indigo: rgba(99, 102, 241, 0.05);
+  --tint-emerald: rgba(16, 185, 129, 0.05);
 }
 
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-panel: var(--panel);
+  --color-panel-border: var(--panel-border);
+  --color-card: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-muted: var(--muted);
+  --color-tint-blue: var(--tint-blue);
+  --color-tint-cyan: var(--tint-cyan);
+  --color-tint-pink: var(--tint-pink);
+  --color-tint-indigo: var(--tint-indigo);
+  --color-tint-emerald: var(--tint-emerald);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Global transition for theme switch */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms; /* Base duration for small elements */
+}
+
+/* Prose overrides for better contrast in light mode */
+.prose {
+  --tw-prose-body: #0f172a; /* Slate-900 - forced very dark */
+  --tw-prose-headings: #020617; /* Slate-950 */
+  --tw-prose-links: #4f46e5;
+  --tw-prose-bold: #020617;
+  --tw-prose-counters: #475569;
+  --tw-prose-bullets: #475569;
+  --tw-prose-hr: rgba(15, 23, 42, 0.1);
+  --tw-prose-quotes: #0f172a;
+  --tw-prose-quote-borders: rgba(15, 23, 42, 0.1);
+  --tw-prose-captions: #64748b;
+  --tw-prose-code: #0f172a;
+  --tw-prose-pre-code: #0f172a;
+  --tw-prose-pre-bg: #f8fafc;
+  --tw-prose-th-borders: rgba(15, 23, 42, 0.2);
+  --tw-prose-td-borders: rgba(15, 23, 42, 0.1);
+}
+
+/* Ensure report text is NEVER white in light mode */
+.theme-light .report-container,
+.theme-light .report-container * {
+  color: #0f172a !important;
+}
+
+/* Specific table styling for the report in light mode */
+.theme-light .report-container table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 1.5rem 0 !important;
+  border: 2px solid rgba(15, 23, 42, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.theme-light .report-container th {
+  background-color: rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  color: #020617 !important;
+  font-weight: 800 !important;
+  padding: 12px !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+}
+
+.theme-light .report-container td {
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  padding: 12px !important;
+  color: #1e293b !important;
+}
+
+.theme-light .report-container tr:nth-child(even) {
+  background-color: rgba(15, 23, 42, 0.02) !important;
+}
+
+/* Override for body and large panels to be smoother */
+body, .panel-transition {
+  transition-duration: 500ms !important;
 }
 
 /* --- GLOBAL UTILITIES --- */

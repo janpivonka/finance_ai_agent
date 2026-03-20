@@ -60,7 +60,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
 
   return (
     <section className="pb-20 space-y-12">
-      <div className="reveal mb-10 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="reveal mb-10 h-px bg-gradient-to-r from-transparent via-[color:var(--panel-border)] to-transparent" />
       
       <div ref={headerRef} className="reveal mb-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="text-left">
@@ -70,16 +70,16 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             </div>
             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 animate-pulse">Audit Report Complete</h2>
           </div>
-          <h3 className="text-4xl font-black text-white tracking-tight text-left">
+          <h3 className="text-4xl font-black text-[color:var(--foreground)] tracking-tight text-left">
             Vaše měsíční úspora činí <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">{formatCurrency(displayUspora)}</span>
           </h3>
           
           <div className="mt-6 space-y-3">
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/5 border border-white/10 shadow-sm animate-fade-in">
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-[var(--panel)] border border-[color:var(--panel-border)] shadow-sm animate-fade-in">
               <div className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-500/20">
                 <FileText size={12} className="text-indigo-400" />
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Zdroj:</span>
+              <span className="text-[10px] font-bold text-[color:var(--muted)] uppercase tracking-widest">Zdroj:</span>
               {isEditingFileName ? (
                 <div className="flex items-center gap-2">
                   <input
@@ -95,7 +95,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
                       }
                     }}
                     autoFocus
-                    className="bg-slate-800/50 border border-indigo-500/50 rounded-lg px-2 py-1 text-xs font-black text-white outline-none focus:border-indigo-400 max-w-[200px]"
+                    className="bg-[var(--panel-strong)] border border-indigo-500/50 rounded-lg px-2 py-1 text-xs font-black text-[color:var(--foreground)] outline-none focus:border-indigo-400 max-w-[200px]"
                   />
                   <button
                     onClick={() => handleRenameFile(tempFileName)}
@@ -115,7 +115,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-black text-white truncate max-w-[250px] md:max-w-md">
+                  <span className="text-[11px] font-black text-[color:var(--foreground)] truncate max-w-[250px] md:max-w-md">
                     {uploadedFileName || "Manuální vstup dat"}
                   </span>
                   <button
@@ -123,7 +123,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
                       setIsEditingFileName(true);
                       setTempFileName(uploadedFileName || "");
                     }}
-                    className="h-5 w-5 flex items-center justify-center hover:text-indigo-400 transition-colors cursor-pointer"
+                    className="h-5 w-5 flex items-center justify-center text-[color:var(--muted)] hover:text-indigo-400 transition-colors cursor-pointer"
                   >
                     <Pencil size={12} />
                   </button>
@@ -133,8 +133,8 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
 
             <div className="flex flex-wrap gap-3">
               <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <Mail size={12} className="text-emerald-400" />
-                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider">Odesláno na email</span>
+                <Mail size={12} className="text-emerald-600 dark:text-emerald-400" />
+                <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Odesláno na email</span>
               </div>
 
               <button 
@@ -144,8 +144,8 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
                 className="flex items-center gap-2 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer group/badge animate-fade-in"
                 style={{ animationDelay: '0.2s' }}
               >
-                <History size={12} className="text-indigo-300 group-hover/badge:rotate-[-45deg] transition-transform" />
-                <span className="text-[9px] font-black text-indigo-300 uppercase tracking-wider">Dostupné v historii</span>
+                <History size={12} className="text-indigo-600 dark:text-indigo-300 group-hover/badge:rotate-[-45deg] transition-transform" />
+                <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-300 uppercase tracking-wider">Dostupné v historii</span>
               </button>
             </div>
           </div>
@@ -185,35 +185,35 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
         <div className="reveal"><RecommendationCard icon={ShieldCheck} title="Rating pojistky" highlight={analysis.pojisteni} description="Analýza rizikového krytí vůči jistině." badge="Bezpečí" /></div>
       </div>
 
-      <div className="reveal overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40 backdrop-blur-xl shadow-2xl ring-1 ring-white/5 group transition-all duration-500 hover:border-indigo-500/20">
-          <div className="px-10 py-7 bg-white/5 border-b border-white/5 flex items-center justify-between">
-              <h3 className="font-black text-white tracking-widest uppercase text-xs">Benchmark Top nabídek</h3>
-              <div className="flex items-center gap-2 text-[9px] font-black text-cyan-400 uppercase bg-cyan-400/10 px-4 py-1.5 rounded-full ring-1 ring-cyan-500/20 animate-pulse">
+      <div className="reveal overflow-hidden rounded-[2.5rem] border border-[color:var(--panel-border)] bg-[var(--panel)] backdrop-blur-xl shadow-2xl ring-1 ring-[color:var(--panel-border)] group transition-all duration-500 hover:border-indigo-500/20">
+          <div className="px-10 py-7 bg-[var(--panel-strong)] border-b border-[color:var(--panel-border)] flex items-center justify-between">
+              <h3 className="font-black text-[color:var(--foreground)] tracking-widest uppercase text-xs">Benchmark Top nabídek</h3>
+              <div className="flex items-center gap-2 text-[9px] font-black text-cyan-600 dark:text-cyan-400 uppercase bg-cyan-400/10 px-4 py-1.5 rounded-full ring-1 ring-cyan-500/20 animate-pulse">
                 <CheckCircle2 size={12}/> Market Verified
               </div>
           </div>
           <div className="overflow-x-auto scrollbar-hide">
             <table className="w-full text-sm">
-              <thead className="bg-[#020617]/30 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
+              <thead className="bg-[var(--background)]/30 text-[9px] font-black uppercase tracking-[0.2em] text-[color:var(--muted-2)]">
                 <tr>
                   <th className="px-10 py-6 text-left">Instituce</th>
                   <th className="px-10 py-6 text-left">Sazba</th>
-                  <th className="px-10 py-6 text-left text-cyan-400">Měsíční úspora</th>
+                  <th className="px-10 py-6 text-left text-cyan-600 dark:text-cyan-400">Měsíční úspora</th>
                   <th className="px-10 py-6 text-left hidden md:table-cell">Strategická výhoda</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[color:var(--panel-border)]">
                 {analysis.top_nabidky?.map((item, i) => {
                   const localUspora = Number(item?.usp || 0);
                   return (
                     <tr key={i} className="group/row hover:bg-indigo-500/5 transition-all duration-300 text-left">
-                      <td className="px-10 py-7 font-black text-white group-hover/row:text-cyan-400 transition-colors">{item?.banka || "—"}</td>
-                      <td className="px-10 py-7 font-bold text-slate-400">{item?.sazba || "—"}</td>
-                      <td className="px-10 py-7 font-black text-cyan-400 text-xl group-hover/row:scale-105 transition-transform origin-left">
+                      <td className="px-10 py-7 font-black text-[color:var(--foreground)] group-hover/row:text-cyan-600 dark:group-hover/row:text-cyan-400 transition-colors">{item?.banka || "—"}</td>
+                      <td className="px-10 py-7 font-bold text-[color:var(--muted)]">{item?.sazba || "—"}</td>
+                      <td className="px-10 py-7 font-black text-cyan-600 dark:text-cyan-400 text-xl group-hover/row:scale-105 transition-transform origin-left">
                          +{Math.floor(localUspora * (displayUspora / (Number(analysis.uspora) || 1))).toLocaleString()} Kč
                       </td>
                       <td className="px-10 py-7 hidden md:table-cell">
-                        <span className="rounded-xl bg-[#020617] border border-white/5 px-4 py-2 text-[10px] font-black text-slate-500 group-hover/row:text-indigo-400 group-hover/row:border-indigo-500/30 transition-all uppercase tracking-widest">
+                        <span className="rounded-xl bg-[var(--background)] dark:bg-[#020617] border border-[color:var(--panel-border)] px-4 py-2 text-[10px] font-black text-[color:var(--muted)] group-hover/row:text-indigo-600 dark:group-hover/row:text-indigo-400 group-hover/row:border-indigo-500/30 transition-all uppercase tracking-widest shadow-inner">
                           {item?.vyhoda || "Standardní podmínky"}
                         </span>
                       </td>
@@ -223,11 +223,11 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
               </tbody>
             </table>
           </div>
-          <div className="p-10 bg-white/5 border-t border-white/5 text-left">
-            <div className="flex gap-5 p-7 bg-[#020617]/60 rounded-3xl border border-white/5 shadow-inner">
-                <TrendingUp className="text-indigo-500 shrink-0" size={24} />
-                <div className="text-xs text-slate-400 leading-relaxed italic font-medium">
-                  <span className="text-white font-bold not-italic uppercase text-[10px] block mb-1">Strategické doporučení AI:</span>
+          <div className="p-10 bg-[var(--panel-strong)] dark:bg-white/5 border-t border-[color:var(--panel-border)] text-left">
+            <div className="flex gap-5 p-7 bg-[var(--panel)] dark:bg-[#020617]/60 rounded-3xl border border-[color:var(--panel-border-strong)] shadow-inner bg-tint-indigo">
+                <TrendingUp className="text-indigo-600 dark:text-indigo-500 shrink-0" size={24} />
+                <div className="text-xs text-[color:var(--foreground-muted)] dark:text-slate-400 leading-relaxed italic font-medium">
+                  <span className="text-[color:var(--foreground)] dark:text-white font-bold not-italic uppercase text-[10px] block mb-1">Strategické doporučení AI:</span>
                   {analysis.kreativni_vypocet || analysis.analyticky_duvod || "Vaše úspora je připravena k uvolnění."}
                 </div>
             </div>

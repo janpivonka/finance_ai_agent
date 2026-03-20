@@ -65,10 +65,10 @@ export default function HistoryPage() {
     goToConsultation(item);
   };
 
-  if (!mounted) return <div className="min-h-screen bg-[#020617]" />;
+  if (!mounted) return <div className="min-h-screen bg-[var(--background)]" />;
 
   return (
-    <div className={`min-h-screen bg-[#020617] text-slate-200 selection:bg-indigo-500/30 transition-all duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen bg-[var(--background)] text-[color:var(--foreground)] selection:bg-indigo-500/30 transition-all duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
       <div className="mx-auto max-w-4xl px-6 py-12 relative">
         <PageBackground 
           glows={[
@@ -89,43 +89,45 @@ export default function HistoryPage() {
           rightElement={
             <div className="flex flex-col md:flex-row gap-4 mb-2">
               <div className="relative flex-1 group min-w-[300px]">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-400 transition-colors z-10" />
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[color:var(--muted)] group-focus-within:text-cyan-400 transition-colors z-10" />
                 <input
                   type="text"
                   placeholder="Hledat v archivu..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-900/40 border border-white/5 rounded-2xl py-4 pl-12 pr-10 text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-xl transition-all"
+                  className="w-full bg-[var(--panel)] border border-[color:var(--panel-border)] rounded-2xl py-4 pl-12 pr-10 text-xs text-[color:var(--foreground)] outline-none focus:ring-1 focus:ring-indigo-500/40 backdrop-blur-xl transition-all"
                 />
                 {searchQuery && (
-                  <X 
-                    size={16} 
-                    onClick={() => setSearchQuery("")} 
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white cursor-pointer" 
-                  />
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[color:var(--muted)] hover:text-white transition-colors p-1 rounded-full hover:bg-white/5 cursor-pointer"
+                  >
+                    <X size={14} />
+                  </button>
                 )}
               </div>
 
-              <div className="flex bg-slate-900/40 p-1 rounded-2xl border border-white/5 backdrop-blur-xl">
-                {(['date', 'uspora', 'name'] as SortField[]).map((field) => {
-                  const isActive = sortBy === field;
-                  return (
-                    <button
-                      key={field}
-                      onClick={() => handleSort(field)}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                        isActive 
-                        ? 'bg-fuchsia-600 text-white shadow-lg shadow-fuchsia-600/20' 
-                        : 'text-slate-500 hover:text-slate-300'
-                      }`}
-                    >
-                      {field === 'date' ? 'Datum' : field === 'uspora' ? 'Úspora' : 'Název'}
-                      {isActive && (
-                        sortOrder === 'asc' ? <ArrowUpNarrowWide size={14} /> : <ArrowDownWideNarrow size={14} />
-                      )}
-                    </button>
-                  );
-                })}
+              <div className="flex gap-2">
+                {[
+                  { field: 'date', label: 'Datum', icon: HistoryIcon },
+                  { field: 'name', label: 'Název', icon: HistoryIcon },
+                  { field: 'uspora', label: 'Úspora', icon: HistoryIcon }
+                ].map((f) => (
+                  <button
+                    key={f.field}
+                    onClick={() => handleSort(f.field as SortField)}
+                    className={`flex items-center gap-2 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-xl shadow-lg ring-1 cursor-pointer whitespace-nowrap ${
+                      sortBy === f.field 
+                        ? 'bg-indigo-600 text-white ring-white/20' 
+                        : 'bg-[var(--panel)] text-[color:var(--muted)] border border-[color:var(--panel-border)] hover:bg-[var(--panel-strong)] ring-[color:var(--panel-border)]'
+                    }`}
+                  >
+                    {sortBy === f.field && (
+                      sortOrder === 'asc' ? <ArrowUpNarrowWide size={12} /> : <ArrowDownWideNarrow size={12} />
+                    )}
+                    {f.label}
+                  </button>
+                ))}
               </div>
             </div>
           }

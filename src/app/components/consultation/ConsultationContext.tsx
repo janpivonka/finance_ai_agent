@@ -18,40 +18,41 @@ export const ConsultationContext: React.FC<ConsultationContextProps> = ({
   onStart,
   onStop
 }) => (
-  <aside className="flex flex-col gap-4 lg:w-80 xl:w-96 shrink-0 min-h-0 animate-fade-in-left h-full">
-    <div className="flex-1 overflow-hidden rounded-[2.5rem] border border-white/5 bg-slate-900/40 backdrop-blur-xl p-6 shadow-2xl flex flex-col min-h-0 ring-1 ring-white/5 group hover:border-indigo-500/20 transition-all text-left">
-      <h2 className="mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 shrink-0">
+  <aside className="flex flex-col gap-6 lg:w-72 xl:w-80 shrink-0 min-h-0 animate-fade-in-left h-full pb-4">
+    <div className="flex-1 overflow-hidden rounded-[3rem] border border-[color:var(--panel-border)] bg-[var(--panel)] backdrop-blur-xl p-8 shadow-2xl flex flex-col min-h-0 ring-1 ring-[color:var(--panel-border)] group hover:border-indigo-500/20 transition-all text-left">
+      <h2 className="mb-8 text-[10px] font-black uppercase tracking-[0.3em] text-[color:var(--muted-2)] shrink-0 flex items-center gap-2">
+        <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
         Analytický kontext
       </h2>
       
-      <div className="flex-1 space-y-4 pr-1 scrollbar-hide pb-2 overflow-y-auto">
-        <div className="group/item rounded-[1.5rem] bg-[#020617]/60 p-6 transition-all duration-300 border border-white/5 hover:border-cyan-500/50 hover:ring-1 hover:ring-cyan-500/30 hover:bg-[#020617]/80 cursor-default">
-          <div className="mb-2 flex items-center gap-2 text-cyan-400">
-            <TrendingUp size={14} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Potenciál úspory</span>
+      <div className="flex-1 space-y-6 pr-1 scrollbar-hide pb-2 overflow-y-auto">
+        <div className="group/item rounded-[2rem] bg-[var(--panel-strong)] dark:bg-[#020617]/60 p-7 transition-all duration-300 border border-[color:var(--panel-border)] hover:border-cyan-500/50 hover:ring-1 hover:ring-cyan-500/30 hover:bg-[var(--panel)] cursor-default bg-tint-cyan shadow-inner">
+          <div className="mb-3 flex items-center gap-2 text-cyan-600 dark:text-cyan-400">
+            <TrendingUp size={16} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Potenciál úspory</span>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-black text-white tracking-tighter">{usporaParam}</span>
-            <span className="text-xs font-bold text-slate-500 uppercase ml-1 text-indigo-400">Kč/m</span>
+            <span className="text-5xl font-black text-[color:var(--foreground)] tracking-tighter italic">{usporaParam}</span>
+            <span className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase ml-2 tracking-tighter">Kč/m</span>
           </div>
         </div>
 
-        <div className="group/item rounded-[1.5rem] bg-[#020617]/60 p-6 transition-all duration-300 border border-white/5 hover:border-indigo-500/50 hover:ring-1 hover:ring-indigo-500/30 hover:bg-[#020617]/80 cursor-default">
-          <div className="mb-2 flex items-center gap-2 text-indigo-400">
-            <Calendar size={14} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Fixace do</span>
+        <div className="group/item rounded-[2rem] bg-[var(--panel-strong)] dark:bg-[#020617]/60 p-7 transition-all duration-300 border border-[color:var(--panel-border)] hover:border-indigo-500/50 hover:ring-1 hover:ring-indigo-500/30 hover:bg-[var(--panel)] cursor-default bg-tint-indigo shadow-inner">
+          <div className="mb-3 flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+            <Calendar size={16} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Fixace do</span>
           </div>
-          <span className="text-2xl font-black text-white tracking-tight">{fixaceParam}</span>
+          <span className="text-3xl font-black text-[color:var(--foreground)] tracking-tight uppercase">{fixaceParam}</span>
         </div>
 
-        <div className="relative overflow-hidden rounded-2xl bg-[#020617]/60 border border-fuchsia-500/25 p-5 shadow-[0_0_30px_rgba(217,70,219,0.12)] ring-1 ring-fuchsia-500/20">
-          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/15 via-transparent to-indigo-500/10 pointer-events-none" />
+        <div className="relative overflow-hidden rounded-[2rem] bg-[var(--panel-strong)] dark:bg-[#020617]/60 border border-fuchsia-500/25 p-7 shadow-xl ring-1 ring-fuchsia-500/20 bg-tint-pink">
+          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-indigo-500/5 pointer-events-none" />
           <div className="relative">
-            <div className="flex items-center gap-2 mb-3 text-fuchsia-300">
-              <Headphones size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">AI Strategie</span>
+            <div className="flex items-center gap-2 mb-4 text-fuchsia-600 dark:text-fuchsia-300">
+              <Headphones size={16} />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]">AI Strategie</span>
             </div>
-            <p className="text-xs leading-relaxed text-slate-200 font-semibold italic">
+            <p className="text-[13px] leading-relaxed text-[color:var(--foreground-muted)] dark:text-slate-200 font-bold italic">
               „Na základě aktuální analýzy trhu doporučuji prověřit nabídky a podmínky u konkurenčních institucí.“
             </p>
           </div>
@@ -64,20 +65,20 @@ export const ConsultationContext: React.FC<ConsultationContextProps> = ({
         <button
           onClick={onStart}
           disabled={starting}
-          className="group relative w-full overflow-hidden rounded-[1.5rem] bg-indigo-600 py-6 text-sm font-black text-white shadow-[0_0_30px_rgba(79,70,229,0.3)] transition-all hover:bg-indigo-500 hover:tracking-[0.2em] active:scale-95 disabled:opacity-50 uppercase tracking-widest cursor-pointer"
+          className="group relative w-full overflow-hidden rounded-[2rem] bg-indigo-600 py-7 text-sm font-black text-white shadow-[0_15px_35px_rgba(79,70,229,0.3)] transition-all hover:bg-indigo-500 hover:tracking-[0.2em] active:scale-95 disabled:opacity-50 uppercase tracking-widest cursor-pointer border border-indigo-400/30"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
-          <div className="relative z-10 flex items-center justify-center gap-3">
-            {starting ? <Activity size={20} className="animate-spin" /> : <><span>Zahájit uplink</span><PhoneCall size={18} className="group-hover:rotate-12 transition-transform" /></>}
+          <div className="relative z-10 flex items-center justify-center gap-4">
+            {starting ? <Activity size={24} className="animate-spin" /> : <><span>Zahájit uplink</span><PhoneCall size={20} className="group-hover:rotate-12 transition-transform duration-300" /></>}
           </div>
         </button>
       ) : (
         <button
           onClick={onStop}
-          className="group w-full rounded-[1.5rem] bg-fuchsia-950/20 py-6 font-black text-fuchsia-500 border border-fuchsia-500/40 transition-all hover:bg-fuchsia-500/10 active:scale-95 uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(217,70,219,0.1)] cursor-pointer"
+          className="group w-full rounded-[2rem] bg-rose-500/10 py-7 font-black text-rose-600 dark:text-fuchsia-500 border border-rose-500/30 transition-all hover:bg-rose-500/20 active:scale-95 uppercase tracking-widest text-sm shadow-[0_10px_25px_rgba(244,63,94,0.1)] cursor-pointer"
         >
-          <div className="flex items-center justify-center gap-3">
-            <MicOff size={18} className="animate-pulse" />
+          <div className="flex items-center justify-center gap-4">
+            <div className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
             Ukončit spojení
           </div>
         </button>

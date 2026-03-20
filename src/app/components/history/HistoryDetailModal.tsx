@@ -51,7 +51,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
                     }
                   }}
                   autoFocus
-                  className="bg-slate-800/50 border border-indigo-500/50 rounded-lg px-2 py-1 text-xs font-black text-white uppercase tracking-widest outline-none focus:border-indigo-400 w-32 md:w-48"
+                  className="bg-[var(--panel-strong)] border border-indigo-500/50 rounded-lg px-2 py-1 text-xs font-black text-[color:var(--foreground)] uppercase tracking-widest outline-none focus:border-indigo-400 w-32 md:w-48"
                 />
                 <button
                   onClick={() => onRename(String(item.id), tempName)}
@@ -71,7 +71,7 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <h2 className="font-black text-white uppercase tracking-widest text-xs md:text-sm truncate max-w-[150px] md:max-w-[300px]">
+                <h2 className="font-black text-[color:var(--foreground)] uppercase tracking-widest text-xs md:text-sm truncate max-w-[150px] md:max-w-[300px]">
                   {item.fileName || "Textová analýza"}
                 </h2>
                 <button
@@ -79,46 +79,46 @@ export const HistoryDetailModal: React.FC<HistoryDetailModalProps> = ({
                     onEditToggle(true);
                     onTempNameChange(item.fileName || "");
                   }}
-                  className="h-6 w-6 flex items-center justify-center text-slate-500 hover:text-indigo-400 transition-colors cursor-pointer"
+                  className="h-6 w-6 flex items-center justify-center text-[color:var(--muted)] hover:text-indigo-400 transition-colors cursor-pointer"
                 >
                   <Pencil size={14} />
                 </button>
               </div>
             )}
           </div>
-          <p className="text-[9px] text-slate-500 font-bold tracking-[0.2em]">{item.date}</p>
+          <p className="text-[9px] text-[color:var(--muted)] font-bold tracking-[0.2em]">{item.date}</p>
         </div>
       </div>
     }
     footer={
       <div className="flex flex-col md:flex-row gap-3 w-full">
-        <button onClick={onClose} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors cursor-pointer">Zavřít</button>
+        <button onClick={onClose} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-[color:var(--muted)] hover:text-[color:var(--foreground)] transition-colors cursor-pointer">Zavřít</button>
         <div className="flex flex-col md:flex-row gap-3 flex-1">
-          <button onClick={() => onReturnToAnalysis(item)} className="flex-1 px-6 py-3 bg-[#020617] border border-indigo-500/30 text-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/10 hover:border-indigo-500/60 transition-all flex items-center justify-center gap-2 group cursor-pointer"><Search size={14} className="group-hover:scale-110 transition-transform duration-300" /> Zobrazit analýzu</button>
+          <button onClick={() => onReturnToAnalysis(item)} className="flex-1 px-6 py-3 bg-[var(--background)] border border-indigo-500/30 text-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/10 hover:border-indigo-500/60 transition-all flex items-center justify-center gap-2 group cursor-pointer"><Search size={14} className="group-hover:scale-110 transition-transform duration-300" /> Zobrazit analýzu</button>
           <button
             onClick={() => onConsultation(item)}
             className="flex-1 px-8 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all flex items-center justify-center gap-2 group cursor-pointer"
           >
-            <Zap size={14} className="group-hover:animate-pulse text-cyan-400" /> Konzultace
+            Probrat hlasem <Zap size={14} className="fill-current" />
           </button>
         </div>
       </div>
     }
   >
-    <div className="p-6 md:p-8 space-y-6 md:space-y-8 text-slate-300">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-        <div className="bg-[#020617]/60 border border-cyan-500/20 p-5 rounded-[1.5rem] shadow-inner text-left">
-          <p className="text-[9px] text-cyan-400 font-black uppercase tracking-widest mb-1">Měsíční úspora</p>
-          <p className="text-2xl md:text-3xl font-black text-white tracking-tighter">{formatCurrency(item.uspora)}</p>
+    <div className="p-8 space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-[var(--panel-strong)] dark:bg-[#020617]/60 border border-cyan-500/30 dark:border-cyan-500/20 p-5 rounded-[1.5rem] shadow-inner text-left bg-tint-cyan">
+          <p className="text-[9px] text-cyan-700 dark:text-cyan-400 font-black uppercase tracking-widest mb-1">Měsíční úspora</p>
+          <p className="text-2xl md:text-3xl font-black text-[color:var(--foreground)] tracking-tighter">{formatCurrency(item.uspora)}</p>
         </div>
-        <div className="bg-[#020617]/60 border border-indigo-500/20 p-5 rounded-[1.5rem] shadow-inner text-left">
-          <p className="text-[9px] text-indigo-400 font-black uppercase tracking-widest mb-1">Konec fixace</p>
-          <p className="text-2xl md:text-3xl font-black text-white tracking-tighter">{item.fixace || "—"}</p>
+        <div className="bg-[var(--panel-strong)] dark:bg-[#020617]/60 border border-indigo-500/30 dark:border-indigo-500/20 p-5 rounded-[1.5rem] shadow-inner text-left bg-tint-indigo">
+          <p className="text-[9px] text-indigo-700 dark:text-indigo-400 font-black uppercase tracking-widest mb-1">Konec fixace</p>
+          <p className="text-2xl md:text-3xl font-black text-[color:var(--foreground)] tracking-tighter">{item.fixace || "—"}</p>
         </div>
       </div>
       <div className="space-y-3 pb-4 text-left">
-        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] px-1">Podrobný Report</h4>
-        <div className="report-container prose prose-invert prose-sm max-w-none bg-[#020617]/40 border border-white/5 p-5 md:p-6 rounded-2xl shadow-inner font-medium text-slate-300" dangerouslySetInnerHTML={{ __html: item.textovy_obsah || "Obsah nebyl vygenerován." }} />
+        <h4 className="text-[10px] font-black text-[color:var(--muted-2)] uppercase tracking-[0.2em] px-1">Podrobný Report</h4>
+        <div className="report-container prose dark:prose-invert prose-sm max-w-none bg-[var(--panel)] dark:bg-[#020617]/40 border border-[color:var(--panel-border-strong)] p-5 md:p-6 rounded-2xl shadow-inner font-medium text-[color:var(--foreground-muted)] dark:text-slate-300 bg-tint-pink" dangerouslySetInnerHTML={{ __html: item.textovy_obsah || "Obsah nebyl vygenerován." }} />
       </div>
     </div>
   </Modal>

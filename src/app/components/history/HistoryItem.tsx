@@ -39,12 +39,12 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
       layout: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
     }}
     onClick={() => onEntryClick(item)}
-    className={`relative flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 cursor-pointer ${
+    className={`relative flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 cursor-pointer border ${
       isHighlighted 
       ? 'history-highlight bg-fuchsia-500/10 border-fuchsia-500/60 shadow-[0_0_40px_rgba(217,70,219,0.18)] ring-fuchsia-500/40 z-20' 
       : isSelected
       ? 'bg-indigo-500/10 border-indigo-500/50 shadow-[0_0_30px_rgba(79,70,229,0.1)] ring-indigo-500/30'
-      : 'bg-slate-900/40 border-white/5 hover:border-indigo-500/40 hover:bg-slate-900/60 ring-white/5'
+      : 'bg-[var(--card-bg)] border-[color:var(--card-border)] hover:border-indigo-500/40 hover:bg-[var(--card-hover-bg)] ring-[color:var(--panel-border)] bg-tint-indigo'
     }`}
   >
     <div className="flex items-center gap-5">
@@ -56,7 +56,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
         className={`h-10 w-10 shrink-0 flex items-center justify-center rounded-xl transition-all ${
           isSelected 
           ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' 
-          : 'bg-[#020617] text-slate-600 hover:text-indigo-400 ring-1 ring-white/10'
+          : 'bg-[var(--panel-strong)] text-[color:var(--muted)] hover:text-indigo-400 ring-1 ring-[color:var(--panel-border)]'
         }`}
       >
         {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
@@ -67,17 +67,17 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
         ? 'bg-fuchsia-500 text-white ring-2 ring-fuchsia-300/50' 
         : isSelected
         ? 'bg-indigo-600 text-white'
-        : 'bg-[#020617] text-indigo-400 ring-1 ring-white/10 group-hover:ring-cyan-500/50 group-hover:bg-indigo-600 group-hover:text-white'
+        : 'bg-[var(--panel-strong)] text-indigo-400 ring-1 ring-[color:var(--panel-border)] group-hover:ring-cyan-500/50 group-hover:bg-indigo-600 group-hover:text-white'
       }`}>
         <FileText size={24} />
       </div>
       <div className="text-left">
-        <h3 className={`font-black tracking-tight text-lg group-hover:text-cyan-50 transition-colors ${
-          sortBy === 'name' ? 'text-fuchsia-400' : 'text-white'
+        <h3 className={`font-black tracking-tight text-lg transition-colors ${
+          sortBy === 'name' ? 'text-fuchsia-400' : 'text-[color:var(--foreground)]'
         }`}>
           {item.fileName || "Textová analýza"}
         </h3>
-        <div className="flex flex-wrap items-center gap-4 text-[10px] text-slate-500 mt-1.5 font-bold uppercase tracking-widest">
+        <div className="flex flex-wrap items-center gap-4 text-[10px] text-[color:var(--muted)] mt-1.5 font-bold uppercase tracking-widest">
           <span className={`flex items-center gap-1.5 ${
             sortBy === 'date' ? 'text-fuchsia-400' : ''
           }`}>

@@ -37,10 +37,12 @@ export const PageBackground: React.FC<PageBackgroundProps> = ({
       {glows.map((glow, i) => (
         <div 
           key={i}
-          className={`absolute rounded-full blur-[120px] transition-colors duration-1000 
+          className={`absolute rounded-full blur-[120px] transition-all duration-1000 
             ${glow.color || "bg-indigo-600"} 
             ${glow.size || "w-96 h-96"} 
             ${glow.opacity || "opacity-10"}
+            dark:opacity-[0.1]
+            opacity-[0.05]
             ${getPositionClasses(glow.position || "")}
             ${glow.animate ? "animate-pulse-slow" : ""}
           `}
@@ -48,7 +50,7 @@ export const PageBackground: React.FC<PageBackgroundProps> = ({
         />
       ))}
       {withNoise && (
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] dark:opacity-20 mix-blend-overlay" />
       )}
     </div>
   );

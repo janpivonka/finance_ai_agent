@@ -41,10 +41,10 @@ export default function AnalysisPage() {
   useScrollDirection();
   useIntersectionObserver('.reveal', `${mounted}-${analysis ? 1 : 0}`);
 
-  if (!mounted) return <div className="min-h-screen bg-[#020617]" />;
+  if (!mounted) return <div className="min-h-screen bg-[var(--background)]" />;
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 transition-all duration-1000 pb-24 relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--background)] text-[color:var(--foreground)] transition-all duration-1000 pb-24 relative overflow-hidden">
       <div className="mx-auto max-w-6xl px-8 h-full flex flex-col relative py-8 md:px-12">
         
         <PageBackground 

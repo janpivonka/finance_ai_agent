@@ -36,10 +36,10 @@ function ConsultationContent() {
 
   useIntersectionObserver('.reveal', isMounted);
 
-  if (!isMounted) return <div className="bg-[#020617] min-h-screen" />;
+  if (!isMounted) return <div className="bg-[var(--background)] min-h-screen" />;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col h-[calc(100vh-40px)] px-6 py-6 md:px-10 overflow-hidden bg-[#020617] relative">
+    <div className="mx-auto flex w-full max-w-7xl flex-col h-screen px-6 py-4 md:px-10 overflow-hidden bg-[var(--background)] relative">
       
       <PageBackground 
         glows={[
@@ -69,43 +69,45 @@ function ConsultationContent() {
             specialista
           </>
         }
-        description="Na základě vašich dat probereme možnosti optimalizace, poskytneme podrobnější informace vyplývající ze smlouvy a detaily související s vaším konkrétním produktem."
+        description="Na základě vašich dat probereme možnosti optimalizace a detaily vyplývající ze smlouvy."
         rightElement={
-          <div className="flex flex-col items-end gap-3">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col items-end gap-4">
+            <div className="flex items-center gap-3">
               <button 
                 onClick={handleToHistory}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--panel)] border border-[color:var(--panel-border)] text-[10px] font-black uppercase tracking-widest text-[color:var(--muted)] hover:text-[color:var(--foreground)] hover:bg-[var(--panel-strong)] transition-all cursor-pointer shadow-sm"
               >
-                <History size={14} />
+                <History size={14} className="text-indigo-500" />
                 <span className="hidden md:inline">Archiv</span>
               </button>
               <button 
                 onClick={handleBackToAnalysis}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/20 transition-all cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-500/20 transition-all cursor-pointer shadow-sm"
               >
                 <Search size={14} />
                 <span className="hidden md:inline">Analýza</span>
               </button>
             </div>
 
-            <div className={`flex items-center gap-3 rounded-2xl px-4 py-2 text-[10px] font-black tracking-widest uppercase transition-all duration-500 ring-1 ${
-              isCalling ? 'bg-fuchsia-950/30 text-fuchsia-400 ring-fuchsia-500/50 shadow-[0_0_20px_rgba(217,70,219,0.3)]' : 'bg-slate-900/50 text-cyan-400 ring-cyan-500/30'
+            <div className={`flex items-center gap-3 rounded-2xl px-5 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all duration-500 ring-1 ${
+              isCalling 
+                ? 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 ring-fuchsia-500/40 shadow-[0_10px_20px_rgba(217,70,219,0.15)]' 
+                : 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 ring-cyan-500/30'
             }`}>
-              <div className="relative flex h-2 w-2">
-                <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCalling ? 'animate-ping bg-fuchsia-400' : 'bg-cyan-400'}`}></span>
-                <span className={`relative inline-flex h-2 w-2 rounded-full ${isCalling ? 'bg-fuchsia-500' : 'bg-cyan-500'}`}></span>
+              <div className="relative flex h-2.5 w-2.5">
+                <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCalling ? 'animate-ping bg-fuchsia-500' : 'bg-cyan-500'}`}></span>
+                <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${isCalling ? 'bg-fuchsia-600' : 'bg-cyan-600'}`}></span>
               </div>
               <span className="hidden sm:inline">{isCalling ? "Live Uplink Active" : "Link Standby"}</span>
               <span className="sm:hidden">{isCalling ? "Live" : "Ready"}</span>
             </div>
           </div>
         }
-        className="shrink-0"
+        className="shrink-0 !mb-6"
       />
 
       {/* BODY */}
-      <div className="flex flex-1 flex-col gap-6 min-h-0 lg:flex-row overflow-hidden mb-4 relative z-10">
+      <div className="flex flex-1 flex-col gap-6 min-h-0 lg:flex-row overflow-hidden mb-6 relative z-10">
         <ConsultationContext 
           usporaParam={usporaParam} 
           fixaceParam={fixaceParam} 
@@ -138,7 +140,7 @@ function ConsultationContent() {
 
 export default function AdvisorPage() {
   return (
-    <div className="bg-[#020617] min-h-screen flex items-center justify-center">
+    <div className="bg-[var(--background)] min-h-screen flex items-center justify-center">
       <Suspense fallback={null}>
         <ConsultationContent />
       </Suspense>
