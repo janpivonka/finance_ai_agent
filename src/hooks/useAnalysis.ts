@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AnalysisResult, HistoryItem, ServerActionResponse } from "@/types";
 import { analyzeContract } from "@/app/analysis/actions";
 
@@ -8,6 +8,7 @@ export const useAnalysis = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [displayUspora, setDisplayUspora] = useState(0);
+  const [usporaAnimationSeed, setUsporaAnimationSeed] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [isEditingFileName, setIsEditingFileName] = useState(false);
@@ -31,28 +32,29 @@ export const useAnalysis = () => {
   }, []);
 
   useEffect(() => {
-    if (analysis && analysis.uspora) {
-      const target = Number(analysis.uspora) || 0;
-      const startValue = 0; 
-      const duration = 2000; 
-      const frameRate = 1000 / 60;
-      const totalFrames = duration / frameRate;
-      let frame = 0;
+    const target = analysis ? (Number(analysis.uspora) || 0) : 0;
+    if (target <= 0) return;
 
-      const timer = setInterval(() => {
-        frame++;
-        const progress = frame / totalFrames;
-        const easeOutExpo = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-        setDisplayUspora(startValue + (target - startValue) * easeOutExpo);
-        if (frame >= totalFrames) {
-          setDisplayUspora(target);
-          clearInterval(timer);
-        }
-      }, frameRate);
+    setDisplayUspora(0);
+    const startValue = 0;
+    const duration = 2000;
+    const frameRate = 1000 / 60;
+    const totalFrames = duration / frameRate;
+    let frame = 0;
 
-      return () => clearInterval(timer);
-    }
-  }, [analysis]);
+    const timer = setInterval(() => {
+      frame++;
+      const progress = frame / totalFrames;
+      const easeOutExpo = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      setDisplayUspora(startValue + (target - startValue) * easeOutExpo);
+      if (frame >= totalFrames) {
+        setDisplayUspora(target);
+        clearInterval(timer);
+      }
+    }, frameRate);
+
+    return () => clearInterval(timer);
+  }, [analysis, usporaAnimationSeed]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
@@ -136,6 +138,10 @@ export const useAnalysis = () => {
     setLoadingProgress(0);
   };
 
+  const restartUsporaAnimation = useCallback(() => {
+    setUsporaAnimationSeed((v) => v + 1);
+  }, []);
+
   return {
     contractText,
     setContractText,
@@ -153,6 +159,7 @@ export const useAnalysis = () => {
     mounted,
     handleRenameFile,
     handleProcess,
-    resetAnalysis
+    resetAnalysis,
+    restartUsporaAnimation
   };
 };

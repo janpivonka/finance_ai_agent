@@ -34,7 +34,8 @@ export default function AnalysisPage() {
     mounted,
     handleRenameFile,
     handleProcess,
-    resetAnalysis
+    resetAnalysis,
+    restartUsporaAnimation
   } = useAnalysis();
 
   useScrollDirection();
@@ -105,6 +106,7 @@ export default function AnalysisPage() {
               tempFileName={tempFileName}
               setTempFileName={setTempFileName}
               handleRenameFile={handleRenameFile}
+              onResultsEnterViewport={restartUsporaAnimation}
             />
           )}
         </div>

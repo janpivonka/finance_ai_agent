@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Zap,
   FileText,
@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   TrendingUp
 } from "lucide-react";
+import { useInView } from "framer-motion";
 import { AnalysisResult } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
@@ -28,6 +29,7 @@ interface AnalysisResultsProps {
   tempFileName: string;
   setTempFileName: (val: string) => void;
   handleRenameFile: (name: string) => void;
+  onResultsEnterViewport: () => void;
 }
 
 export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
@@ -38,15 +40,29 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   setIsEditingFileName,
   tempFileName,
   setTempFileName,
-  handleRenameFile
+  handleRenameFile,
+  onResultsEnterViewport
 }) => {
   const { goToHistory, goToConsultation } = useAppNavigation();
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(headerRef, { amount: 0.6, once: false });
+  const wasInViewRef = useRef(false);
+
+  useEffect(() => {
+    if (inView && !wasInViewRef.current) {
+      wasInViewRef.current = true;
+      onResultsEnterViewport();
+      return;
+    }
+
+    if (!inView) wasInViewRef.current = false;
+  }, [inView, onResultsEnterViewport]);
 
   return (
     <section className="pb-20 space-y-12">
       <div className="reveal mb-10 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       
-      <div className="reveal mb-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
+      <div ref={headerRef} className="reveal mb-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="text-left">
           <div className="flex items-center gap-3 mb-2">
             <div className="h-8 w-8 bg-indigo-600 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.4)]">
