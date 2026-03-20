@@ -9,6 +9,7 @@ import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { AnalysisUpload } from "../components/analysis/AnalysisUpload";
 import { AnalysisLoading } from "../components/analysis/AnalysisLoading";
 import { AnalysisResults } from "../components/analysis/AnalysisResults";
+import { AnimatePresence } from "framer-motion";
 
 // Shared UI Components
 import { PageBackground } from "../components/ui/PageBackground";
@@ -79,9 +80,11 @@ export default function AnalysisPage() {
 
         <div className={`relative z-10 flex-1 flex flex-col gap-4 transition-all duration-700 ${!analysis ? "justify-center" : ""}`}>
           
-          {error && !loading && (
-            <ErrorMessage error={error} onClear={() => setError(null)} />
-          )}
+          <AnimatePresence mode="popLayout">
+            {error && !loading && (
+              <ErrorMessage error={error} onClear={() => setError(null)} key="analysis-error" />
+            )}
+          </AnimatePresence>
 
           {!analysis && !loading && (
             <AnalysisUpload 

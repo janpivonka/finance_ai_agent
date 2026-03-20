@@ -37,6 +37,10 @@
   --button-primary-text: #0f172a;
   --button-primary-hover-bg: #22d3ee;
 
+  --scroll-button-bg: #4f46e5; /* Indigo-600 */
+  --scroll-button-text: #ffffff;
+  --scroll-button-hover-bg: #4338ca; /* Indigo-700 */
+
   --card-bg: rgba(15, 23, 42, 0.4);
   --card-border: rgba(255, 255, 255, 0.05);
   --card-hover-bg: rgba(15, 23, 42, 0.6);
@@ -56,6 +60,10 @@
   --button-primary-bg: #db2777; /* Fuchsia-600 */
   --button-primary-text: #ffffff;
   --button-primary-hover-bg: #be185d; /* Fuchsia-700 */
+
+  --scroll-button-bg: #10b981; /* Emerald-500 */
+  --scroll-button-text: #ffffff;
+  --scroll-button-hover-bg: #059669; /* Emerald-600 */
 
   --card-bg: rgba(255, 255, 255, 0.5);
   --card-border: rgba(15, 23, 42, 0.05);
@@ -93,11 +101,11 @@ body {
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-/* Global transition for theme switch */
+/* Global transition for theme switch and interactive elements */
 * {
-  transition-property: background-color, border-color, color, fill, stroke;
+  transition-property: background-color, border-color, color, fill, stroke, transform, opacity, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms; /* Base duration for small elements */
+  transition-duration: 300ms;
 }
 
 /* Prose overrides for better contrast in light mode */
@@ -155,8 +163,14 @@ body {
 }
 
 /* Override for body and large panels to be smoother */
-body, .panel-transition {
+body, .panel-transition, .modal-transition {
   transition-duration: 500ms !important;
+}
+
+/* Smooth button transitions */
+button, a, input, textarea {
+  transition-duration: 400ms !important;
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
 /* --- GLOBAL UTILITIES --- */

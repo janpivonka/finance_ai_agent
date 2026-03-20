@@ -1,5 +1,6 @@
 import React from "react";
 import { UploadCloud, Zap } from "lucide-react";
+import { useTheme } from "../ui/ThemeProvider";
 
 interface AnalysisUploadProps {
   contractText: string;
@@ -14,6 +15,9 @@ export const AnalysisUpload: React.FC<AnalysisUploadProps> = ({
   onProcess,
   loading
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) {
@@ -32,9 +36,19 @@ export const AnalysisUpload: React.FC<AnalysisUploadProps> = ({
   return (
     <section className="reveal-init rounded-[3.5rem] border border-[color:var(--panel-border)] bg-[var(--panel)] backdrop-blur-2xl p-2 md:p-3 shadow-2xl ring-1 ring-[color:var(--panel-border)] transition-all duration-500 max-w-5xl mx-auto w-full group/main">
       <div className="grid gap-2 md:grid-cols-[1fr_auto_1fr] items-center bg-[var(--panel-strong)] rounded-[3.2rem] p-6 md:p-8">
-        <label className="group relative flex cursor-pointer flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-[color:var(--panel-border)] bg-[var(--panel)] p-8 transition-all duration-500 hover:border-cyan-500/50 hover:bg-cyan-500/5 overflow-hidden min-h-[220px]">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:bg-cyan-500 group-hover:shadow-cyan-500/40">
+        <label className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-[color:var(--panel-border)] bg-[var(--panel)] p-8 transition-all duration-500 overflow-hidden min-h-[220px] ${
+          isDark 
+            ? "hover:border-cyan-500/50 hover:bg-cyan-500/5" 
+            : "hover:border-fuchsia-500/50 hover:bg-fuchsia-500/5"
+        }`}>
+          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent ${
+            isDark ? "from-indigo-500/10" : "from-emerald-500/10"
+          }`} />
+          <div className={`relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${
+            isDark 
+              ? "bg-indigo-600 group-hover:bg-cyan-500 group-hover:shadow-cyan-500/40" 
+              : "bg-emerald-600 group-hover:bg-fuchsia-600 group-hover:shadow-fuchsia-500/40"
+          }`}>
             <UploadCloud size={28} className="group-hover:animate-bounce" />
           </div>
           <div className="relative text-center">
@@ -65,11 +79,11 @@ export const AnalysisUpload: React.FC<AnalysisUploadProps> = ({
           <button
             onClick={handleManualSubmit}
             disabled={loading || !contractText.trim()}
-            className="group relative overflow-hidden rounded-[1.5rem] bg-[var(--button-primary-bg)] px-8 py-4 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-10 shadow-2xl cursor-pointer"
+            className="group relative overflow-hidden rounded-[1.5rem] bg-[var(--button-primary-bg)] px-8 py-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] enabled:hover:scale-[1.05] enabled:hover:-translate-y-1 active:scale-95 disabled:opacity-40 shadow-2xl enabled:cursor-pointer disabled:cursor-not-allowed border border-transparent enabled:hover:border-indigo-400/30 enabled:hover:shadow-indigo-500/40"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <span className="relative flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-[color:var(--button-primary-text)] group-hover:text-white transition-colors">
-              Spustit Audit <Zap size={14} className="fill-current" />
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-500 to-cyan-500 opacity-0 enabled:group-hover:opacity-100 transition-opacity duration-500" />
+            <span className="relative flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-[color:var(--button-primary-text)] enabled:group-hover:text-white transition-colors duration-500">
+              Spustit Audit <Zap size={14} className="fill-current group-hover:animate-pulse" />
             </span>
           </button>
         </div>

@@ -67,9 +67,9 @@ export const MainInsightBanner: React.FC<MainInsightBannerProps> = ({
       <div className="flex flex-col gap-4 min-w-[300px]">
         <button 
           onClick={onAction}
-          className="group relative cursor-pointer flex items-center justify-center gap-4 bg-[var(--button-primary-bg)] text-[color:var(--button-primary-text)] px-10 py-7 rounded-[2rem] font-black text-xl transition-all duration-300 hover:bg-[var(--button-primary-hover-bg)] hover:-rotate-3 hover:scale-110 active:scale-95 shadow-[0_15px_30px_rgba(34,211,238,0.2)] hover:shadow-[0_25px_60px_rgba(34,211,238,0.5)]"
+          className="group relative cursor-pointer flex items-center justify-center gap-4 bg-[var(--button-primary-bg)] text-[color:var(--button-primary-text)] px-10 py-7 rounded-[2rem] font-black text-xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-[var(--button-primary-hover-bg)] hover:-rotate-3 hover:scale-110 active:scale-95 shadow-[0_15px_30px_rgba(34,211,238,0.2)] hover:shadow-[0_25px_60px_rgba(34,211,238,0.5)] border border-transparent hover:border-white/20"
         >
-          <TrendingUp size={24} className="group-hover:translate-y-[-4px] group-hover:translate-x-[4px] transition-transform duration-300" />
+          <TrendingUp size={24} className="group-hover:translate-y-[-4px] group-hover:translate-x-[4px] transition-transform duration-500 ease-out" />
           {lastAnalysis ? "Získat tuto úsporu" : "Spustit analýzu"}
         </button>
         

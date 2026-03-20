@@ -49,16 +49,15 @@ export const ScrollToTop = ({ forceShow }: { forceShow?: boolean }) => {
     <button
       onClick={scrollToTop}
       type="button"
-      // Z-index 99999 a pointer-events-auto jsou klíčové
       className={`fixed bottom-8 right-8 h-14 w-14 rounded-2xl 
-                 bg-indigo-600 text-white shadow-2xl
+                 bg-[var(--scroll-button-bg)] text-[color:var(--scroll-button-text)] shadow-2xl
                  flex items-center justify-center cursor-pointer
-                 transition-all duration-500 hover:scale-110 active:scale-95
+                 transition-all duration-500 hover:bg-[var(--scroll-button-hover-bg)] hover:scale-110 hover:-translate-y-1 active:scale-95
                  ${shouldShow 
                    ? "opacity-100 translate-y-0 z-[9999] pointer-events-auto" 
                    : "opacity-0 translate-y-20 z-[-1] pointer-events-none"
                  }`}
-      style={{ isolation: 'isolate' }} // Vytvoří nový stacking context
+      style={{ isolation: 'isolate' }} 
     >
       <ChevronUp size={28} strokeWidth={3} />
     </button>
