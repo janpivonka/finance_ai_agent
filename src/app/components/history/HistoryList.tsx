@@ -31,16 +31,15 @@ export const HistoryList: React.FC<HistoryListProps> = ({
   onDeleteClick,
   itemsRef
 }) => (
-  <motion.div layout key="history-list" className="flex flex-col gap-6 relative z-10">
+  <motion.div layout layoutScroll key="history-list" className="flex flex-col gap-6 relative z-10 overflow-anchor-none">
     <AnimatePresence>
       {selectedIds.length > 0 && (
         <motion.div 
-          layout
-          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={{ opacity: 0, y: -16, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          exit={{ opacity: 0, y: -16, scale: 0.98 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="flex items-center justify-between p-4 bg-indigo-600/10 border border-indigo-500/30 rounded-2xl backdrop-blur-xl sticky top-4 z-30 shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
+          className="fixed left-3 right-3 bottom-24 md:bottom-auto md:top-6 md:left-auto md:right-6 md:w-[420px] flex items-center justify-between p-4 bg-indigo-600/10 border border-indigo-500/30 rounded-2xl backdrop-blur-xl z-[80] shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
         >
           <div className="flex items-center gap-4">
             <button 
@@ -73,8 +72,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({
       )}
     </AnimatePresence>
     
-    <motion.div layout className="grid gap-4">
-      <AnimatePresence initial={false}>
+    <motion.div layout layoutScroll className="grid gap-4 overflow-anchor-none">
+      <AnimatePresence initial={false} mode="popLayout">
         {items.map((item) => (
           <HistoryItem
             key={item.id}

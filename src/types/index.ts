@@ -25,7 +25,7 @@ export interface AnalysisResult {
   clientPhone?: string;
 }
 
-export interface HistoryItem extends AnalysisResult {}
+export type HistoryItem = AnalysisResult;
 
 export type SortField = "date" | "uspora" | "name";
 export type SortOrder = "asc" | "desc";

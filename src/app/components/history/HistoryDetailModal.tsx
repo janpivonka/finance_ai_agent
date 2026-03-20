@@ -1,5 +1,5 @@
 import React from "react";
-import { Zap, Check, X, Pencil, Search, History } from "lucide-react";
+import { Zap, Check, X, Pencil, Search } from "lucide-react";
 import { Modal } from "../ui/Modal";
 import { HistoryItem } from "@/types";
 import { formatCurrency } from "@/lib/utils";

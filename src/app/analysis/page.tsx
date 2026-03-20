@@ -14,7 +14,6 @@ import { AnalysisResults } from "../components/analysis/AnalysisResults";
 import { PageBackground } from "../components/ui/PageBackground";
 import { PageHeader } from "../components/ui/PageHeader";
 import { ErrorMessage } from "../components/ui/ErrorMessage";
-import { LoadingOverlay } from "../components/ui/LoadingOverlay";
 import { Activity, RotateCcw } from "lucide-react";
 
 export default function AnalysisPage() {

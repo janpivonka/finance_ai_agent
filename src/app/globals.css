@@ -141,6 +141,11 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Prevent browser scroll anchoring from fighting layout animations */
+.overflow-anchor-none {
+  overflow-anchor: none;
+}
+
 /* --- REPORT CONTENT STYLING --- */
 
 .report-container, .report-container * {

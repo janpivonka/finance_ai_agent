@@ -13,13 +13,18 @@ export const useHistory = () => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        const parsed = saved ? JSON.parse(saved) : [];
+        const parsed = saved ? (JSON.parse(saved) as unknown) : [];
+        const parsedArray = Array.isArray(parsed) ? parsed : [];
         
         // Validace a přidání ID pokud chybí
-        const validated = parsed.map((item: any, index: number) => ({
-          ...item,
-          id: item.id || `id-${index}-${Date.now()}`
-        }));
+        const validated: HistoryItem[] = parsedArray.map((raw, index) => {
+          const item =
+            (typeof raw === "object" && raw !== null ? raw : {}) as Partial<HistoryItem>;
+          return {
+            ...item,
+            id: String(item.id || `id-${index}-${Date.now()}`),
+          } as HistoryItem;
+        });
         
         setHistory(validated);
       } catch (e) {

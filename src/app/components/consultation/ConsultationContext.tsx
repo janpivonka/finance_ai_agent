@@ -50,7 +50,7 @@ export const ConsultationContext: React.FC<ConsultationContextProps> = ({
               <span className="text-[10px] font-black uppercase tracking-widest">AI Strategie</span>
            </div>
            <p className="text-xs leading-relaxed text-slate-400 font-medium italic">
-              "Na základě aktuální analýzy trhu doporučuji prověřit nabídky a podmínky u konkurenčních institucí."
+              „Na základě aktuální analýzy trhu doporučuji prověřit nabídky a podmínky u konkurenčních institucí.“
            </p>
         </div>
       </div>

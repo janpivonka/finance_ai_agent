@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AnalysisResult, ServerActionResponse } from "@/types";
+import { AnalysisResult, HistoryItem, ServerActionResponse } from "@/types";
 import { analyzeContract } from "@/app/analysis/actions";
 
 export const useAnalysis = () => {
@@ -55,7 +55,7 @@ export const useAnalysis = () => {
   }, [analysis]);
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (loading) {
       setLoadingProgress(0);
       interval = setInterval(() => {
@@ -76,11 +76,13 @@ export const useAnalysis = () => {
     setIsEditingFileName(false);
     if (typeof window !== 'undefined') {
       try {
-        const savedHistory = JSON.parse(localStorage.getItem("finance_history") || "[]");
-        const updatedHistory = savedHistory.map((item: any) => 
-          item.fileName === uploadedFileName ? { ...item, fileName: newName } : item
+        const raw = localStorage.getItem("finance_history");
+        const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+        const savedHistory = (Array.isArray(parsed) ? parsed : []) as HistoryItem[];
+        const updatedHistory = savedHistory.map((item) =>
+          item.fileName === uploadedFileName ? { ...item, fileName: newName } : item,
         );
-        localStorage.setItem("finance_history", JSON.stringify(updatedHistory));
+        localStorage.setItem("finance_history", JSON.stringify(updatedHistory as HistoryItem[]));
       } catch (e) {
         console.error("Chyba při ukládání přejmenování souboru do localStorage:", e);
       }
@@ -116,7 +118,7 @@ export const useAnalysis = () => {
           localStorage.setItem("finance_history", JSON.stringify([resultWithMeta, ...history.slice(0, 9)]));
         }, 600);
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Nepodařilo se spojit s analytickou AI.");
       setLoading(false);
     }

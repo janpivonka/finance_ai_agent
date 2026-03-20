@@ -8,7 +8,7 @@ import { HistoryItem } from "@/types";
 export const useAppNavigation = () => {
   const router = useRouter();
 
-  const safeSetItem = (key: string, value: any) => {
+  const safeSetItem = (key: string, value: unknown) => {
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem(key, JSON.stringify(value));
@@ -44,16 +44,22 @@ export const useAppNavigation = () => {
    * Navigace na stránku Konzultace
    * @param item Záznam z historie, pro který se má konzultace zahájit
    */
-  const goToConsultation = (item: HistoryItem) => {
-    const idParam = encodeURIComponent(String(item.id || ""));
-    const usporaParam = encodeURIComponent(String(item.uspora));
-    const fixaceParam = encodeURIComponent(String(item.fixace));
-    
-    // Uložíme ID pro případný návrat
-    safeSetItem("last_analysis_data", { id: item.id });
-    
+  const goToConsultation = (
+    item?: Pick<HistoryItem, "id" | "uspora" | "fixace">,
+  ) => {
+    if (!item) {
+      router.push("/consultation");
+      return;
+    }
+
+    const idParam = encodeURIComponent(String(item.id ?? ""));
+    const usporaParam = encodeURIComponent(String(item.uspora ?? 0));
+    const fixaceParam = encodeURIComponent(String(item.fixace ?? ""));
+
+    if (item.id) safeSetItem("last_analysis_data", { id: item.id });
+
     router.push(
-      `/consultation?id=${idParam}&uspora=${usporaParam}&fixace=${fixaceParam}`
+      `/consultation?id=${idParam}&uspora=${usporaParam}&fixace=${fixaceParam}`,
     );
   };
 

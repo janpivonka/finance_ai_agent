@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { LayoutDashboard, FileSearch, Mic2, History } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
@@ -14,7 +14,6 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const router = useRouter();
   const { goToHome, goToAnalysis, goToConsultation, goToHistory } = useAppNavigation();
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
@@ -22,9 +21,9 @@ export default function Sidebar() {
   const handleNavigate = (href: string) => {
     if (href === "/") goToHome();
     else if (href === "/analysis") goToAnalysis();
-    else if (href === "/consultation") goToConsultation({ id: "", uspora: 0, fixace: "" } as any);
+    else if (href === "/consultation") goToConsultation();
     else if (href === "/history") goToHistory();
-    else router.push(href);
+    else goToHome();
   };
 
   React.useEffect(() => {

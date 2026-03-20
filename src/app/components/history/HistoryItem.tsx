@@ -26,7 +26,8 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
   innerRef
 }) => (
   <motion.div
-    layout
+    layout="position"
+    layoutScroll
     ref={innerRef}
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -35,7 +36,7 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
     transition={{ 
       duration: 0.8, 
       ease: [0.16, 1, 0.3, 1],
-      layout: { duration: 0.4 }
+      layout: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
     }}
     onClick={() => onEntryClick(item)}
     className={`relative flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 cursor-pointer ${

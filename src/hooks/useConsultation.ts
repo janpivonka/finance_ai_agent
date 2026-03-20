@@ -2,6 +2,24 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Vapi from "@vapi-ai/web";
 import { useAppNavigation } from "./useAppNavigation";
+import { HistoryItem } from "@/types";
+
+type VapiClient = {
+  on: (event: string, cb: (message: unknown) => void) => void;
+  start: (
+    assistantId: string,
+    options?: { variableValues?: Record<string, string> },
+  ) => Promise<void>;
+  stop: () => void;
+  send: (payload: unknown) => void;
+};
+
+type VapiTranscriptMessage = {
+  type: "transcript";
+  role?: string;
+  transcript?: string;
+  transcriptType?: string;
+};
 
 export const useConsultation = () => {
   const searchParams = useSearchParams();
@@ -13,7 +31,7 @@ export const useConsultation = () => {
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; text: string; isFinal?: boolean }[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [extraContext, setExtraContext] = useState<string | null>(null);
-  const [fullHistoryEntry, setFullHistoryEntry] = useState<any>(null);
+  const [fullHistoryEntry, setFullHistoryEntry] = useState<HistoryItem | null>(null);
   const [awaitingFirstTranscript, setAwaitingFirstTranscript] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   
@@ -21,7 +39,7 @@ export const useConsultation = () => {
   const usporaParam = searchParams.get("uspora") || "0";
   const fixaceParam = searchParams.get("fixace") || "neuvedena";
 
-  const vapiRef = useRef<any | null>(null);
+  const vapiRef = useRef<VapiClient | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,13 +47,14 @@ export const useConsultation = () => {
     const historyData = localStorage.getItem("finance_history");
     if (historyData) {
       try {
-        const history = JSON.parse(historyData);
+        const parsed = JSON.parse(historyData) as unknown;
+        const history = (Array.isArray(parsed) ? parsed : []) as HistoryItem[];
         const matchingEntry =
           (idParam
-            ? history.find((h: any) => String(h.id) === String(idParam))
+            ? history.find((h) => String(h.id) === String(idParam))
             : null) ||
           history.find(
-            (h: any) =>
+            (h) =>
               String(h.uspora) === String(usporaParam) &&
               String(h.fixace) === String(fixaceParam),
           );
@@ -70,12 +89,13 @@ export const useConsultation = () => {
     const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
     if (!publicKey) return;
 
-    const vapi = new Vapi(publicKey);
+    const vapi = new Vapi(publicKey) as unknown as VapiClient;
 
-    vapi.on("message", (message: any) => {
-      if (message?.type === "transcript") {
-        const role = message.role === "user" ? "user" : "assistant";
-        const text = message.transcript || "";
+    vapi.on("message", (message: unknown) => {
+      const m = message as Partial<VapiTranscriptMessage>;
+      if (m?.type === "transcript") {
+        const role = m.role === "user" ? "user" : "assistant";
+        const text = typeof m.transcript === "string" ? m.transcript : "";
 
         if (text.trim() !== "") setAwaitingFirstTranscript(false);
 
@@ -86,11 +106,11 @@ export const useConsultation = () => {
             newMessages[newMessages.length - 1] = { 
               ...lastMsg, 
               text: text, 
-              isFinal: message.transcriptType === "final" 
+              isFinal: m.transcriptType === "final" 
             };
             return newMessages;
           } 
-          return [...prev, { role, text, isFinal: message.transcriptType === "final" }];
+          return [...prev, { role, text, isFinal: m.transcriptType === "final" }];
         });
       }
     });
@@ -111,7 +131,7 @@ export const useConsultation = () => {
   }, [isMounted]);
 
   const handleBackToAnalysis = () => {
-    goToAnalysis(fullHistoryEntry);
+    goToAnalysis(fullHistoryEntry || undefined);
   };
 
   const handleScroll = () => {
@@ -133,7 +153,7 @@ export const useConsultation = () => {
           analyticky_duvod: extraContext || "Klient chce probrat možnosti úspor."
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Vapi start error:", error);
       setIsCalling(false);
       setAwaitingFirstTranscript(false);

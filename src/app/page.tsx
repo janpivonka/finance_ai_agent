@@ -5,9 +5,9 @@ import {
   Home, 
   Mic, 
   FolderOpen, 
-  Building2,
   ShieldCheck,
-  Coins
+  Coins,
+  Zap
 } from "lucide-react";
 
 // Import komponent a hooků
@@ -23,8 +23,6 @@ import { FutureModuleCard } from "./components/dashboard/FutureModuleCard";
 // Shared UI Components
 import { PageBackground } from "./components/ui/PageBackground";
 import { PageHeader } from "./components/ui/PageHeader";
-import { Badge } from "./components/ui/Badge";
-import { Zap } from "lucide-react";
 
 export default function DashboardPage() {
   const { 

@@ -22,7 +22,7 @@ const BANK_MARKET_DATA = [
   { bank: "Fio banka", rate: 4.59, benefit: "Transparentní podmínky" }
 ];
 
-async function triggerMakeAutomation(payload: any) {
+async function triggerMakeAutomation(payload: unknown) {
   const MAKE_WEBHOOK_URL = process.env.MAKE_WEBHOOK_URL;
   if (!MAKE_WEBHOOK_URL) return;
   try {
@@ -91,7 +91,7 @@ export async function analyzeContract(formData: FormData): Promise<ServerActionR
       } else {
         result = await mathModel.generateContent(`${mathPrompt}\n\nTEXT SMLOUVY K ANALÝZE:\n${rawTextFromArea}`);
       }
-    } catch (genError: any) {
+    } catch (genError: unknown) {
       console.error("❌ Gemini API Error:", genError);
       return { error: "Analytický nástroj neodpověděl včas nebo je přetížen. Zkuste to prosím znovu za chvíli." };
     }
@@ -139,7 +139,7 @@ export async function analyzeContract(formData: FormData): Promise<ServerActionR
     try {
       const creativeResult = await creativeModel.generateContent(creativePrompt);
       analytickyDuvod = creativeResult.response.text().trim();
-    } catch (e) {
+    } catch {
       console.warn("⚠️ Creative model failed, using fallback reason.");
     }
 
@@ -164,11 +164,12 @@ export async function analyzeContract(formData: FormData): Promise<ServerActionR
     await triggerMakeAutomation(finalData);
     return { data: finalData };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("🔥 ANALÝZA ERROR:", error);
     if (error instanceof SyntaxError) {
       return { error: "Nepodařilo se zpracovat výsledek analýzy. Dokument může být poškozen nebo nečitelný." };
     }
-    return { error: `Došlo k neočekávané chybě: ${error.message}` };
+    const message = error instanceof Error ? error.message : "Neznámá chyba";
+    return { error: `Došlo k neočekávané chybě: ${message}` };
   }
 }

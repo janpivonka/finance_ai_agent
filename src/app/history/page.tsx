@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { ScrollToTop } from "../components/ScrollToTop";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";

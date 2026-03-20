@@ -36,7 +36,13 @@ export const MainInsightBanner: React.FC<MainInsightBannerProps> = ({
           {lastAnalysis && (
             <div className="p-6 bg-white/5 border border-white/10 rounded-[2rem] max-w-2xl backdrop-blur-md group-hover:border-indigo-500/30 transition-all duration-500">
               <p className="text-slate-300 text-sm leading-relaxed">
-                "Vaše současná sazba je o <span className="text-fuchsia-400 font-bold">1.2%</span> nad tržním průměrem. Refinancováním ušetříte celkem <span className="text-cyan-400 font-bold">{(lastAnalysis.uspora * 12 * 5).toLocaleString()} Kč</span> během příštích 5 let."
+                Vaše současná sazba je o{" "}
+                <span className="text-fuchsia-400 font-bold">1.2%</span> nad tržním
+                průměrem. Refinancováním ušetříte celkem{" "}
+                <span className="text-cyan-400 font-bold">
+                  {(lastAnalysis.uspora * 12 * 5).toLocaleString()} Kč
+                </span>{" "}
+                během příštích 5 let.
               </p>
             </div>
           )}

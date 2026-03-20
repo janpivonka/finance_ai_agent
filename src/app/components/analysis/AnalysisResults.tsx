@@ -123,17 +123,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
 
               <button 
                 onClick={() => {
-                  try {
-                    if (analysis?.id) {
-                      localStorage.setItem(
-                        "last_analysis_data",
-                        JSON.stringify({ id: analysis.id }),
-                      );
-                    }
-                  } catch (e) {
-                    console.error("Nepodařilo se uložit last_analysis_data pro historii:", e);
-                  }
-                  goToHistory();
+                  goToHistory(analysis.id);
                 }}
                 className="flex items-center gap-2 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer group/badge animate-fade-in"
                 style={{ animationDelay: '0.2s' }}
@@ -147,8 +137,8 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
 
         <button 
           onClick={() => {
-              goToConsultation(analysis as any);
-            }}
+            goToConsultation(analysis);
+          }}
           className="group flex items-center justify-center gap-4 rounded-2xl bg-indigo-600 px-10 py-5 text-xs font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95 cursor-pointer"
         >
           Personalizovaná konzultace
@@ -197,7 +187,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {analysis.top_nabidky?.map((item: any, i: number) => {
+                {analysis.top_nabidky?.map((item, i) => {
                   const localUspora = Number(item?.usp || 0);
                   return (
                     <tr key={i} className="group/row hover:bg-indigo-500/5 transition-all duration-300 text-left">

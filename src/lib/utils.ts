@@ -1,4 +1,5 @@
 // src/lib/utils.ts
+import { AnalysisResult } from "@/types";
 
 /**
  * Formátuje číslo jako měnu v CZK
@@ -42,8 +43,10 @@ export function numberToCzechWords(num: number): string {
 /**
  * Generuje HTML report pro e-maily nebo zobrazení
  */
-export function generateReportHTML(data: any) {
-  const rows = data.top_nabidky.map((n: any) => `
+export function generateReportHTML(
+  data: Pick<AnalysisResult, "top_nabidky" | "analyticky_duvod" | "uspora">,
+): string {
+  const rows = data.top_nabidky.map((n) => `
     <tr>
       <td style="padding: 14px; border-bottom: 1px solid #edf2f7; font-family: sans-serif;"><b>${n.banka}</b></td>
       <td style="padding: 14px; border-bottom: 1px solid #edf2f7; font-family: sans-serif; color: #2b6cb0; font-weight: bold;">${n.sazba}</td>

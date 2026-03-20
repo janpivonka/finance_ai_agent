@@ -5,7 +5,10 @@ import { useLayoutEffect } from 'react';
  * @param className - Třída, kterou mají animované prvky
  * @param dependency - Stav (např. history.length), při jehož změně se má observer restartovat
  */
-export const useIntersectionObserver = (className = '.reveal', dependency: any = null) => {
+export const useIntersectionObserver = (
+  className = ".reveal",
+  dependency: unknown = null,
+) => {
   useLayoutEffect(() => {
     // 1. Najdeme všechny prvky s danou třídou
     const elements = document.querySelectorAll(className);

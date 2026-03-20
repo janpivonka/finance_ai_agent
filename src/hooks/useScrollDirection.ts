@@ -8,10 +8,16 @@ export const useScrollDirection = () => {
 
   useEffect(() => {
     // Funkce, která zjistí scroll odkudkoliv
-    const handleScroll = (e: any) => {
+    const handleScroll = (e: Event) => {
       // Zkusíme vzít scroll z cíle eventu (pokud je to div) nebo z okna
-      const target = e.target === document ? document.documentElement : e.target;
-      const currentScrollY = target.scrollTop ?? window.scrollY;
+      const rawTarget = e.target;
+      const target =
+        rawTarget === document
+          ? document.documentElement
+          : (rawTarget as HTMLElement | null);
+      const currentScrollY =
+        (target && "scrollTop" in target ? (target as HTMLElement).scrollTop : null) ??
+        window.scrollY;
 
       setShowScrollTop(currentScrollY > 100);
 
