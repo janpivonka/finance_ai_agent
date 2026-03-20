@@ -28,7 +28,7 @@ export const ConsultationInput: React.FC<ConsultationInputProps> = ({
       <button
         type="submit"
         disabled={!inputValue.trim() || !isCalling}
-        className="group rounded-2xl bg-white text-slate-950 px-10 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-cyan-400 disabled:bg-slate-900 disabled:text-slate-700 active:scale-95 shadow-lg cursor-pointer"
+        className="group rounded-2xl bg-white text-slate-950 px-10 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all enabled:hover:bg-cyan-400 disabled:bg-slate-900 disabled:text-slate-700 active:scale-95 shadow-lg cursor-not-allowed enabled:cursor-pointer"
       >
         Send
       </button>

@@ -18,10 +18,41 @@ body {
 
 /* --- GLOBAL UTILITIES --- */
 
+/* Cursor: default arrow globally, override only where needed */
+html, body {
+  cursor: default;
+}
+
+/* Text cursor only where typing is expected */
+input:not(:disabled):is([type="text"], [type="search"], [type="email"], [type="tel"], [type="url"], [type="password"]),
+textarea:not(:disabled),
+[contenteditable="true"],
+[role="textbox"] {
+  cursor: text;
+}
+
+input:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+}
+
+select:not(:disabled) {
+  cursor: pointer;
+}
+
 /* Hide scrollbars globally */
 * {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
+}
+
+/* Explicit cursor overrides (Tailwind v4 utilities may compile with low specificity) */
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed !important;
 }
 
 ::-webkit-scrollbar {
