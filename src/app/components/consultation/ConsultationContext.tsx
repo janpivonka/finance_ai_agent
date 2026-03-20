@@ -44,14 +44,17 @@ export const ConsultationContext: React.FC<ConsultationContextProps> = ({
           <span className="text-2xl font-black text-white tracking-tight">{fixaceParam}</span>
         </div>
 
-        <div className="rounded-2xl bg-indigo-950/20 border border-indigo-500/20 p-5 animate-pulse-slow">
-           <div className="flex items-center gap-2 mb-3 text-fuchsia-400">
+        <div className="relative overflow-hidden rounded-2xl bg-[#020617]/60 border border-fuchsia-500/25 p-5 shadow-[0_0_30px_rgba(217,70,219,0.12)] ring-1 ring-fuchsia-500/20">
+          <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/15 via-transparent to-indigo-500/10 pointer-events-none" />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-3 text-fuchsia-300">
               <Headphones size={14} />
               <span className="text-[10px] font-black uppercase tracking-widest">AI Strategie</span>
-           </div>
-           <p className="text-xs leading-relaxed text-slate-400 font-medium italic">
+            </div>
+            <p className="text-xs leading-relaxed text-slate-200 font-semibold italic">
               „Na základě aktuální analýzy trhu doporučuji prověřit nabídky a podmínky u konkurenčních institucí.“
-           </p>
+            </p>
+          </div>
         </div>
       </div>
     </div>
