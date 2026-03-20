@@ -16,7 +16,7 @@ Finance AI Agent is a **high-fidelity, frontend-first financial experience** tha
 - **Consultation:** a live voice AI banker that discusses the result with real-time transcript.
 - **History:** a local archive of analyses with search, sort, rename, detail view and bulk actions.
 
-The UI is intentionally “OS-like”: glass surfaces, cinematic gradients, and motion-driven UX built to feel premium and responsive.
+The app behaves like an **SPA-style experience**: page-to-page navigation is instant and stateful, with a persistent layout and motion-driven transitions. The UI is intentionally “OS-like”: glass surfaces, cinematic gradients, and interaction feedback that feels premium and responsive.
 
 ---
 
@@ -28,13 +28,21 @@ The UI is intentionally “OS-like”: glass surfaces, cinematic gradients, and 
 
 ## 📸 Screenshots
 
-| Dashboard | Analysis |
-|---|---|
-| ![Dashboard](public/screenshots/dashboard.svg) | ![Analysis](public/screenshots/analysis.svg) |
+### Dashboard
 
-| Consultation | History |
-|---|---|
-| ![Consultation](public/screenshots/consultation.svg) | ![History](public/screenshots/history.svg) |
+<img src="public/screenshots/dashboard.png" alt="Dashboard" width="100%" />
+
+### Analysis
+
+<img src="public/screenshots/analysis.png" alt="Analysis" width="100%" />
+
+### Consultation
+
+<img src="public/screenshots/consultation.png" alt="Consultation" width="100%" />
+
+### History
+
+<img src="public/screenshots/history.png" alt="History" width="100%" />
 
 ---
 
@@ -61,10 +69,12 @@ The UI is intentionally “OS-like”: glass surfaces, cinematic gradients, and 
 - **Framework:** Next.js 16.1.6 (App Router)
 - **UI:** React 19 + TypeScript
 - **Styling:** Tailwind CSS 4 (+ `tailwindcss-animate`)
-- **Animace:** Framer Motion
+- **Motion:** Framer Motion
 - **AI Analysis:** Google Generative AI (Gemini) via Server Actions
 - **Voice:** Vapi Web SDK
 - **Storage:** `localStorage` (no database yet)
+
+At runtime this is effectively a **client-side product** (SPA-like UX). Server Actions are used specifically for sensitive AI calls and integrations.
 
 ---
 
@@ -141,7 +151,7 @@ npm run lint
 - Analysis history is stored in `localStorage` (locally in the user’s browser).
 - For analysis, document content is sent to the AI model (Gemini) via a server action.
 - Voice consultation runs via the Vapi Web SDK.
-- Optionally, results can be forwarded to Make.com via a webhook.
+- Optionally, results can be forwarded to Make.com via a webhook for email sending automation.
 
 ---
 
@@ -151,6 +161,9 @@ npm run lint
 - Insurance 2.0 module (coverage checks + optimization)
 - Wealth Management feed (investments / crypto / assets)
 - Extended reporting + export flows
+- **Mobile app** (React Native)
+- light mode
+- and more...
 
 ---
 
