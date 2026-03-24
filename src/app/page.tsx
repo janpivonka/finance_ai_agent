@@ -19,6 +19,7 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { ActionCard } from "./components/dashboard/ActionCard";
 import { MainInsightBanner } from "./components/dashboard/MainInsightBanner";
 import { FutureModuleCard } from "./components/dashboard/FutureModuleCard";
+import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 
 // Shared UI Components
 import { PageBackground } from "./components/ui/PageBackground";
@@ -32,6 +33,8 @@ export default function DashboardPage() {
     goToHistory, 
     goToAnalysis 
   } = useDashboard();
+
+  const { activeId, handleInteraction } = useMobileInteraction();
 
   // Aktivace animací a sledování scrollu
   useScrollDirection();
@@ -68,7 +71,9 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 reveal">
           
           <ActionCard 
-            onClick={goToAnalysis}
+            onClick={() => handleInteraction('analysis', goToAnalysis)}
+            isActive={activeId === 'analysis'}
+            activeVariant="indigo"
             icon={Home}
             title="Analýza hypotéky"
             description="Odhalte skryté poplatky a prostor pro úsporu ve vaší smlouvě."
@@ -80,7 +85,9 @@ export default function DashboardPage() {
           />
 
           <ActionCard 
-            onClick={goToConsultation}
+            onClick={() => handleInteraction('consultation', goToConsultation)}
+            isActive={activeId === 'consultation'}
+            activeVariant="emerald"
             icon={Mic}
             title="Hlasový AI Bankéř"
             description="Proberte výsledky analýzy přirozeně hlasem v reálném čase."
@@ -92,7 +99,9 @@ export default function DashboardPage() {
           />
 
           <ActionCard 
-            onClick={goToHistory}
+            onClick={() => handleInteraction('history', goToHistory)}
+            isActive={activeId === 'history'}
+            activeVariant="fuchsia"
             icon={FolderOpen}
             title="Moje historie"
             description="Kompletní archiv vašich dokumentů a vygenerovaných reportů."
@@ -104,25 +113,31 @@ export default function DashboardPage() {
           />
         </div>
 
+        {/* HLAVNÍ INSIGHT BANNER */}
         <MainInsightBanner 
-          lastAnalysis={lastAnalysis}
-          onAction={goToConsultation}
+          lastAnalysis={lastAnalysis} 
+          onAction={() => handleInteraction('insight', lastAnalysis ? goToConsultation : goToAnalysis)}
+          isActive={activeId === 'insight'}
         />
 
         {/* SEKCE: BUDOUCÍ MODULY */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 reveal">
           <FutureModuleCard 
+            onClick={() => handleInteraction('insurance', () => {})}
+            isActive={activeId === 'insurance'}
+            variant="indigo"
             icon={ShieldCheck}
             title="Pojištění 2.0"
             description="Automatické hlídání podpojištění a optimalizace pojistného krytí pomocí AI."
-            colorClass="hover:border-indigo-500/30"
           />
 
           <FutureModuleCard 
+            onClick={() => handleInteraction('wealth', () => {})}
+            isActive={activeId === 'wealth'}
+            variant="fuchsia"
             icon={Coins}
             title="Wealth Management"
             description="Sledujte své investice, kryptoměny a majetek v jednom inteligentním feedu."
-            colorClass="hover:border-fuchsia-500/30"
           />
         </div>
       </div>

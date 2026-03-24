@@ -1,6 +1,7 @@
 import React from "react";
 import { UploadCloud, Zap } from "lucide-react";
 import { useTheme } from "../ui/ThemeProvider";
+import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 
 interface AnalysisUploadProps {
   contractText: string;
@@ -17,20 +18,25 @@ export const AnalysisUpload: React.FC<AnalysisUploadProps> = ({
 }) => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const { activeId, handleInteraction } = useMobileInteraction();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) {
-      const fd = new FormData();
-      fd.append("file", f);
-      onProcess(fd, f.name);
+      handleInteraction('file-upload', () => {
+        const fd = new FormData();
+        fd.append("file", f);
+        onProcess(fd, f.name);
+      }, 250);
     }
   };
 
   const handleManualSubmit = () => {
-    const fd = new FormData();
-    fd.append("text", contractText);
-    onProcess(fd, "Manuální vstup textu");
+    handleInteraction('manual-submit', () => {
+      const fd = new FormData();
+      fd.append("text", contractText);
+      onProcess(fd, "Manuální vstup textu");
+    }, 250);
   };
 
   return (
@@ -40,16 +46,16 @@ export const AnalysisUpload: React.FC<AnalysisUploadProps> = ({
           isDark 
             ? "hover:border-cyan-500/50 hover:bg-cyan-500/5" 
             : "hover:border-fuchsia-500/50 hover:bg-fuchsia-500/5"
-        }`}>
+        } ${activeId === 'file-upload' ? (isDark ? 'border-cyan-500/50 bg-cyan-500/5' : 'border-fuchsia-500/50 bg-fuchsia-500/5') : ''}`}>
           <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent ${
             isDark ? "from-indigo-500/10" : "from-emerald-500/10"
-          }`} />
+          } ${activeId === 'file-upload' ? 'opacity-100' : ''}`} />
           <div className={`relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${
             isDark 
               ? "bg-indigo-600 group-hover:bg-cyan-500 group-hover:shadow-cyan-500/40" 
               : "bg-emerald-600 group-hover:bg-fuchsia-600 group-hover:shadow-fuchsia-500/40"
-          }`}>
-            <UploadCloud size={28} className="group-hover:animate-bounce" />
+          } ${activeId === 'file-upload' ? (isDark ? 'bg-cyan-500 shadow-cyan-500/40 scale-110 rotate-3' : 'bg-fuchsia-600 shadow-fuchsia-500/40 scale-110 rotate-3') : ''}`}>
+            <UploadCloud size={28} className={activeId === 'file-upload' ? 'animate-bounce' : 'group-hover:animate-bounce'} />
           </div>
           <div className="relative text-center">
             <p className="text-sm font-black text-[color:var(--foreground)] tracking-widest uppercase mb-1">
@@ -79,11 +85,11 @@ export const AnalysisUpload: React.FC<AnalysisUploadProps> = ({
           <button
             onClick={handleManualSubmit}
             disabled={loading || !contractText.trim()}
-            className="group relative overflow-hidden rounded-[1.5rem] bg-[var(--button-primary-bg)] px-8 py-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] enabled:hover:scale-[1.05] enabled:hover:-translate-y-1 active:scale-95 disabled:opacity-40 shadow-2xl enabled:cursor-pointer disabled:cursor-not-allowed border border-transparent enabled:hover:border-indigo-400/30 enabled:hover:shadow-indigo-500/40"
+            className={`group relative overflow-hidden rounded-[1.5rem] bg-[var(--button-primary-bg)] px-8 py-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] enabled:hover:scale-[1.05] enabled:hover:-translate-y-1 active:scale-95 disabled:opacity-40 shadow-2xl enabled:cursor-pointer disabled:cursor-not-allowed border border-transparent enabled:hover:border-indigo-400/30 enabled:hover:shadow-indigo-500/40 ${activeId === 'manual-submit' ? 'scale-[1.05] -translate-y-1 border-indigo-400/30 shadow-indigo-500/40' : ''}`}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-500 to-cyan-500 opacity-0 enabled:group-hover:opacity-100 transition-opacity duration-500" />
-            <span className="relative flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-[color:var(--button-primary-text)] enabled:group-hover:text-white transition-colors duration-500">
-              Spustit Audit <Zap size={14} className="fill-current group-hover:animate-pulse" />
+            <div className={`absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-500 to-cyan-500 opacity-0 enabled:group-hover:opacity-100 transition-opacity duration-500 ${activeId === 'manual-submit' ? 'opacity-100' : ''}`} />
+            <span className={`relative flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-[color:var(--button-primary-text)] enabled:group-hover:text-white transition-colors duration-500 ${activeId === 'manual-submit' ? 'text-white' : ''}`}>
+              Spustit Audit <Zap size={14} className={`fill-current ${activeId === 'manual-submit' ? 'animate-pulse' : 'group-hover:animate-pulse'}`} />
             </span>
           </button>
         </div>

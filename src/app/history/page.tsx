@@ -7,6 +7,7 @@ import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useHistoryPage } from "@/hooks/useHistoryPage";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
+import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 import { HistoryItem } from "@/types";
 
 import { HistoryList } from "../components/history/HistoryList";
@@ -51,6 +52,8 @@ export default function HistoryPage() {
     confirmDelete,
     closeModal
   } = useHistoryPage();
+
+  const { activeId, handleInteraction } = useMobileInteraction();
 
   useScrollDirection();
   
@@ -146,9 +149,10 @@ export default function HistoryPage() {
               onToggleSelectAll={toggleSelectAll}
               onClearSelection={() => setSelectedIds([])}
               onBulkDelete={() => setIsBulkDelete(true)}
-              onEntryClick={(item) => setSelectedEntry(item)}
+              onEntryClick={(item) => handleInteraction(String(item.id), () => setSelectedEntry(item), 200)}
               onDeleteClick={(id) => setDeleteId(id)}
               itemsRef={itemsRef}
+              activeEntryId={activeId}
             />
           )}
         </AnimatePresence>

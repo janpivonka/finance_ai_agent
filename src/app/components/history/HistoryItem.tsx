@@ -13,6 +13,7 @@ interface HistoryItemProps {
   onToggleSelect: (id: string) => void;
   onDeleteClick: (id: string | number) => void;
   innerRef?: (el: HTMLDivElement | null) => void;
+  isActive?: boolean;
 }
 
 export const HistoryItem: React.FC<HistoryItemProps> = ({
@@ -23,7 +24,8 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
   onEntryClick,
   onToggleSelect,
   onDeleteClick,
-  innerRef
+  innerRef,
+  isActive = false
 }) => (
   <motion.div
     layout="position"
@@ -39,11 +41,13 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
       layout: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
     }}
     onClick={() => onEntryClick(item)}
-    className={`relative flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 cursor-pointer border ${
+    className={`relative group flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 cursor-pointer border ${
       isHighlighted 
-      ? 'history-highlight bg-fuchsia-500/10 border-fuchsia-500/60 shadow-[0_0_40px_rgba(217,70,219,0.18)] ring-fuchsia-500/40 z-20' 
+      ? 'history-highlight bg-fuchsia-500/10 border-fuchsia-500/60 shadow-[0_0_40px_rgba(217,70_219,0.18)] ring-fuchsia-500/40 z-20' 
       : isSelected
       ? 'bg-indigo-500/10 border-indigo-500/50 shadow-[0_0_30px_rgba(79,70,229,0.1)] ring-indigo-500/30'
+      : isActive
+      ? 'scale-[0.98] border-indigo-500/40 bg-[var(--card-hover-bg)] ring-indigo-500/20 shadow-lg'
       : 'bg-[var(--card-bg)] border-[color:var(--card-border)] hover:border-indigo-500/40 hover:bg-[var(--card-hover-bg)] ring-[color:var(--panel-border)] bg-tint-indigo'
     }`}
   >
@@ -67,6 +71,8 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
         ? 'bg-fuchsia-500 text-white ring-2 ring-fuchsia-300/50' 
         : isSelected
         ? 'bg-indigo-600 text-white'
+        : isActive
+        ? 'ring-cyan-500/50 bg-indigo-600 text-white'
         : 'bg-[var(--panel-strong)] text-indigo-400 ring-1 ring-[color:var(--panel-border)] group-hover:ring-cyan-500/50 group-hover:bg-indigo-600 group-hover:text-white'
       }`}>
         <FileText size={24} />

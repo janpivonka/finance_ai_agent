@@ -16,6 +16,7 @@ interface HistoryListProps {
   onEntryClick: (item: HistoryItemType) => void;
   onDeleteClick: (id: string | number) => void;
   itemsRef: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
+  activeEntryId?: string | null;
 }
 
 export const HistoryList: React.FC<HistoryListProps> = ({
@@ -29,7 +30,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({
   onBulkDelete,
   onEntryClick,
   onDeleteClick,
-  itemsRef
+  itemsRef,
+  activeEntryId = null
 }) => (
   <motion.div layout layoutScroll key="history-list" className="flex flex-col gap-6 relative z-10 overflow-anchor-none">
     <AnimatePresence>
@@ -80,8 +82,9 @@ export const HistoryList: React.FC<HistoryListProps> = ({
             item={item}
             isHighlighted={highlightedId === String(item.id)}
             isSelected={selectedIds.includes(String(item.id))}
+            isActive={activeEntryId === String(item.id)}
             sortBy={sortBy}
-            onEntryClick={onEntryClick}
+            onEntryClick={(item) => onEntryClick(item)}
             onToggleSelect={onToggleSelect}
             onDeleteClick={onDeleteClick}
             innerRef={(el) => { itemsRef.current[String(item.id)] = el; }}

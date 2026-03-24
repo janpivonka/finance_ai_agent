@@ -9,6 +9,7 @@ import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { AnalysisUpload } from "../components/analysis/AnalysisUpload";
 import { AnalysisLoading } from "../components/analysis/AnalysisLoading";
 import { AnalysisResults } from "../components/analysis/AnalysisResults";
+import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 
 // Shared UI Components
 import { PageBackground } from "../components/ui/PageBackground";
@@ -44,6 +45,8 @@ export default function AnalysisPage() {
     confirmRename,
     cancelRename
   } = useAnalysis();
+
+  const { activeId, handleInteraction } = useMobileInteraction();
 
   useScrollDirection();
   useIntersectionObserver('.reveal', `${mounted}-${analysis ? 1 : 0}`);
@@ -102,8 +105,9 @@ export default function AnalysisPage() {
             <AnalysisUpload 
               contractText={contractText}
               onTextChange={setContractText}
-              onProcess={handleProcess}
+              onProcess={(fd, name) => handleInteraction('file-upload', () => handleProcess(fd, name), 250)}
               loading={loading}
+              activeId={activeId}
             />
           )}
 

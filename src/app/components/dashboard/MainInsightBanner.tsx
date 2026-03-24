@@ -5,14 +5,16 @@ import { HistoryItem } from "@/types";
 interface MainInsightBannerProps {
   lastAnalysis: HistoryItem | null;
   onAction: () => void;
+  isActive?: boolean;
 }
 
 export const MainInsightBanner: React.FC<MainInsightBannerProps> = ({ 
   lastAnalysis, 
-  onAction 
+  onAction,
+  isActive = false
 }) => (
-  <div className="rounded-[3.5rem] bg-gradient-to-br from-[var(--panel-strong)] to-[var(--background)] p-10 text-[color:var(--foreground)] relative overflow-hidden shadow-2xl ring-1 ring-[color:var(--panel-border-strong)] mb-12 group reveal transition-all duration-700">
-    <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+  <div className={`rounded-[3.5rem] bg-gradient-to-br from-[var(--panel-strong)] to-[var(--background)] p-10 text-[color:var(--foreground)] relative overflow-hidden shadow-2xl ring-1 ring-[color:var(--panel-border-strong)] mb-12 group reveal transition-all duration-700 ${isActive ? 'ring-indigo-500/30' : ''}`}>
+    <div className={`absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${isActive ? 'opacity-100' : ''}`} />
     
     <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
       <div className="flex-1 text-left">
@@ -27,14 +29,14 @@ export const MainInsightBanner: React.FC<MainInsightBannerProps> = ({
         
         <div className="space-y-4 mb-10">
           <div className="flex flex-col sm:flex-row sm:items-baseline gap-4">
-            <span className="text-7xl font-black tracking-tighter bg-gradient-to-r from-[color:var(--foreground)] via-indigo-400 to-slate-400 bg-clip-text text-transparent italic">
+            <span className={`text-7xl font-black tracking-tighter bg-gradient-to-r from-[color:var(--foreground)] via-indigo-400 to-slate-400 bg-clip-text text-transparent italic transition-all duration-700 ${isActive ? 'scale-105 origin-left' : ''}`}>
               {lastAnalysis ? `${Number(lastAnalysis.uspora).toLocaleString()} Kč` : "0 Kč"}
             </span>
             <span className="text-[color:var(--muted)] text-2xl font-light">/ měsíčně</span>
           </div>
           
           {lastAnalysis && (
-            <div className="p-6 bg-[var(--panel)] border border-[color:var(--panel-border)] rounded-[2rem] max-w-2xl backdrop-blur-md group-hover:border-indigo-500/30 transition-all duration-500">
+            <div className={`p-6 bg-[var(--panel)] border border-[color:var(--panel-border)] rounded-[2rem] max-w-2xl backdrop-blur-md group-hover:border-indigo-500/30 transition-all duration-500 ${isActive ? 'border-indigo-500/30' : ''}`}>
               <p className="text-[color:var(--muted)] text-sm leading-relaxed">
                 Vaše současná sazba je o{" "}
                 <span className="text-fuchsia-400 font-bold">1.2%</span> nad tržním
@@ -67,9 +69,9 @@ export const MainInsightBanner: React.FC<MainInsightBannerProps> = ({
       <div className="flex flex-col gap-4 min-w-[300px]">
         <button 
           onClick={onAction}
-          className="group relative cursor-pointer flex items-center justify-center gap-4 bg-[var(--button-primary-bg)] text-[color:var(--button-primary-text)] px-10 py-7 rounded-[2rem] font-black text-xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-[var(--button-primary-hover-bg)] hover:-rotate-3 hover:scale-110 active:scale-95 shadow-[0_15px_30px_rgba(34,211,238,0.2)] hover:shadow-[0_25px_60px_rgba(34,211,238,0.5)] border border-transparent hover:border-white/20"
+          className={`group relative cursor-pointer flex items-center justify-center gap-4 bg-[var(--button-primary-bg)] text-[color:var(--button-primary-text)] px-10 py-7 rounded-[2rem] font-black text-xl transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-[var(--button-primary-hover-bg)] hover:-rotate-3 hover:scale-110 active:scale-95 shadow-[0_15px_30px_rgba(34,211,238,0.2)] hover:shadow-[0_25px_60px_rgba(34,211,238,0.5)] border border-transparent hover:border-white/20 ${isActive ? 'bg-[var(--button-primary-hover-bg)] -rotate-3 scale-110 shadow-[0_25px_60px_rgba(34,211,238,0.5)] border-white/20' : ''}`}
         >
-          <TrendingUp size={24} className="group-hover:translate-y-[-4px] group-hover:translate-x-[4px] transition-transform duration-500 ease-out" />
+          <TrendingUp size={24} className={`group-hover:translate-y-[-4px] group-hover:translate-x-[4px] transition-transform duration-500 ease-out ${isActive ? '-translate-y-1 translate-x-1' : ''}`} />
           {lastAnalysis ? "Získat tuto úsporu" : "Spustit analýzu"}
         </button>
         
