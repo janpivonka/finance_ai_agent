@@ -49,7 +49,7 @@ export const ScrollToTop = ({ forceShow }: { forceShow?: boolean }) => {
     <button
       onClick={scrollToTop}
       type="button"
-      className={`fixed bottom-8 right-8 h-14 w-14 rounded-2xl 
+      className={`fixed bottom-28 md:bottom-8 right-6 md:right-8 h-14 w-14 rounded-2xl 
                  bg-[var(--scroll-button-bg)] text-[color:var(--scroll-button-text)] shadow-2xl
                  flex items-center justify-center cursor-pointer
                  transition-all duration-500 hover:bg-[var(--scroll-button-hover-bg)] hover:scale-110 hover:-translate-y-1 active:scale-95

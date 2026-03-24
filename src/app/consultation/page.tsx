@@ -75,9 +75,9 @@ function ConsultationContent() {
             <div className="flex items-center gap-3">
               <button 
                 onClick={handleToHistory}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--panel)] border border-[color:var(--panel-border)] text-[10px] font-black uppercase tracking-widest text-[color:var(--muted)] hover:text-[color:var(--foreground)] hover:bg-[var(--panel-strong)] transition-all cursor-pointer shadow-sm"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--panel)] border border-[color:var(--panel-border)] text-[10px] font-black uppercase tracking-widest text-[color:var(--muted)] hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10 dark:hover:bg-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 cursor-pointer shadow-sm group/archiv"
               >
-                <History size={14} className="text-indigo-500" />
+                <History size={14} className="text-indigo-500 group-hover/archiv:scale-110 transition-transform duration-300" />
                 <span className="hidden md:inline">Archiv</span>
               </button>
               <button 

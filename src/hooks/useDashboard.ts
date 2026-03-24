@@ -23,11 +23,9 @@ export const useDashboard = () => {
   }, []);
 
   const handleConsultation = () => {
-    if (lastAnalysis) {
-      goToConsultation(lastAnalysis);
-    } else {
-      goToAnalysis();
-    }
+    // Navigujeme na konzultaci vždy, i bez předchozí analýzy. 
+    // Pokud analýza existuje, předáme ji jako kontext.
+    goToConsultation(lastAnalysis || undefined);
   };
 
   const handleHistory = () => {
