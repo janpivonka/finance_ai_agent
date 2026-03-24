@@ -14,38 +14,55 @@ export const getUniqueFileName = (
   history: HistoryItem[], 
   excludeId?: string
 ): string => {
-  const baseName = fileName.includes('.') 
+  let baseName = fileName.includes('.') 
     ? fileName.substring(0, fileName.lastIndexOf('.')) 
     : fileName;
   const extension = fileName.includes('.') 
     ? fileName.substring(fileName.lastIndexOf('.')) 
     : "";
   
-  // Find all items that have the exact same name or follow the "Name (index)" pattern
-  const duplicateRegex = new RegExp(`^${baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( \\(\\d+\\))?${extension.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+  // 1. Strip any existing (N) from the end of baseName to prevent (1) (2)
+  const indexMatch = baseName.match(/(.+) \((\d+)\)$/);
+  if (indexMatch) {
+    baseName = indexMatch[1];
+  }
+
+  // 2. Find all items that share the same baseName (with or without index)
+  // We use a case-insensitive match for the base name
+  const escapedBase = baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const duplicateRegex = new RegExp(`^${escapedBase}( \\(\\d+\\))?${extension.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
   
-  const existingDuplicates = history.filter(item => 
+  const existingItems = history.filter(item => 
     item.id !== excludeId && 
     item.fileName && 
     duplicateRegex.test(item.fileName)
   );
 
-  if (existingDuplicates.length === 0) {
-    return fileName;
+  if (existingItems.length === 0) {
+    return `${baseName}${extension}`;
   }
 
-  // Find the highest index currently in use
-  let maxIndex = 0;
-  existingDuplicates.forEach(item => {
-    const match = item.fileName?.match(/\((\d+)\)/);
-    if (match) {
-      const index = parseInt(match[1]);
-      if (index > maxIndex) maxIndex = index;
+  // 3. Find all used indices
+  const usedIndices = new Set<number>();
+  existingItems.forEach(item => {
+    const m = item.fileName?.match(/\((\d+)\)/);
+    if (m) {
+      usedIndices.add(parseInt(m[1]));
+    } else if (item.fileName?.toLowerCase() === `${baseName}${extension}`.toLowerCase()) {
+      // The original name itself is used (index 0 effectively)
+      usedIndices.add(0);
     }
   });
 
-  return `${baseName} (${maxIndex + 1})${extension}`;
+  // 4. Find the first available index starting from 1
+  let nextIndex = 1;
+  while (usedIndices.has(nextIndex)) {
+    nextIndex++;
+  }
+
+  return `${baseName} (${nextIndex})${extension}`;
 };
+
 
 /**
  * Checks if a filename already exists in the history.
@@ -67,24 +84,23 @@ export const checkFileNameExists = (
  */
 export const sanitizeHistoryNames = (history: HistoryItem[]): { sanitized: HistoryItem[], changed: boolean } => {
   let changed = false;
-  const seenNames = new Map<string, string>(); // name -> id
   const newHistory = [...history];
 
-  // We iterate from oldest to newest (end to start) or vice versa? 
-  // Let's go from oldest to newest to keep the original name for the first one.
+  // We iterate from oldest to newest to keep the original name for the first one.
+  // History is usually sorted [newest, ..., oldest]
   for (let i = newHistory.length - 1; i >= 0; i--) {
     const item = newHistory[i];
     const currentName = item.fileName || "Dokument bez názvu";
     
-    // If we've seen this name before, it's a duplicate
-    if (seenNames.has(currentName.toLowerCase())) {
-      // Get a unique name for this duplicate
-      const uniqueName = getUniqueFileName(currentName, newHistory.slice(i + 1));
+    // Check if this name already appeared earlier in the processing (which means later in history)
+    // Actually, let's just use the current unique generator against the already processed items
+    const processedItems = newHistory.slice(i + 1);
+    
+    const uniqueName = getUniqueFileName(currentName, processedItems, String(item.id));
+    
+    if (uniqueName !== currentName) {
       newHistory[i] = { ...item, fileName: uniqueName };
-      seenNames.set(uniqueName.toLowerCase(), String(item.id));
       changed = true;
-    } else {
-      seenNames.set(currentName.toLowerCase(), String(item.id));
     }
   }
 
