@@ -17,6 +17,7 @@ import { useInView } from "framer-motion";
 import { AnalysisResult } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
+import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 import { SavingsChart } from "./SavingsChart";
 import { RecommendationCard } from "./RecommendationCard";
 
@@ -44,6 +45,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   onResultsEnterViewport
 }) => {
   const { goToHistory, goToConsultation } = useAppNavigation();
+  const { activeId, handleInteraction } = useMobileInteraction();
   const headerRef = useRef<HTMLDivElement | null>(null);
   const inView = useInView(headerRef, { amount: 0.6, once: false });
   const wasInViewRef = useRef(false);
@@ -138,13 +140,11 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
               </div>
 
               <button 
-                onClick={() => {
-                  goToHistory(analysis.id);
-                }}
-                className="flex items-center gap-2 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer group/badge animate-fade-in"
+                onClick={() => handleInteraction('go-to-history', () => goToHistory(analysis.id))}
+                className={`flex items-center gap-2 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 hover:bg-indigo-500/20 transition-all cursor-pointer group/badge animate-fade-in ${activeId === 'go-to-history' ? 'bg-indigo-500/20 border-indigo-500/40 scale-95' : ''}`}
                 style={{ animationDelay: '0.2s' }}
               >
-                <History size={12} className="text-indigo-600 dark:text-indigo-300 group-hover/badge:rotate-[-45deg] transition-transform" />
+                <History size={12} className={`text-indigo-600 dark:text-indigo-300 group-hover/badge:rotate-[-45deg] transition-transform ${activeId === 'go-to-history' ? 'rotate-[-45deg]' : ''}`} />
                 <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-300 uppercase tracking-wider">Dostupné v historii</span>
               </button>
             </div>
@@ -152,13 +152,11 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
         </div>
 
         <button 
-          onClick={() => {
-            goToConsultation(analysis);
-          }}
-          className="group flex items-center justify-center gap-4 rounded-2xl bg-indigo-600 px-10 py-5 text-xs font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95 cursor-pointer"
+          onClick={() => handleInteraction('consultation', () => goToConsultation(analysis))}
+          className={`group flex items-center justify-center gap-4 rounded-2xl bg-indigo-600 px-10 py-5 text-xs font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-95 cursor-pointer ${activeId === 'consultation' ? 'bg-indigo-500 scale-95 shadow-[0_0_40px_rgba(79,70,229,0.5)]' : ''}`}
         >
           Personalizovaná konzultace
-          <ArrowRight size={18} className="transition-transform group-hover:translate-x-2" />
+          <ArrowRight size={18} className={`transition-transform group-hover:translate-x-2 ${activeId === 'consultation' ? 'translate-x-2' : ''}`} />
         </button>
       </div>
 
@@ -172,9 +170,21 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
       </div>
 
       <div className="grid gap-6 md:grid-cols-3 mb-12">
-        <div className="reveal"><RecommendationCard icon={FileText} title="Termín Fixace" highlight={analysis.fixace} description="Otevřené okno pro bezpoplatkový transfer." badge="Datum" /></div>
         <div className="reveal">
           <RecommendationCard 
+            onClick={() => handleInteraction('rec-fix', () => {})}
+            isActive={activeId === 'rec-fix'}
+            icon={FileText} 
+            title="Termín Fixace" 
+            highlight={analysis.fixace} 
+            description="Otevřené okno pro bezpoplatkový transfer." 
+            badge="Datum" 
+          />
+        </div>
+        <div className="reveal">
+          <RecommendationCard 
+            onClick={() => handleInteraction('rec-cash', () => {})}
+            isActive={activeId === 'rec-cash'}
             icon={Wallet} 
             title="Měsíční cashflow" 
             highlight={`+${Math.floor(displayUspora).toLocaleString()} Kč`} 
@@ -182,7 +192,17 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             badge="Výnos" 
           />
         </div>
-        <div className="reveal"><RecommendationCard icon={ShieldCheck} title="Rating pojistky" highlight={analysis.pojisteni} description="Analýza rizikového krytí vůči jistině." badge="Bezpečí" /></div>
+        <div className="reveal">
+          <RecommendationCard 
+            onClick={() => handleInteraction('rec-insurance', () => {})}
+            isActive={activeId === 'rec-insurance'}
+            icon={ShieldCheck} 
+            title="Rating pojistky" 
+            highlight={analysis.pojisteni} 
+            description="Analýza rizikového krytí vůči jistině." 
+            badge="Bezpečí" 
+          />
+        </div>
       </div>
 
       <div className="reveal overflow-hidden rounded-[2.5rem] border border-[color:var(--panel-border)] bg-[var(--panel)] backdrop-blur-xl shadow-2xl ring-1 ring-[color:var(--panel-border)] group transition-all duration-500 hover:border-indigo-500/20">

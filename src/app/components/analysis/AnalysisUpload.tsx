@@ -23,11 +23,11 @@ export const AnalysisUpload: React.FC<AnalysisUploadProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f) {
-      handleInteraction('file-upload', () => {
-        const fd = new FormData();
-        fd.append("file", f);
-        onProcess(fd, f.name);
-      }, 250);
+      const fd = new FormData();
+      fd.append("file", f);
+      onProcess(fd, f.name);
+      // Reset input to allow re-upload of the same file
+      e.target.value = '';
     }
   };
 
@@ -36,17 +36,23 @@ export const AnalysisUpload: React.FC<AnalysisUploadProps> = ({
       const fd = new FormData();
       fd.append("text", contractText);
       onProcess(fd, "Manuální vstup textu");
-    }, 250);
+    }, 350);
   };
 
   return (
     <section className="reveal-init rounded-[3.5rem] border border-[color:var(--panel-border)] bg-[var(--panel)] backdrop-blur-2xl p-2 md:p-3 shadow-2xl ring-1 ring-[color:var(--panel-border)] transition-all duration-500 max-w-5xl mx-auto w-full group/main">
       <div className="grid gap-2 md:grid-cols-[1fr_auto_1fr] items-center bg-[var(--panel-strong)] rounded-[3.2rem] p-6 md:p-8">
-        <label className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-[color:var(--panel-border)] bg-[var(--panel)] p-8 transition-all duration-500 overflow-hidden min-h-[220px] ${
+        <label 
+          onPointerDown={() => {
+            // OKAMŽITĚ nastavíme aktivní stav pro vizuální odezvu bez delaye,
+            // aby prohlížeč nezablokoval následné otevření souboru.
+            handleInteraction('file-upload', () => {}, 0);
+          }}
+          className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-[color:var(--panel-border)] bg-[var(--panel)] p-8 transition-all duration-500 overflow-hidden min-h-[220px] ${
           isDark 
-            ? "hover:border-cyan-500/50 hover:bg-cyan-500/5" 
-            : "hover:border-fuchsia-500/50 hover:bg-fuchsia-500/5"
-        } ${activeId === 'file-upload' ? (isDark ? 'border-cyan-500/50 bg-cyan-500/5' : 'border-fuchsia-500/50 bg-fuchsia-500/5') : ''}`}>
+            ? "hover:border-cyan-500/50 hover:bg-cyan-500/5 hover:shadow-[0_0_40px_rgba(34,211,238,0.1)]" 
+            : "hover:border-fuchsia-500/50 hover:bg-fuchsia-500/5 hover:shadow-[0_0_40px_rgba(217,70,219,0.1)]"
+        } ${activeId === 'file-upload' ? (isDark ? 'border-cyan-500/50 bg-cyan-500/10 shadow-[0_0_50px_rgba(34,211,238,0.3)] scale-[0.98]' : 'border-fuchsia-500/50 bg-fuchsia-500/10 shadow-[0_0_50px_rgba(217,70,219,0.3)] scale-[0.98]') : ''}`}>
           <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-transparent ${
             isDark ? "from-indigo-500/10" : "from-emerald-500/10"
           } ${activeId === 'file-upload' ? 'opacity-100' : ''}`} />
@@ -54,16 +60,21 @@ export const AnalysisUpload: React.FC<AnalysisUploadProps> = ({
             isDark 
               ? "bg-indigo-600 group-hover:bg-cyan-500 group-hover:shadow-cyan-500/40" 
               : "bg-emerald-600 group-hover:bg-fuchsia-600 group-hover:shadow-fuchsia-500/40"
-          } ${activeId === 'file-upload' ? (isDark ? 'bg-cyan-500 shadow-cyan-500/40 scale-110 rotate-3' : 'bg-fuchsia-600 shadow-fuchsia-500/40 scale-110 rotate-3') : ''}`}>
+          } ${activeId === 'file-upload' ? (isDark ? '!bg-cyan-500 shadow-cyan-500/40 scale-110 rotate-3' : '!bg-fuchsia-600 shadow-fuchsia-500/40 scale-110 rotate-3') : ''}`}>
             <UploadCloud size={28} className={activeId === 'file-upload' ? 'animate-bounce' : 'group-hover:animate-bounce'} />
           </div>
           <div className="relative text-center">
-            <p className="text-sm font-black text-[color:var(--foreground)] tracking-widest uppercase mb-1">
+            <p className={`text-sm font-black tracking-widest uppercase mb-1 transition-colors ${activeId === 'file-upload' ? (isDark ? 'text-cyan-400' : 'text-fuchsia-500') : 'text-[color:var(--foreground)]'}`}>
               Nahrát PDF smlouvu
             </p>
             <p className="text-[10px] text-[color:var(--muted-2)] font-bold uppercase tracking-widest opacity-60">Neural OCR Scan</p>
           </div>
-          <input type="file" className="hidden" accept=".pdf" onChange={handleFileChange} />
+          <input 
+            type="file" 
+            className="hidden" 
+            accept=".pdf" 
+            onChange={handleFileChange} 
+          />
         </label>
 
         <div className="flex md:flex-col items-center gap-4 py-2 md:py-0">

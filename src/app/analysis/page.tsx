@@ -78,10 +78,10 @@ export default function AnalysisPage() {
           description={!analysis && !loading ? "Nahrajte dokument pro hloubkovou kontrolu skrytých poplatků a identifikaci úsporných příležitostí v reálném čase." : undefined}
           rightElement={analysis && (
             <button 
-              onClick={resetAnalysis}
-              className="group flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:border-indigo-500/50 hover:bg-indigo-500/10 transition-all cursor-pointer"
+              onClick={() => handleInteraction('reset-analysis', resetAnalysis, 350)}
+              className={`group flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:border-indigo-500/50 hover:bg-indigo-500/10 transition-all cursor-pointer ${activeId === 'reset-analysis' ? 'text-white border-indigo-500/50 bg-indigo-500/10 scale-95' : ''}`}
             >
-              <RotateCcw size={14} className="group-hover:rotate-[-180deg] transition-transform duration-500" />
+              <RotateCcw size={14} className={`transition-transform duration-500 ${activeId === 'reset-analysis' ? 'rotate-[-180deg]' : 'group-hover:rotate-[-180deg]'}`} />
               Další instrument
             </button>
           )}
@@ -105,9 +105,8 @@ export default function AnalysisPage() {
             <AnalysisUpload 
               contractText={contractText}
               onTextChange={setContractText}
-              onProcess={(fd, name) => handleInteraction('file-upload', () => handleProcess(fd, name), 250)}
+              onProcess={handleProcess}
               loading={loading}
-              activeId={activeId}
             />
           )}
 
