@@ -35,13 +35,13 @@ export const HistoryList: React.FC<HistoryListProps> = ({
     <AnimatePresence>
       {selectedIds.length > 0 && (
         <motion.div 
-          initial={{ opacity: 0, y: -16, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -16, scale: 0.98 }}
+          initial={{ opacity: 0, x: 20, scale: 0.95 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: 20, scale: 0.95 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed left-3 right-3 bottom-24 md:bottom-auto md:top-6 md:left-auto md:right-6 md:w-[420px] flex items-center justify-between p-4 bg-indigo-600/10 border border-indigo-500/30 rounded-2xl backdrop-blur-xl z-[80] shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
+          className="fixed top-24 right-4 left-auto bottom-auto md:top-6 md:right-6 md:w-[420px] flex flex-col md:flex-row items-stretch md:items-center justify-between p-4 bg-indigo-600/10 border border-indigo-500/30 rounded-2xl backdrop-blur-xl z-[150] shadow-[0_20px_40px_rgba(0,0,0,0.3)] gap-4 md:gap-0"
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between md:justify-start gap-4">
             <button 
               onClick={onToggleSelectAll}
               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors cursor-pointer"
@@ -49,7 +49,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({
               {selectedIds.length === items.length ? <CheckSquare size={16} /> : <Square size={16} />}
               {selectedIds.length === items.length ? "Zrušit vše" : "Vybrat vše"}
             </button>
-            <span className="h-4 w-px bg-white/10" />
+            <span className="hidden md:block h-4 w-px bg-white/10" />
             <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
               Vybráno: <span className="text-white">{selectedIds.length}</span>
             </span>
@@ -57,13 +57,13 @@ export const HistoryList: React.FC<HistoryListProps> = ({
           <div className="flex items-center gap-2">
             <button 
               onClick={onClearSelection}
-              className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors cursor-pointer"
+              className="flex-1 md:flex-none px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors cursor-pointer"
             >
               Zrušit
             </button>
             <button 
               onClick={onBulkDelete}
-              className="flex items-center gap-2 px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-600/20 transition-all cursor-pointer"
+              className="flex-[2] md:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-600/20 transition-all cursor-pointer"
             >
               <Trash2 size={14} /> Smazat vybrané
             </button>

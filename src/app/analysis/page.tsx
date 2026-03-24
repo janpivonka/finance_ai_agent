@@ -9,7 +9,6 @@ import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { AnalysisUpload } from "../components/analysis/AnalysisUpload";
 import { AnalysisLoading } from "../components/analysis/AnalysisLoading";
 import { AnalysisResults } from "../components/analysis/AnalysisResults";
-import { AnimatePresence } from "framer-motion";
 
 // Shared UI Components
 import { PageBackground } from "../components/ui/PageBackground";
@@ -39,23 +38,8 @@ export default function AnalysisPage() {
     restartUsporaAnimation
   } = useAnalysis();
 
-  const [showTimeoutInfo, setShowTimeoutInfo] = React.useState(false);
-
   useScrollDirection();
   useIntersectionObserver('.reveal', `${mounted}-${analysis ? 1 : 0}`);
-
-  // Timeout logic for long loading
-  React.useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (loading) {
-      timer = setTimeout(() => {
-        setShowTimeoutInfo(true);
-      }, 10000); // 10 seconds
-    } else {
-      setShowTimeoutInfo(false);
-    }
-    return () => clearTimeout(timer);
-  }, [loading]);
 
   if (!mounted) return <div className="min-h-screen bg-[var(--background)]" />;
 
@@ -95,23 +79,9 @@ export default function AnalysisPage() {
 
         <div className={`relative z-10 flex-1 flex flex-col gap-4 transition-all duration-700 ${!analysis ? "justify-center" : ""}`}>
           
-          <AnimatePresence mode="popLayout">
-            {error && !loading && (
-              <ErrorMessage error={error} onClear={() => setError(null)} key="analysis-error" />
-            )}
-            
-            {showTimeoutInfo && loading && (
-              <ErrorMessage 
-                error="Analýza trvá déle než obvykle. AI agent stále pracuje, ale pokud chcete, můžete proces restartovat." 
-                variant="indigo"
-                onRetry={() => {
-                  setShowTimeoutInfo(false);
-                  resetAnalysis();
-                }}
-                key="timeout-info"
-              />
-            )}
-          </AnimatePresence>
+          {error && !loading && (
+            <ErrorMessage error={error} onClear={() => setError(null)} />
+          )}
 
           {!analysis && !loading && (
             <AnalysisUpload 

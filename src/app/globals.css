@@ -336,6 +336,28 @@ select:not(:disabled) {
 
 /* --- REPORT CONTENT STYLING --- */
 
+.report-container {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.report-container table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  white-space: nowrap;
+}
+
+/* Ensure table cells don't shrink too much and maintain readability */
+.report-container th, 
+.report-container td {
+  min-width: 100px;
+  padding: 0.75rem 1rem !important;
+}
+
 .report-container, .report-container * {
   background-color: transparent !important;
   background: transparent !important;
