@@ -71,35 +71,34 @@ function ConsultationContent() {
         }
         description="Na základě vašich dat probereme možnosti optimalizace a detaily vyplývající ze smlouvy."
         rightElement={
-          <div className="flex flex-col items-end gap-4">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col md:items-end gap-4">
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
               <button 
                 onClick={handleToHistory}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--panel)] border border-[color:var(--panel-border)] text-[10px] font-black uppercase tracking-widest text-[color:var(--muted)] hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10 dark:hover:bg-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 cursor-pointer shadow-sm group/archiv"
+                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-[var(--panel)] border border-[color:var(--panel-border)] text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[color:var(--muted)] hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10 dark:hover:bg-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 cursor-pointer shadow-sm group/archiv"
               >
                 <History size={14} className="text-indigo-500 group-hover/archiv:scale-110 transition-transform duration-300" />
-                <span className="hidden md:inline">Archiv</span>
+                <span>Archiv</span>
               </button>
               <button 
                 onClick={handleBackToAnalysis}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-500/20 transition-all cursor-pointer shadow-sm"
+                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-500/20 transition-all cursor-pointer shadow-sm"
               >
                 <Search size={14} />
-                <span className="hidden md:inline">Analýza</span>
+                <span>Analýza</span>
               </button>
-            </div>
-
-            <div className={`flex items-center gap-3 rounded-2xl px-5 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all duration-500 ring-1 ${
-              isCalling 
-                ? 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 ring-fuchsia-500/40 shadow-[0_10px_20px_rgba(217,70,219,0.15)]' 
-                : 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 ring-cyan-500/30'
-            }`}>
-              <div className="relative flex h-2.5 w-2.5">
-                <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCalling ? 'animate-ping bg-fuchsia-500' : 'bg-cyan-500'}`}></span>
-                <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${isCalling ? 'bg-fuchsia-600' : 'bg-cyan-600'}`}></span>
+              
+              <div className={`flex items-center gap-2 md:gap-3 rounded-xl md:rounded-2xl px-3 py-2 md:px-5 md:py-2.5 text-[9px] md:text-[10px] font-black tracking-widest uppercase transition-all duration-500 ring-1 ${
+                isCalling 
+                  ? 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 ring-fuchsia-500/40 shadow-[0_10px_20px_rgba(217,70,219,0.15)]' 
+                  : 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 ring-cyan-500/30'
+              }`}>
+                <div className="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
+                  <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCalling ? 'animate-ping bg-fuchsia-500' : 'bg-cyan-500'}`}></span>
+                  <span className={`relative inline-flex h-2 w-2 md:h-2.5 md:w-2.5 rounded-full ${isCalling ? 'bg-fuchsia-600' : 'bg-cyan-600'}`}></span>
+                </div>
+                <span>{isCalling ? "Live Uplink Active" : "Link Standby"}</span>
               </div>
-              <span className="hidden sm:inline">{isCalling ? "Live Uplink Active" : "Link Standby"}</span>
-              <span className="sm:hidden">{isCalling ? "Live" : "Ready"}</span>
             </div>
           </div>
         }
@@ -108,21 +107,24 @@ function ConsultationContent() {
 
       {/* BODY */}
       <div className="flex flex-1 flex-col gap-6 min-h-0 lg:flex-row overflow-hidden mb-6 relative z-10">
-        <ConsultationContext 
-          usporaParam={usporaParam} 
-          fixaceParam={fixaceParam} 
-          isCalling={isCalling} 
-          starting={starting}
-          onStart={handleStartCall}
-          onStop={handleStopCall}
-        />
+        <div className={`${isCalling ? 'hidden' : 'flex'} lg:flex lg:w-72 xl:w-80 shrink-0 min-h-0`}>
+          <ConsultationContext 
+            usporaParam={usporaParam} 
+            fixaceParam={fixaceParam} 
+            isCalling={isCalling} 
+            starting={starting}
+            onStart={handleStartCall}
+            onStop={handleStopCall}
+          />
+        </div>
 
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <div className={`${!isCalling ? 'hidden' : 'flex'} lg:flex flex-1 flex-col overflow-hidden`}>
           <ConsultationChat 
             messages={messages} 
             isCalling={isCalling} 
             scrollContainerRef={scrollContainerRef} 
             onScroll={handleScroll} 
+            onStopCall={handleStopCall}
           />
 
           <ConsultationInput 

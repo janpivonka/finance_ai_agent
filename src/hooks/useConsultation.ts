@@ -44,6 +44,20 @@ export const useConsultation = () => {
 
   useEffect(() => {
     setIsMounted(true);
+
+    // Filter out specific non-fatal console errors that trigger Next.js dev overlay on mobile
+    if (process.env.NODE_ENV === "development") {
+      const originalError = console.error;
+      console.error = (...args: any[]) => {
+        const msg = String(args[0] || "");
+        if (msg.includes("Ignoring settings for browser- or platform-unsupported input processor(s): audio")) {
+          return;
+        }
+        originalError.apply(console, args);
+      };
+      return () => { console.error = originalError; };
+    }
+
     const historyData = localStorage.getItem("finance_history");
     if (historyData) {
       try {
@@ -132,7 +146,19 @@ export const useConsultation = () => {
 
     vapi.on("error", (err: any) => {
       console.error("Vapi error event:", err);
-      const msg = typeof err === 'string' ? err : err?.message || "Neznámá chyba Vapi";
+      const msg = typeof err === 'string' ? err : err?.message || err?.error || "Neznámá chyba Vapi";
+      
+      const isAudioWarning = 
+        msg.toLowerCase().includes("unsupported input processor") || 
+        msg.toLowerCase().includes("audio") ||
+        msg.toLowerCase().includes("processor") ||
+        msg.toLowerCase().includes("settings for browser");
+
+      if (isAudioWarning) {
+        console.warn("Vapi audio processing warning (non-fatal):", msg);
+        return;
+      }
+
       alert(`Vapi error: ${msg}`);
       setIsCalling(false);
       setStarting(false);
@@ -177,13 +203,14 @@ export const useConsultation = () => {
 
     try {
       setStarting(true);
+      setMessages([]); // Reset chat for a new call
       setAwaitingFirstTranscript(true);
       
       console.log("Starting Vapi call with params:", { usporaParam, fixaceParam, extraContext });
       
-      await vapiRef.current.start("4c32087f-c5e7-48db-b775-10a47b12e912", {
-        variableValues: { 
-          uspora: usporaParam, 
+      await vapiRef.current.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || "4c32087f-c5e7-48db-b775-10a47b12e912", {
+        variableValues: {
+          uspora: usporaParam,
           fixace: fixaceParam,
           analyticky_duvod: extraContext || "Klient chce probrat možnosti úspor."
         },
@@ -191,6 +218,18 @@ export const useConsultation = () => {
     } catch (error: unknown) {
       console.error("Vapi start error detail:", error);
       const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      const isAudioWarning = 
+        errorMessage.toLowerCase().includes("unsupported input processor") || 
+        errorMessage.toLowerCase().includes("audio") ||
+        errorMessage.toLowerCase().includes("processor") ||
+        errorMessage.toLowerCase().includes("settings for browser");
+
+      if (isAudioWarning) {
+        console.warn("Vapi start audio warning (non-fatal):", errorMessage);
+        return;
+      }
+
       alert(`Chyba při zahájení hovoru: ${errorMessage}`);
       setIsCalling(false);
       setAwaitingFirstTranscript(false);
@@ -200,8 +239,13 @@ export const useConsultation = () => {
   };
 
   const handleStopCall = () => {
-    vapiRef.current?.stop();
+    try {
+      vapiRef.current?.stop();
+    } catch (e) {
+      console.error("Vapi stop error:", e);
+    }
     setIsCalling(false);
+    setStarting(false);
     setAwaitingFirstTranscript(false);
   };
 
