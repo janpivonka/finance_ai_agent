@@ -1,6 +1,7 @@
 // src/hooks/useHistory.ts
 import { useState, useEffect, useCallback } from 'react';
 import { HistoryItem } from '@/types';
+import { sanitizeHistoryNames } from '@/utils/history';
 
 const STORAGE_KEY = "finance_history";
 
@@ -8,7 +9,7 @@ export const useHistory = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Načtení historie
+  // Načtení a sanace historie
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -25,8 +26,17 @@ export const useHistory = () => {
             id: String(item.id || `id-${index}-${Date.now()}`),
           } as HistoryItem;
         });
+
+        // SANACE: Oprava duplicitních názvů v celé historii
+        const { sanitized, changed } = sanitizeHistoryNames(validated);
         
-        setHistory(validated);
+        if (changed) {
+          console.log("History sanitized: fixed duplicate filenames.");
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
+          setHistory(sanitized);
+        } else {
+          setHistory(validated);
+        }
       } catch (e) {
         console.error("Chyba při načítání historie:", e);
         setHistory([]);

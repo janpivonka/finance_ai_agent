@@ -14,6 +14,7 @@ import { AnalysisResults } from "../components/analysis/AnalysisResults";
 import { PageBackground } from "../components/ui/PageBackground";
 import { PageHeader } from "../components/ui/PageHeader";
 import { ErrorMessage } from "../components/ui/ErrorMessage";
+import { DuplicateNameModal } from "../components/ui/DuplicateNameModal";
 import { Activity, RotateCcw } from "lucide-react";
 
 export default function AnalysisPage() {
@@ -35,7 +36,13 @@ export default function AnalysisPage() {
     handleRenameFile,
     handleProcess,
     resetAnalysis,
-    restartUsporaAnimation
+    restartUsporaAnimation,
+    // Duplicate Modal Props
+    isDuplicateModalOpen,
+    pendingOriginalName,
+    suggestedName,
+    confirmRename,
+    cancelRename
   } = useAnalysis();
 
   useScrollDirection();
@@ -79,6 +86,14 @@ export default function AnalysisPage() {
 
         <div className={`relative z-10 flex-1 flex flex-col gap-4 transition-all duration-700 ${!analysis ? "justify-center" : ""}`}>
           
+          <DuplicateNameModal 
+            isOpen={isDuplicateModalOpen}
+            onClose={cancelRename}
+            onConfirm={confirmRename}
+            originalName={pendingOriginalName}
+            suggestedName={suggestedName}
+          />
+
           {error && !loading && (
             <ErrorMessage error={error} onClear={() => setError(null)} />
           )}

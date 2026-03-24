@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { AnalysisResult, HistoryItem, ServerActionResponse } from "@/types";
 import { analyzeContract } from "@/app/analysis/actions";
+import { checkFileNameExists, getUniqueFileName } from "@/utils/history";
 
 export const useAnalysis = () => {
   const [contractText, setContractText] = useState("");
@@ -14,6 +15,12 @@ export const useAnalysis = () => {
   const [isEditingFileName, setIsEditingFileName] = useState(false);
   const [tempFileName, setTempFileName] = useState("");
   const [mounted, setMounted] = useState(false);
+
+  // Duplicate name state
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<FormData | null>(null);
+  const [pendingOriginalName, setPendingOriginalName] = useState("");
+  const [suggestedName, setSuggestedName] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -74,15 +81,24 @@ export const useAnalysis = () => {
   }, [loading]);
 
   const handleRenameFile = (newName: string) => {
-    setUploadedFileName(newName);
-    setIsEditingFileName(false);
-    setAnalysis((prev) => (prev ? { ...prev, fileName: newName } : prev));
+    // Check for duplicates in history even when manually renaming
     if (typeof window !== 'undefined') {
       try {
-        const targetId = analysis?.id ? String(analysis.id) : null;
         const raw = localStorage.getItem("finance_history");
         const parsed = raw ? (JSON.parse(raw) as unknown) : [];
         const savedHistory = (Array.isArray(parsed) ? parsed : []) as HistoryItem[];
+        
+        // If the new name already exists (excluding the current item)
+        if (checkFileNameExists(newName, savedHistory, analysis?.id)) {
+          const uniqueName = getUniqueFileName(newName, savedHistory, analysis?.id);
+          newName = uniqueName; // Automatically apply index
+        }
+
+        setUploadedFileName(newName);
+        setIsEditingFileName(false);
+        setAnalysis((prev) => (prev ? { ...prev, fileName: newName } : prev));
+        
+        const targetId = analysis?.id ? String(analysis.id) : null;
         const updatedHistory = targetId
           ? savedHistory.map((item) =>
               String(item.id) === targetId ? { ...item, fileName: newName } : item,
@@ -95,7 +111,7 @@ export const useAnalysis = () => {
     }
   };
 
-  const handleProcess = async (formData: FormData, fileName: string) => {
+  const processAnalysis = async (formData: FormData, fileName: string) => {
     setLoading(true);
     setError(null);
     setAnalysis(null);
@@ -130,6 +146,44 @@ export const useAnalysis = () => {
     }
   };
 
+  const handleProcess = async (formData: FormData, fileName: string) => {
+    // Check for duplicates in localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem("finance_history");
+        const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+        const history = (Array.isArray(parsed) ? parsed : []) as HistoryItem[];
+        
+        if (checkFileNameExists(fileName, history)) {
+          setPendingFormData(formData);
+          setPendingOriginalName(fileName);
+          setSuggestedName(getUniqueFileName(fileName, history));
+          setIsDuplicateModalOpen(true);
+          return;
+        }
+      } catch (e) {
+        console.error("Chyba při kontrole duplicitních názvů:", e);
+      }
+    }
+
+    await processAnalysis(formData, fileName);
+  };
+
+  const confirmRename = async (newName: string) => {
+    if (pendingFormData && pendingOriginalName) {
+      setIsDuplicateModalOpen(false);
+      await processAnalysis(pendingFormData, newName);
+      setPendingFormData(null);
+      setPendingOriginalName("");
+    }
+  };
+
+  const cancelRename = () => {
+    setIsDuplicateModalOpen(false);
+    setPendingFormData(null);
+    setPendingOriginalName("");
+  };
+
   const resetAnalysis = () => {
     setAnalysis(null);
     setContractText("");
@@ -160,6 +214,12 @@ export const useAnalysis = () => {
     handleRenameFile,
     handleProcess,
     resetAnalysis,
-    restartUsporaAnimation
+    restartUsporaAnimation,
+    // Duplicate Modal Props
+    isDuplicateModalOpen,
+    pendingOriginalName,
+    suggestedName,
+    confirmRename,
+    cancelRename
   };
 };
