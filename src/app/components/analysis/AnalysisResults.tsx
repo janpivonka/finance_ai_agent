@@ -196,24 +196,25 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             <table className="w-full text-sm">
               <thead className="bg-[var(--background)]/30 text-[9px] font-black uppercase tracking-[0.2em] text-[color:var(--muted-2)]">
                 <tr>
-                  <th className="px-10 py-6 text-left">Instituce</th>
-                  <th className="px-10 py-6 text-left">Sazba</th>
-                  <th className="px-10 py-6 text-left text-cyan-600 dark:text-cyan-400">Měsíční úspora</th>
-                  <th className="px-10 py-6 text-left hidden md:table-cell">Strategická výhoda</th>
+                  <th className="px-6 md:px-10 py-6 text-left">Instituce</th>
+                  <th className="px-6 md:px-10 py-6 text-left">Sazba</th>
+                  <th className="px-6 md:px-10 py-6 text-left">Měsíční úspora</th>
+                  <th className="px-6 md:px-10 py-6 text-left">Strategická výhoda</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[color:var(--panel-border)]">
                 {analysis.top_nabidky?.map((item, i) => {
                   const localUspora = Number(item?.usp || 0);
+                  const formattedUspora = Math.floor(localUspora * (displayUspora / (Number(analysis.uspora) || 1))).toLocaleString();
                   return (
                     <tr key={i} className="group/row hover:bg-indigo-500/5 transition-all duration-300 text-left">
-                      <td className="px-10 py-7 font-black text-[color:var(--foreground)] group-hover/row:text-cyan-600 dark:group-hover/row:text-cyan-400 transition-colors">{item?.banka || "—"}</td>
-                      <td className="px-10 py-7 font-bold text-[color:var(--muted)]">{item?.sazba || "—"}</td>
-                      <td className="px-10 py-7 font-black text-cyan-600 dark:text-cyan-400 text-xl group-hover/row:scale-105 transition-transform origin-left">
-                         +{Math.floor(localUspora * (displayUspora / (Number(analysis.uspora) || 1))).toLocaleString()} Kč
+                      <td className="px-6 md:px-10 py-7 font-black text-[color:var(--foreground)] group-hover/row:text-cyan-600 dark:group-hover/row:text-cyan-400 transition-colors whitespace-nowrap">{item?.banka || "—"}</td>
+                      <td className="px-6 md:px-10 py-7 font-black text-fuchsia-600 dark:text-fuchsia-400 whitespace-nowrap">{item?.sazba || "—"}</td>
+                      <td className="px-6 md:px-10 py-7 font-black text-emerald-600 dark:text-emerald-400 text-lg md:text-xl group-hover/row:scale-105 transition-transform origin-left whitespace-nowrap">
+                         +{formattedUspora} Kč
                       </td>
-                      <td className="px-10 py-7 hidden md:table-cell">
-                        <span className="rounded-xl bg-[var(--background)] dark:bg-[#020617] border border-[color:var(--panel-border)] px-4 py-2 text-[10px] font-black text-[color:var(--muted)] group-hover/row:text-indigo-600 dark:group-hover/row:text-indigo-400 group-hover/row:border-indigo-500/30 transition-all uppercase tracking-widest shadow-inner">
+                      <td className="px-6 md:px-10 py-7">
+                        <span className="inline-block rounded-xl bg-[var(--background)] dark:bg-[#020617] border border-[color:var(--panel-border)] px-4 py-2 text-[9px] md:text-[10px] font-black text-[color:var(--muted)] group-hover/row:text-indigo-600 dark:group-hover/row:text-indigo-400 group-hover/row:border-indigo-500/30 transition-all uppercase tracking-widest shadow-inner whitespace-nowrap md:whitespace-normal">
                           {item?.vyhoda || "Standardní podmínky"}
                         </span>
                       </td>
