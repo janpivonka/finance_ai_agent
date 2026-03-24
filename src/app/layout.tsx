@@ -13,7 +13,7 @@ export default function RootLayout({
         <ThemeProvider>
           <div className="flex h-screen w-full overflow-hidden">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto relative">
+            <main className="flex-1 overflow-y-auto relative pb-32 md:pb-0">
               {children}
             </main>
           </div>
