@@ -5,11 +5,11 @@ import { useAppNavigation } from "./useAppNavigation";
 import { HistoryItem } from "@/types";
 
 type VapiClient = {
-  on: (event: string, cb: (message: unknown) => void) => void;
+  on: (event: string, cb: (message: any) => void) => void;
   start: (
     assistantId: string,
     options?: { variableValues?: Record<string, string> },
-  ) => Promise<void>;
+  ) => Promise<any>;
   stop: () => void;
   send: (payload: unknown) => void;
 };
@@ -87,8 +87,12 @@ export const useConsultation = () => {
     if (vapiRef.current) return;
 
     const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
-    if (!publicKey) return;
+    if (!publicKey) {
+      console.error("NEXT_PUBLIC_VAPI_PUBLIC_KEY is missing!");
+      return;
+    }
 
+    console.log("Initializing Vapi with public key:", publicKey.substring(0, 5) + "...");
     const vapi = new Vapi(publicKey) as unknown as VapiClient;
 
     vapi.on("message", (message: unknown) => {
@@ -126,8 +130,20 @@ export const useConsultation = () => {
       setMessages(prev => prev.map(m => ({ ...m, isFinal: true })));
     });
 
+    vapi.on("error", (err: any) => {
+      console.error("Vapi error event:", err);
+      const msg = typeof err === 'string' ? err : err?.message || "Neznámá chyba Vapi";
+      alert(`Vapi error: ${msg}`);
+      setIsCalling(false);
+      setStarting(false);
+      setAwaitingFirstTranscript(false);
+    });
+
     vapiRef.current = vapi;
-    return () => { vapi.stop(); };
+    return () => { 
+      vapi.stop(); 
+      vapiRef.current = null;
+    };
   }, [isMounted]);
 
   const handleBackToAnalysis = () => {
@@ -142,10 +158,29 @@ export const useConsultation = () => {
   };
 
   const handleStartCall = async () => {
-    if (!vapiRef.current) return;
+    if (!vapiRef.current) {
+      console.error("Vapi instance is not initialized");
+      return;
+    }
+
+    // Check for secure context (required for microphone on mobile)
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      alert("Pro fungování hlasového asistenta je vyžadováno zabezpečené připojení (HTTPS). Na mobilních zařízeních nelze mikrofon používat přes nezabezpečené HTTP (např. IP adresu).");
+      return;
+    }
+
+    // Check for mediaDevices support
+    if (typeof navigator !== "undefined" && (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia)) {
+      alert("Váš prohlížeč nepodporuje nebo blokuje přístup k mikrofonu. Zkontrolujte prosím oprávnění v nastavení prohlížeče.");
+      return;
+    }
+
     try {
       setStarting(true);
       setAwaitingFirstTranscript(true);
+      
+      console.log("Starting Vapi call with params:", { usporaParam, fixaceParam, extraContext });
+      
       await vapiRef.current.start("4c32087f-c5e7-48db-b775-10a47b12e912", {
         variableValues: { 
           uspora: usporaParam, 
@@ -154,7 +189,9 @@ export const useConsultation = () => {
         },
       });
     } catch (error: unknown) {
-      console.error("Vapi start error:", error);
+      console.error("Vapi start error detail:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`Chyba při zahájení hovoru: ${errorMessage}`);
       setIsCalling(false);
       setAwaitingFirstTranscript(false);
     } finally {
