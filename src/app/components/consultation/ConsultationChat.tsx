@@ -1,5 +1,6 @@
 import React from "react";
 import { MessageSquare, Mic } from "lucide-react";
+import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 
 interface Message {
   role: "user" | "assistant";
@@ -21,47 +22,50 @@ export const ConsultationChat: React.FC<ConsultationChatProps> = ({
   scrollContainerRef, 
   onScroll,
   onStopCall
-}) => (
-  <div className="flex flex-1 flex-col overflow-hidden gap-4 md:gap-6 min-h-0 animate-fade-in-right">
-    {/* Header Card */}
-    <div className="flex shrink-0 items-center justify-between rounded-[1.5rem] md:rounded-[2rem] border border-[color:var(--panel-border)] bg-[var(--panel-strong)] px-4 py-3 md:px-8 md:py-5 shadow-lg ring-1 ring-[color:var(--panel-border)]">
-      <div className="flex items-center gap-3 md:gap-4">
-        <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl md:rounded-2xl bg-[var(--background)] shadow-inner ring-1 ring-[color:var(--panel-border)]">
-          <div className="relative">
-            <MessageSquare size={18} className={`transition-colors duration-500 md:w-5 md:h-5 ${isCalling ? 'text-fuchsia-500' : 'text-cyan-500'}`} />
-            {isCalling && <div className="absolute -top-1 -right-1 h-2 w-2 md:h-3 md:w-3 rounded-full bg-fuchsia-500 animate-ping" />}
-          </div>
-        </div>
-        <div className="text-left">
-          <span className="text-[9px] md:text-[11px] font-black uppercase tracking-[0.2em] text-[color:var(--foreground)] block">AI Neural Dialogue</span>
-          <span className="text-[8px] md:text-[9px] font-bold text-indigo-500 uppercase tracking-widest opacity-80">Encrypted Stream 2.0</span>
-        </div>
-      </div>
-      
-      {isCalling && (
-        <div className="flex items-center gap-3 md:gap-5">
-          <div className="hidden sm:flex items-end gap-1.5 h-5 px-3 py-1.5 bg-cyan-500/5 rounded-lg border border-cyan-500/10">
-             {[1,2,3,4,5].map(i => (
-               <div key={i} className={`w-1 bg-cyan-500 rounded-full animate-visualizer shadow-[0_0_8px_#22d3ee]`} style={{ animationDelay: `${i*0.15}s`, height: '60%' }} />
-             ))}
-          </div>
-          
-          {/* Mobile Only Stop Button */}
-          <button 
-            onClick={onStopCall}
-            className="lg:hidden flex items-center gap-2 rounded-xl bg-rose-500 px-3 py-2 shadow-[0_5px_15px_rgba(244,63,94,0.3)] animate-pulse border border-rose-400/50 cursor-pointer active:scale-95"
-          >
-             <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-             <span className="text-[9px] font-black text-white uppercase tracking-wider">Stop</span>
-          </button>
+}) => {
+  const { activeId, handleInteraction } = useMobileInteraction();
 
-          <div className="hidden lg:flex items-center gap-2 rounded-xl bg-fuchsia-500 px-4 py-1.5 shadow-[0_5px_15px_rgba(217,70,219,0.3)] animate-pulse border border-fuchsia-400/50">
-             <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
-             <span className="text-[10px] font-black text-white uppercase tracking-wider">Live</span>
+  return (
+    <div className="flex flex-1 flex-col overflow-hidden gap-4 md:gap-6 min-h-0 animate-fade-in-right">
+      {/* Header Card */}
+      <div className="flex shrink-0 items-center justify-between rounded-[1.5rem] md:rounded-[2rem] border border-[color:var(--panel-border)] bg-[var(--panel-strong)] px-4 py-3 md:px-8 md:py-5 shadow-lg ring-1 ring-[color:var(--panel-border)]">
+        <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl md:rounded-2xl bg-[var(--background)] shadow-inner ring-1 ring-[color:var(--panel-border)]">
+            <div className="relative">
+              <MessageSquare size={18} className={`transition-colors duration-500 md:w-5 md:h-5 ${isCalling ? 'text-fuchsia-500' : 'text-cyan-500'}`} />
+              {isCalling && <div className="absolute -top-1 -right-1 h-2 w-2 md:h-3 md:w-3 rounded-full bg-fuchsia-500 animate-ping" />}
+            </div>
+          </div>
+          <div className="text-left">
+            <span className="text-[9px] md:text-[11px] font-black uppercase tracking-[0.2em] text-[color:var(--foreground)] block">AI Neural Dialogue</span>
+            <span className="text-[8px] md:text-[9px] font-bold text-indigo-500 uppercase tracking-widest opacity-80">Encrypted Stream 2.0</span>
           </div>
         </div>
-      )}
-    </div>
+        
+        {isCalling && (
+          <div className="flex items-center gap-3 md:gap-5">
+            <div className="hidden sm:flex items-end gap-1.5 h-5 px-3 py-1.5 bg-cyan-500/5 rounded-lg border border-cyan-500/10">
+               {[1,2,3,4,5].map(i => (
+                 <div key={i} className={`w-1 bg-cyan-500 rounded-full animate-visualizer shadow-[0_0_8px_#22d3ee]`} style={{ animationDelay: `${i*0.15}s`, height: '60%' }} />
+               ))}
+            </div>
+            
+            {/* Mobile Only Stop Button */}
+            <button 
+              onClick={() => handleInteraction('stop-call-mobile', onStopCall || (() => {}), 350)}
+              className={`lg:hidden flex items-center gap-2 rounded-xl bg-rose-500 px-3 py-2 shadow-[0_5px_15px_rgba(244,63,94,0.3)] animate-pulse border border-rose-400/50 cursor-pointer active:scale-95 ${activeId === 'stop-call-mobile' ? 'scale-95 bg-rose-600' : ''}`}
+            >
+               <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+               <span className="text-[9px] font-black text-white uppercase tracking-wider">Stop</span>
+            </button>
+
+            <div className="hidden lg:flex items-center gap-2 rounded-xl bg-fuchsia-500 px-4 py-1.5 shadow-[0_5px_15px_rgba(217,70,219,0.3)] animate-pulse border border-fuchsia-400/50">
+               <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+               <span className="text-[10px] font-black text-white uppercase tracking-wider">Live</span>
+            </div>
+          </div>
+        )}
+      </div>
 
     {/* Messages Card */}
     <div className="flex-1 rounded-[2rem] md:rounded-[2.5rem] border border-[color:var(--panel-border)] bg-[var(--panel)] backdrop-blur-xl shadow-2xl ring-1 ring-[color:var(--panel-border)] overflow-hidden flex flex-col relative group transition-all duration-500 hover:border-indigo-500/20">
@@ -118,3 +122,4 @@ export const ConsultationChat: React.FC<ConsultationChatProps> = ({
     </div>
   </div>
 );
+};

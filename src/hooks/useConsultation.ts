@@ -173,7 +173,39 @@ export const useConsultation = () => {
   }, [isMounted]);
 
   const handleBackToAnalysis = () => {
-    goToAnalysis(fullHistoryEntry || undefined);
+    if (fullHistoryEntry) {
+      goToAnalysis(fullHistoryEntry);
+      return;
+    }
+    
+    // Fallback: pokusíme se najít záznam v historii přímo při kliknutí (pokud nebyl nalezen při mountu)
+    if (typeof window !== "undefined") {
+      const historyData = localStorage.getItem("finance_history");
+      if (historyData) {
+        try {
+          const parsed = JSON.parse(historyData) as unknown;
+          const history = (Array.isArray(parsed) ? parsed : []) as HistoryItem[];
+          const matchingEntry =
+            (idParam
+              ? history.find((h) => String(h.id) === String(idParam))
+              : null) ||
+            history.find(
+              (h) =>
+                String(h.uspora) === String(usporaParam) &&
+                String(h.fixace) === String(fixaceParam),
+            );
+
+          if (matchingEntry) {
+            goToAnalysis(matchingEntry);
+            return;
+          }
+        } catch (e) {
+          console.error("Chyba při hledání v historii:", e);
+        }
+      }
+    }
+    
+    goToAnalysis();
   };
 
   const handleScroll = () => {

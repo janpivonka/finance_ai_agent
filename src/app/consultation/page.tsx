@@ -7,6 +7,7 @@ import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { ConsultationContext } from "../components/consultation/ConsultationContext";
 import { ConsultationChat } from "../components/consultation/ConsultationChat";
 import { ConsultationInput } from "../components/consultation/ConsultationInput";
+import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 
 // Shared UI Components
 import { PageBackground } from "../components/ui/PageBackground";
@@ -33,6 +34,8 @@ function ConsultationContent() {
     handleBackToAnalysis,
     handleToHistory
   } = useConsultation();
+
+  const { activeId, handleInteraction } = useMobileInteraction();
 
   useIntersectionObserver('.reveal', isMounted);
 
@@ -74,15 +77,15 @@ function ConsultationContent() {
           <div className="flex flex-col md:items-end gap-4">
             <div className="flex flex-wrap items-center gap-2 md:gap-3">
               <button 
-                onClick={handleToHistory}
-                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-[var(--panel)] border border-[color:var(--panel-border)] text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[color:var(--muted)] hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10 dark:hover:bg-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 cursor-pointer shadow-sm group/archiv"
+                onClick={() => handleInteraction('go-history', handleToHistory, 350)}
+                className={`flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-[var(--panel)] border border-[color:var(--panel-border)] text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[color:var(--muted)] hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10 dark:hover:bg-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300 cursor-pointer shadow-sm group/archiv ${activeId === 'go-history' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 dark:bg-indigo-500/20 border-indigo-500/40 scale-95' : ''}`}
               >
-                <History size={14} className="text-indigo-500 group-hover/archiv:scale-110 transition-transform duration-300" />
+                <History size={14} className={`text-indigo-500 transition-transform duration-300 ${activeId === 'go-history' ? 'scale-110' : 'group-hover/archiv:scale-110'}`} />
                 <span>Archiv</span>
               </button>
               <button 
-                onClick={handleBackToAnalysis}
-                className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-500/20 transition-all cursor-pointer shadow-sm"
+                onClick={() => handleInteraction('go-analysis', handleBackToAnalysis, 350)}
+                className={`flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[9px] md:text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-500/20 transition-all cursor-pointer shadow-sm ${activeId === 'go-analysis' ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-500/20 scale-95' : ''}`}
               >
                 <Search size={14} />
                 <span>Analýza</span>
