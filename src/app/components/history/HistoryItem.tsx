@@ -27,27 +27,25 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
   innerRef,
   isActive = false
 }) => (
-  <motion.div
-    layout
-    ref={innerRef}
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, x: 100, scale: 0.95 }}
-    transition={{ 
-      duration: 0.5, 
-      ease: [0.16, 1, 0.3, 1]
-    }}
-    onClick={() => onEntryClick(item)}
-    className={`relative group flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 cursor-pointer border ${
-      isHighlighted 
-      ? 'history-highlight bg-fuchsia-500/10 border-fuchsia-500/60 shadow-[0_0_40px_rgba(217,70_219,0.18)] ring-fuchsia-500/40 z-20' 
-      : isSelected
-      ? 'bg-indigo-500/10 border-indigo-500/50 shadow-[0_0_30px_rgba(79,70,229,0.1)] ring-indigo-500/30'
-      : isActive
-      ? 'scale-[0.98] border-indigo-500/40 bg-[var(--card-hover-bg)] ring-indigo-500/20 shadow-lg'
-      : 'bg-[var(--card-bg)] border-[color:var(--card-border)] hover:border-indigo-500/40 hover:bg-[var(--card-hover-bg)] ring-[color:var(--panel-border)] bg-tint-indigo'
-    }`}
-  >
+  <div className="reveal" ref={innerRef}>
+    <motion.div
+      layout
+      exit={{ opacity: 0, x: 100, scale: 0.95 }}
+      transition={{ 
+        duration: 0.6, 
+        ease: [0.16, 1, 0.3, 1]
+      }}
+      onClick={() => onEntryClick(item)}
+      className={`relative group flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 cursor-pointer border ${
+        isHighlighted 
+        ? 'history-highlight bg-fuchsia-500/10 border-fuchsia-500/60 shadow-[0_0_40px_rgba(217,70_219,0.18)] ring-fuchsia-500/40 z-20' 
+        : isSelected
+        ? 'bg-indigo-500/10 border-indigo-500/50 shadow-[0_0_30px_rgba(79,70,229,0.1)] ring-indigo-500/30'
+        : isActive
+        ? 'scale-[0.98] border-indigo-500/40 bg-[var(--card-hover-bg)] ring-indigo-500/20 shadow-lg'
+        : 'bg-[var(--card-bg)] border-[color:var(--card-border)] hover:border-indigo-500/40 hover:bg-[var(--card-hover-bg)] ring-[color:var(--panel-border)] bg-tint-indigo'
+      }`}
+    >
     <div className="flex items-center gap-5">
       <button 
         onClick={(e) => {
@@ -114,4 +112,5 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
       </div>
     </div>
   </motion.div>
+  </div>
 );

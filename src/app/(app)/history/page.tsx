@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ScrollToTop } from "../../components/ScrollToTop";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
@@ -56,6 +56,7 @@ export default function HistoryPage() {
   const { activeId, handleInteraction } = useMobileInteraction();
 
   useScrollDirection();
+  useIntersectionObserver('.reveal', isLoaded ? filteredAndSortedHistory.length : -1);
   
   const handleReturnToAnalysis = (item: HistoryItem) => {
     goToAnalysis(item);
@@ -79,7 +80,7 @@ export default function HistoryPage() {
         <PageHeader 
           badgeIcon={HistoryIcon}
           badgeText="Data Archive Protocol"
-          revealType="on-load"
+          revealType="on-scroll"
           title={
             <>
               Moje <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] animate-gradient-text not-italic">Historie</span>
@@ -87,7 +88,7 @@ export default function HistoryPage() {
           }
           description="Kompletní přehled vašich finančních analýz. Data jsou ukládána lokálně a synchronizována pro okamžitý přístup."
           rightElement={
-            <div className="flex flex-col md:flex-row gap-4 mb-2">
+            <div className="flex flex-col md:flex-row gap-4 mb-2 reveal">
               <div className="relative flex-1 group min-w-[300px]">
                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[color:var(--muted)] group-focus-within:text-cyan-400 transition-colors z-10" />
                 <input

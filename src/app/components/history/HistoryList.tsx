@@ -33,7 +33,11 @@ export const HistoryList: React.FC<HistoryListProps> = ({
   itemsRef,
   activeEntryId = null
 }) => (
-  <motion.div layout key="history-list" className="flex flex-col gap-6 relative z-10">
+  <motion.div 
+    layout 
+    key="history-list" 
+    className="flex flex-col gap-6 relative z-10"
+  >
     <AnimatePresence>
       {selectedIds.length > 0 && (
         <motion.div 
@@ -76,7 +80,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({
     
     <div className="grid gap-4">
       <AnimatePresence initial={false}>
-        {items.map((item) => (
+        {items.map((item, index) => (
           <HistoryItem
             key={item.id}
             item={item}
