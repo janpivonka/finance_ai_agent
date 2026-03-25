@@ -57,9 +57,6 @@ export default function HistoryPage() {
 
   useScrollDirection();
   
-  // Intersection observer for title reveal
-  useIntersectionObserver('.reveal', isLoaded ? filteredAndSortedHistory.length : -1);
-
   const handleReturnToAnalysis = (item: HistoryItem) => {
     goToAnalysis(item);
   };
@@ -82,7 +79,7 @@ export default function HistoryPage() {
         <PageHeader 
           badgeIcon={HistoryIcon}
           badgeText="Data Archive Protocol"
-          revealType="on-scroll"
+          revealType="on-load"
           title={
             <>
               Moje <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] animate-gradient-text not-italic">Historie</span>
@@ -136,11 +133,12 @@ export default function HistoryPage() {
           }
         />
         
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false}>
           {filteredAndSortedHistory.length === 0 ? (
-            <HistoryEmptyState searchQuery={searchQuery} />
+            <HistoryEmptyState key="empty" searchQuery={searchQuery} />
           ) : (
             <HistoryList
+              key="list"
               items={filteredAndSortedHistory}
               selectedIds={selectedIds}
               highlightedId={highlightedId}

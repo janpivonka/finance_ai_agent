@@ -48,14 +48,24 @@ export const useHistoryPage = () => {
   }, []);
 
   const filteredAndSortedHistory = useMemo(() => {
+    // Pomocná funkce pro normalizaci textu (odstranění diakritiky)
+    const normalize = (text: string) => 
+      text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+    const s = normalize(searchQuery);
+
     return history
       .filter((item) => {
-        if (!searchQuery) return true;
-        const s = searchQuery.toLowerCase();
+        if (!s) return true;
+        
+        const fileName = normalize(item?.fileName || "");
+        const date = normalize(item?.date || "");
+        const uspora = normalize(String(item?.uspora || ""));
+        
         return (
-          String(item?.fileName || "").toLowerCase().includes(s) ||
-          String(item?.date || "").toLowerCase().includes(s) ||
-          String(item?.uspora || "").toLowerCase().includes(s)
+          fileName.includes(s) ||
+          date.includes(s) ||
+          uspora.includes(s)
         );
       })
       .sort((a, b) => {
@@ -63,7 +73,18 @@ export const useHistoryPage = () => {
         if (sortBy === "uspora") {
           comparison = Number(a.uspora || 0) - Number(b.uspora || 0);
         } else if (sortBy === "name") {
-          comparison = (a.fileName || "").localeCompare(b.fileName || "");
+          comparison = (a.fileName || "").localeCompare(b.fileName || "", 'cs', { sensitivity: 'base' });
+        } else if (sortBy === "date") {
+          // Sort by timestamp if available, otherwise fallback to parsing date or using id
+          const timeA = a.timestamp ? new Date(a.timestamp).getTime() : (a.id.startsWith('anl-') ? parseInt(a.id.split('-')[1]) : 0);
+          const timeB = b.timestamp ? new Date(b.timestamp).getTime() : (b.id.startsWith('anl-') ? parseInt(b.id.split('-')[1]) : 0);
+          
+          if (timeA !== timeB && !isNaN(timeA) && !isNaN(timeB)) {
+            comparison = timeA - timeB;
+          } else {
+            // Fallback na textové porovnání ID
+            comparison = (a.id || "").toString().localeCompare((b.id || "").toString());
+          }
         } else {
           comparison = (a.id || "").toString().localeCompare((b.id || "").toString());
         }

@@ -130,7 +130,8 @@ export const useAnalysis = () => {
           ...serverData,
           fileName: fileName,
           id: String(serverData.id || `anl-${Date.now()}`),
-          date: String(new Date().toLocaleDateString('cs-CZ'))
+          date: String(new Date().toLocaleDateString('cs-CZ')),
+          timestamp: new Date().toISOString()
         };
 
         setTimeout(() => {

@@ -28,17 +28,14 @@ export const HistoryItem: React.FC<HistoryItemProps> = ({
   isActive = false
 }) => (
   <motion.div
-    layout="position"
-    layoutScroll
+    layout
     ref={innerRef}
     initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: false, margin: "100px 0px -150px 0px", amount: 0.1 }}
+    animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, x: 100, scale: 0.95 }}
     transition={{ 
-      duration: 0.8, 
-      ease: [0.16, 1, 0.3, 1],
-      layout: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
+      duration: 0.5, 
+      ease: [0.16, 1, 0.3, 1]
     }}
     onClick={() => onEntryClick(item)}
     className={`relative group flex items-center justify-between p-6 rounded-[2rem] transition-all duration-500 cursor-pointer border ${

@@ -86,21 +86,30 @@ export const sanitizeHistoryNames = (history: HistoryItem[]): { sanitized: Histo
   let changed = false;
   const newHistory = [...history];
 
-  // We iterate from oldest to newest to keep the original name for the first one.
-  // History is usually sorted [newest, ..., oldest]
-  for (let i = newHistory.length - 1; i >= 0; i--) {
+  // Map to track used names and their original IDs to prevent cross-renaming
+  const usedNames = new Set<string>();
+
+  // We iterate from newest to oldest (standard history order)
+  for (let i = 0; i < newHistory.length; i++) {
     const item = newHistory[i];
     const currentName = item.fileName || "Dokument bez názvu";
     
-    // Check if this name already appeared earlier in the processing (which means later in history)
-    // Actually, let's just use the current unique generator against the already processed items
-    const processedItems = newHistory.slice(i + 1);
-    
-    const uniqueName = getUniqueFileName(currentName, processedItems, String(item.id));
-    
-    if (uniqueName !== currentName) {
-      newHistory[i] = { ...item, fileName: uniqueName };
-      changed = true;
+    // Check if this name is already used by a newer item
+    if (usedNames.has(currentName.toLowerCase())) {
+      // It's a duplicate, generate a unique name based on what's already in usedNames
+      // We need a temporary history-like structure for getUniqueFileName
+      const fakeHistory = Array.from(usedNames).map(name => ({ fileName: name, id: 'temp' } as HistoryItem));
+      const uniqueName = getUniqueFileName(currentName, fakeHistory, item.id);
+      
+      if (uniqueName !== currentName) {
+        newHistory[i] = { ...item, fileName: uniqueName };
+        usedNames.add(uniqueName.toLowerCase());
+        changed = true;
+      } else {
+        usedNames.add(currentName.toLowerCase());
+      }
+    } else {
+      usedNames.add(currentName.toLowerCase());
     }
   }
 

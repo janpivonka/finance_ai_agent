@@ -10,7 +10,7 @@ export const useHistory = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Načtení a sanace historie
-  useEffect(() => {
+  const loadHistory = useCallback(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -21,9 +21,14 @@ export const useHistory = () => {
         const validated: HistoryItem[] = parsedArray.map((raw, index) => {
           const item =
             (typeof raw === "object" && raw !== null ? raw : {}) as Partial<HistoryItem>;
+          // Pokud ID chybí, vytvoříme ho. Musí být unikátní a stabilní.
+          // V ideálním případě by ID mělo být přiděleno již při vytvoření záznamu.
+          if (!item.id) {
+            console.warn(`Záznam v historii nemá ID, přiděluji dočasné: ${item.fileName}`);
+          }
           return {
             ...item,
-            id: String(item.id || `id-${index}-${Date.now()}`),
+            id: String(item.id || `fallback-${index}-${item.timestamp || Date.now()}`),
           } as HistoryItem;
         });
 
@@ -44,6 +49,20 @@ export const useHistory = () => {
       setIsLoaded(true);
     }
   }, []);
+
+  useEffect(() => {
+    loadHistory();
+
+    // Listener pro synchronizaci napříč taby a komponentami
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        loadHistory();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [loadHistory]);
 
   // Uložení historie
   const saveHistory = useCallback((newHistory: HistoryItem[]) => {

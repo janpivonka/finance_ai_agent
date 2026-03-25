@@ -33,7 +33,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({
   itemsRef,
   activeEntryId = null
 }) => (
-  <motion.div layout layoutScroll key="history-list" className="flex flex-col gap-6 relative z-10 overflow-anchor-none">
+  <motion.div layout key="history-list" className="flex flex-col gap-6 relative z-10">
     <AnimatePresence>
       {selectedIds.length > 0 && (
         <motion.div 
@@ -74,8 +74,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({
       )}
     </AnimatePresence>
     
-    <motion.div layout layoutScroll className="grid gap-4 overflow-anchor-none">
-      <AnimatePresence initial={false} mode="popLayout">
+    <div className="grid gap-4">
+      <AnimatePresence initial={false}>
         {items.map((item) => (
           <HistoryItem
             key={item.id}
@@ -91,6 +91,6 @@ export const HistoryList: React.FC<HistoryListProps> = ({
           />
         ))}
       </AnimatePresence>
-    </motion.div>
+    </div>
   </motion.div>
 );
