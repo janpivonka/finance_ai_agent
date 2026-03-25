@@ -4,15 +4,15 @@ import React, { Suspense } from "react";
 import { useConsultation } from "@/hooks/useConsultation";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 
-import { ConsultationContext } from "../components/consultation/ConsultationContext";
-import { ConsultationChat } from "../components/consultation/ConsultationChat";
-import { ConsultationInput } from "../components/consultation/ConsultationInput";
+import { ConsultationContext } from "../../components/consultation/ConsultationContext";
+import { ConsultationChat } from "../../components/consultation/ConsultationChat";
+import { ConsultationInput } from "../../components/consultation/ConsultationInput";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 
 // Shared UI Components
-import { PageBackground } from "../components/ui/PageBackground";
-import { PageHeader } from "../components/ui/PageHeader";
-import { LoadingOverlay } from "../components/ui/LoadingOverlay";
+import { PageBackground } from "../../components/ui/PageBackground";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { LoadingOverlay } from "../../components/ui/LoadingOverlay";
 import { Zap, History, Search } from "lucide-react";
 
 function ConsultationContent() {

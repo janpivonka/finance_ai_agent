@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { AnalysisResult, HistoryItem, ServerActionResponse } from "@/types";
-import { analyzeContract } from "@/app/analysis/actions";
+import { analyzeContract } from "@/app/(app)/analysis/actions";
 import { checkFileNameExists, getUniqueFileName } from "@/utils/history";
 
 export const useAnalysis = () => {

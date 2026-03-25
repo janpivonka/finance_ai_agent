@@ -1,5 +1,4 @@
 import "./globals.css";
-import Sidebar from "./components/Sidebar";
 import { ThemeProvider } from "./components/ui/ThemeProvider";
 
 export default function RootLayout({
@@ -11,12 +10,7 @@ export default function RootLayout({
     <html lang="cs" className="theme-dark" suppressHydrationWarning>
       <body className="antialiased">
         <ThemeProvider>
-          <div className="flex h-screen w-full overflow-hidden">
-            <Sidebar />
-            <main className="flex-1 overflow-y-auto relative pb-32 md:pb-0">
-              {children}
-            </main>
-          </div>
+          {children}
         </ThemeProvider>
       </body>
     </html>

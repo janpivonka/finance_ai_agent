@@ -2,7 +2,7 @@
 
 import React from "react";
 import { AnimatePresence } from "framer-motion";
-import { ScrollToTop } from "../components/ScrollToTop";
+import { ScrollToTop } from "../../components/ScrollToTop";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useHistoryPage } from "@/hooks/useHistoryPage";
@@ -10,14 +10,14 @@ import { useAppNavigation } from "@/hooks/useAppNavigation";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 import { HistoryItem } from "@/types";
 
-import { HistoryList } from "../components/history/HistoryList";
-import { HistoryEmptyState } from "../components/history/HistoryEmptyState";
-import { HistoryDeleteModal } from "../components/history/HistoryDeleteModal";
-import { HistoryDetailModal } from "../components/history/HistoryDetailModal";
+import { HistoryList } from "../../components/history/HistoryList";
+import { HistoryEmptyState } from "../../components/history/HistoryEmptyState";
+import { HistoryDeleteModal } from "../../components/history/HistoryDeleteModal";
+import { HistoryDetailModal } from "../../components/history/HistoryDetailModal";
 
 // Shared UI Components
-import { PageBackground } from "../components/ui/PageBackground";
-import { PageHeader } from "../components/ui/PageHeader";
+import { PageBackground } from "../../components/ui/PageBackground";
+import { PageHeader } from "../../components/ui/PageHeader";
 import { History as HistoryIcon, Search, X, ArrowUpNarrowWide, ArrowDownWideNarrow } from "lucide-react";
 import { SortField } from "@/types";
 

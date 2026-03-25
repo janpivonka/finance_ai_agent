@@ -10,21 +10,21 @@ import { ThemeToggle } from "./ui/ThemeToggle";
 import { useTheme } from "./ui/ThemeProvider";
 
 const navItems = [
-  { label: "Domů", href: "/", icon: LayoutDashboard },
+  { label: "Domů", href: "/dashboard", icon: LayoutDashboard },
   { label: "Analýza", href: "/analysis", icon: FileSearch },
   { label: "Konzultace", href: "/consultation", icon: Mic2 },
   { label: "Historie", href: "/history", icon: History },
 ];
 
 export default function Sidebar() {
-  const { goToHome, goToAnalysis, goToConsultation, goToHistory } = useAppNavigation();
+  const { goToHome, goToAnalysis, goToConsultation, goToHistory, goToDashboard } = useAppNavigation();
   const { toggleTheme } = useTheme();
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
   const { activeId, handleInteraction } = useMobileInteraction();
 
   const handleNavigate = (href: string) => {
-    if (href === "/") goToHome();
+    if (href === "/dashboard") goToDashboard();
     else if (href === "/analysis") goToAnalysis();
     else if (href === "/consultation") goToConsultation();
     else if (href === "/history") goToHistory();

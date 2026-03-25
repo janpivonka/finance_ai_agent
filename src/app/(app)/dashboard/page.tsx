@@ -11,19 +11,19 @@ import {
 } from "lucide-react";
 
 // Import komponent a hooků
-import { ScrollToTop } from "./components/ScrollToTop";
+import { ScrollToTop } from "../../components/ScrollToTop";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useDashboard } from "@/hooks/useDashboard";
 
-import { ActionCard } from "./components/dashboard/ActionCard";
-import { MainInsightBanner } from "./components/dashboard/MainInsightBanner";
-import { FutureModuleCard } from "./components/dashboard/FutureModuleCard";
+import { ActionCard } from "../../components/dashboard/ActionCard";
+import { MainInsightBanner } from "../../components/dashboard/MainInsightBanner";
+import { FutureModuleCard } from "../../components/dashboard/FutureModuleCard";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 
 // Shared UI Components
-import { PageBackground } from "./components/ui/PageBackground";
-import { PageHeader } from "./components/ui/PageHeader";
+import { PageBackground } from "../../components/ui/PageBackground";
+import { PageHeader } from "../../components/ui/PageHeader";
 
 export default function DashboardPage() {
   const { 

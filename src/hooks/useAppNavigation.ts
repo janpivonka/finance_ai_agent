@@ -64,7 +64,14 @@ export const useAppNavigation = () => {
   };
 
   /**
-   * Návrat na domovskou stránku
+   * Navigace na Dashboard
+   */
+  const goToDashboard = () => {
+    router.push("/dashboard");
+  };
+
+  /**
+   * Návrat na domovskou stránku (Landing page)
    */
   const goToHome = () => {
     router.push("/");
@@ -74,6 +81,7 @@ export const useAppNavigation = () => {
     goToAnalysis,
     goToHistory,
     goToConsultation,
+    goToDashboard,
     goToHome,
   };
 };

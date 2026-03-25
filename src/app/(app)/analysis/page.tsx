@@ -1,21 +1,21 @@
 "use client";
 
 import React from "react";
-import { ScrollToTop } from "../components/ScrollToTop";
+import { ScrollToTop } from "../../components/ScrollToTop";
 import { useAnalysis } from "@/hooks/useAnalysis";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 
-import { AnalysisUpload } from "../components/analysis/AnalysisUpload";
-import { AnalysisLoading } from "../components/analysis/AnalysisLoading";
-import { AnalysisResults } from "../components/analysis/AnalysisResults";
+import { AnalysisUpload } from "../../components/analysis/AnalysisUpload";
+import { AnalysisLoading } from "../../components/analysis/AnalysisLoading";
+import { AnalysisResults } from "../../components/analysis/AnalysisResults";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 
 // Shared UI Components
-import { PageBackground } from "../components/ui/PageBackground";
-import { PageHeader } from "../components/ui/PageHeader";
-import { ErrorMessage } from "../components/ui/ErrorMessage";
-import { DuplicateNameModal } from "../components/ui/DuplicateNameModal";
+import { PageBackground } from "../../components/ui/PageBackground";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { ErrorMessage } from "../../components/ui/ErrorMessage";
+import { DuplicateNameModal } from "../../components/ui/DuplicateNameModal";
 import { Activity, RotateCcw } from "lucide-react";
 
 export default function AnalysisPage() {
