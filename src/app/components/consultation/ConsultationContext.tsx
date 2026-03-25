@@ -30,7 +30,10 @@ export const ConsultationContext: React.FC<ConsultationContextProps> = ({
         </h2>
         
         <div className="flex-1 space-y-4 md:space-y-6 pr-1 scrollbar-hide pb-2 overflow-y-auto">
-          <div className="group/item rounded-[2rem] bg-[var(--panel-strong)] dark:bg-[#020617]/60 p-5 md:p-7 transition-all duration-300 border border-[color:var(--panel-border)] hover:border-cyan-500/50 hover:ring-1 hover:ring-cyan-500/30 hover:bg-[var(--panel)] cursor-default bg-tint-cyan shadow-inner">
+          <div 
+            onClick={() => handleInteraction('ctx-uspora', () => {}, 0)}
+            className={`group/item rounded-[2rem] bg-[var(--panel-strong)] dark:bg-[#020617]/60 p-5 md:p-7 transition-all duration-300 border border-[color:var(--panel-border)] hover:border-cyan-500/50 hover:ring-1 hover:ring-cyan-500/30 hover:bg-[var(--panel)] cursor-default bg-tint-cyan shadow-inner ${activeId === 'ctx-uspora' ? 'scale-95 border-cyan-500/50 ring-1 ring-cyan-500/30 bg-[var(--panel)]' : ''}`}
+          >
             <div className="mb-3 flex items-center gap-2 text-cyan-600 dark:text-cyan-400">
               <TrendingUp size={16} />
               <span className="text-[10px] font-black uppercase tracking-widest">Potenciál úspory</span>
@@ -41,7 +44,10 @@ export const ConsultationContext: React.FC<ConsultationContextProps> = ({
             </div>
           </div>
 
-          <div className="group/item rounded-[2rem] bg-[var(--panel-strong)] dark:bg-[#020617]/60 p-5 md:p-7 transition-all duration-300 border border-[color:var(--panel-border)] hover:border-indigo-500/50 hover:ring-1 hover:ring-indigo-500/30 hover:bg-[var(--panel)] cursor-default bg-tint-indigo shadow-inner">
+          <div 
+            onClick={() => handleInteraction('ctx-fixace', () => {}, 0)}
+            className={`group/item rounded-[2rem] bg-[var(--panel-strong)] dark:bg-[#020617]/60 p-5 md:p-7 transition-all duration-300 border border-[color:var(--panel-border)] hover:border-indigo-500/50 hover:ring-1 hover:ring-indigo-500/30 hover:bg-[var(--panel)] cursor-default bg-tint-indigo shadow-inner ${activeId === 'ctx-fixace' ? 'scale-95 border-indigo-500/50 ring-1 ring-indigo-500/30 bg-[var(--panel)]' : ''}`}
+          >
             <div className="mb-3 flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
               <Calendar size={16} />
               <span className="text-[10px] font-black uppercase tracking-widest">Fixace do</span>
@@ -49,7 +55,10 @@ export const ConsultationContext: React.FC<ConsultationContextProps> = ({
             <span className="text-2xl md:text-3xl font-black text-[color:var(--foreground)] tracking-tight uppercase break-all md:break-normal">{fixaceParam}</span>
           </div>
 
-          <div className="relative overflow-hidden rounded-[2rem] bg-[var(--panel-strong)] dark:bg-[#020617]/60 border border-fuchsia-500/25 p-5 md:p-7 shadow-xl ring-1 ring-fuchsia-500/20 bg-tint-pink">
+          <div 
+            onClick={() => handleInteraction('ctx-strategy', () => {}, 0)}
+            className={`relative overflow-hidden rounded-[2rem] bg-[var(--panel-strong)] dark:bg-[#020617]/60 border border-fuchsia-500/25 p-5 md:p-7 shadow-xl ring-1 ring-fuchsia-500/20 bg-tint-pink transition-all duration-300 ${activeId === 'ctx-strategy' ? 'scale-95 border-fuchsia-500/50 bg-[var(--panel)]' : ''}`}
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-indigo-500/5 pointer-events-none" />
             <div className="relative">
               <div className="flex items-center gap-2 mb-3 md:mb-4 text-fuchsia-600 dark:text-fuchsia-300">

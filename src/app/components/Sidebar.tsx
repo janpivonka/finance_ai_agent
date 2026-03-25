@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, FileSearch, Mic2, History } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
+import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 import { ThemeToggle } from "./ui/ThemeToggle";
+import { useTheme } from "./ui/ThemeProvider";
 
 const navItems = [
   { label: "Domů", href: "/", icon: LayoutDashboard },
@@ -16,8 +18,10 @@ const navItems = [
 
 export default function Sidebar() {
   const { goToHome, goToAnalysis, goToConsultation, goToHistory } = useAppNavigation();
+  const { toggleTheme } = useTheme();
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
+  const { activeId, handleInteraction } = useMobileInteraction();
 
   const handleNavigate = (href: string) => {
     if (href === "/") goToHome();
@@ -56,7 +60,7 @@ export default function Sidebar() {
           />
         </motion.div>
 
-        <ThemeToggle className="mb-10" />
+        <ThemeToggle className="mb-10 hover:bg-[var(--panel)]" />
         
         {/* NAVIGACE */}
         <nav className="flex flex-1 flex-col items-center gap-8">
@@ -87,10 +91,10 @@ export default function Sidebar() {
                     />
                   )}
 
-                  {/* IKONA S TVOU NOVOU ANIMACÍ (ROTACE + SCALE) */}
+                  {/* IKONA S ANIMACÍ (HOVER: SCALE, CLICK: ROTATE) */}
                   <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ rotate: 15, scale: 1.25 }}
+                    whileHover={{ scale: 1.25 }}
+                    whileTap={{ rotate: 15 }}
                     transition={{ type: "spring", stiffness: 400, damping: 15 }}
                     className="relative z-10 flex items-center justify-center"
                   >
@@ -125,14 +129,26 @@ export default function Sidebar() {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
+          const isButtonActive = activeId === `nav-${item.label}`;
 
           return (
             <button
               key={item.label}
-              onClick={() => handleNavigate(item.href)}
-              className="relative flex flex-col items-center justify-center w-12 h-12"
+              onClick={() => handleInteraction(`nav-${item.label}`, () => handleNavigate(item.href), 350)}
+              className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${isButtonActive ? 'scale-110' : ''}`}
             >
-              {isActive && (
+              {/* POZADÍ PŘI AKTIVACI (Simulace hover/active z PC) */}
+              {isButtonActive && (
+                <motion.div
+                  layoutId="activePillMobile"
+                  className="absolute inset-0 bg-gradient-to-br from-indigo-600/40 via-indigo-500/40 to-cyan-400/40 rounded-2xl shadow-[0_0_15px_rgba(79,70,229,0.3)] ring-1 ring-white/10"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                />
+              )}
+
+              {isActive && !isButtonActive && (
                 <motion.div
                   layoutId="activeNavMobile"
                   className="absolute inset-0 bg-white/5 rounded-2xl"
@@ -140,16 +156,17 @@ export default function Sidebar() {
                 />
               )}
               
-              {/* IKONA S ANIMACÍ PRO MOBIL */}
+              {/* IKONA S ANIMACÍ PRO MOBIL (CLICK: SCALE + ROTATE) */}
               <motion.div
-                whileTap={{ rotate: -15, scale: 1.3 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                className={`relative z-10 transition-colors ${isActive ? "text-cyan-400" : "text-slate-500"}`}
+                animate={isButtonActive ? { rotate: 15, scale: 1.35 } : { rotate: 0, scale: 1 }}
+                whileTap={{ rotate: 15, scale: 1.35 }}
+                transition={{ type: "spring", stiffness: 400, damping: 12 }}
+                className={`relative z-10 transition-colors ${isActive ? "text-cyan-400" : isButtonActive ? "text-white" : "text-slate-500"}`}
               >
-                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                <Icon size={22} strokeWidth={isActive || isButtonActive ? 2.5 : 2} />
               </motion.div>
               
-              {isActive && (
+              {(isActive || isButtonActive) && (
                 <motion.div 
                   layoutId="activeIndicatorMobile"
                   className="absolute -bottom-1 w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_#22d3ee] z-10" 
@@ -159,7 +176,10 @@ export default function Sidebar() {
           );
         })}
 
-        <ThemeToggle className="h-12 w-12 rounded-2xl" />
+        <ThemeToggle 
+          className={`h-12 w-12 transition-all duration-300 ${activeId === 'theme-toggle' ? 'scale-110 bg-indigo-600/20' : ''}`} 
+          onClick={() => handleInteraction('theme-toggle', toggleTheme, 350)} 
+        />
       </motion.nav>
     </>
   );
