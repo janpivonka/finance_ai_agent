@@ -66,10 +66,10 @@ export default function HistoryPage() {
     goToConsultation(item);
   };
 
-  if (!mounted) return <HistoryLoading />;
+  if (!mounted || !isLoaded) return <HistoryLoading />;
 
   return (
-    <div className={`min-h-screen bg-[var(--background)] text-[color:var(--foreground)] selection:bg-indigo-500/30 transition-all duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`min-h-screen bg-[var(--background)] text-[color:var(--foreground)] selection:bg-indigo-500/30 transition-all duration-1000 opacity-100`}>
       <div className="mx-auto max-w-4xl px-6 py-12 relative">
         <PageBackground 
           glows={[
@@ -90,8 +90,7 @@ export default function HistoryPage() {
           rightElement={
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, margin: "-50px 0px" }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="flex flex-col md:flex-row gap-4 mb-2"
             >

@@ -1,28 +1,36 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Mail, Lock, ArrowLeft, ArrowRight, Github, Chrome } from "lucide-react";
 import { PageBackground } from "../../components/ui/PageBackground";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import AuthLoading from "../loading";
+import { useUser } from "../../components/UserContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useUser();
   const [mounted, setMounted] = React.useState(false);
+  const [email, setEmail] = useState("");
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login
-    if (typeof window !== "undefined") {
-      localStorage.setItem("finance_auth_session", "true");
+    // Use the new login logic from UserContext
+    try {
+      await login({ 
+        name: "Uživatel", 
+        email: email 
+      });
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Chyba při přihlášení:", err);
     }
-    router.push("/dashboard");
   };
 
   if (!mounted) return <AuthLoading />;
@@ -96,6 +104,8 @@ export default function LoginPage() {
                 </div>
                 <input 
                   type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="jmeno@priklad.cz"
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-sm font-medium focus:outline-none focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all text-[color:var(--foreground)]"
                   required

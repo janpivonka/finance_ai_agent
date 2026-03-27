@@ -20,6 +20,7 @@ import { useAppNavigation } from "@/hooks/useAppNavigation";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 import { SavingsChart } from "./SavingsChart";
 import { RecommendationCard } from "./RecommendationCard";
+import { LeadCaptureCard } from "./LeadCaptureCard";
 
 interface AnalysisResultsProps {
   analysis: AnalysisResult;
@@ -46,6 +47,13 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
 }) => {
   const { goToHistory, goToConsultation } = useAppNavigation();
   const { activeId, handleInteraction } = useMobileInteraction();
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsLoggedIn(localStorage.getItem("finance_auth_session") === "true");
+    }
+  }, []);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const inView = useInView(headerRef, { amount: 0.6, once: false });
   const wasInViewRef = useRef(false);
@@ -254,6 +262,8 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             </div>
           </div>
       </div>
+
+      {!isLoggedIn && <LeadCaptureCard />}
     </section>
   );
 };

@@ -37,7 +37,10 @@ async function triggerMakeAutomation(payload: unknown) {
   }
 }
 
-export async function analyzeContract(formData: FormData): Promise<ServerActionResponse<AnalysisResult>> {
+export async function analyzeContract(
+  formData: FormData, 
+  userData?: { email?: string; phone?: string; name?: string }
+): Promise<ServerActionResponse<AnalysisResult>> {
   try {
     const file = formData.get("file") as File;
     const rawTextFromArea = formData.get("text") as string;
@@ -158,10 +161,17 @@ export async function analyzeContract(formData: FormData): Promise<ServerActionR
       textovy_obsah: generateReportHTML({ ...mathData, uspora: usporaCislo, analyticky_duvod: analytickyDuvod }),
       timestamp: new Date().toISOString(),
       date: new Date().toLocaleString('cs-CZ'),
-      clientPhone: process.env.MAKE_DEFAULT_PHONE || ""
+      clientPhone: userData?.phone || process.env.MAKE_DEFAULT_PHONE || ""
     };
 
-    await triggerMakeAutomation(finalData);
+    // Pokud máme email uživatele, přidáme ho do payloadu pro Make.com
+    const automationPayload = {
+      ...finalData,
+      clientEmail: userData?.email || "guest@example.com",
+      clientName: userData?.name || "Guest"
+    };
+
+    await triggerMakeAutomation(automationPayload);
     return { data: finalData };
 
   } catch (error: unknown) {

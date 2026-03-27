@@ -20,6 +20,7 @@ import { ActionCard } from "../../components/dashboard/ActionCard";
 import { MainInsightBanner } from "../../components/dashboard/MainInsightBanner";
 import { FutureModuleCard } from "../../components/dashboard/FutureModuleCard";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
+import { useUser } from "../../components/UserContext";
 
 // Shared UI Components
 import { PageBackground } from "../../components/ui/PageBackground";
@@ -29,19 +30,22 @@ import DashboardLoading from "./loading";
 export default function DashboardPage() {
   const { 
     lastAnalysis, 
-    isLoaded, 
+    isLoaded: isDashboardLoaded, 
     goToConsultation, 
     goToHistory, 
     goToAnalysis 
   } = useDashboard();
 
+  const { user, isLoading: isUserLoading } = useUser();
+  const userName = user?.name || "Uživatel";
+
   const { activeId, handleInteraction } = useMobileInteraction();
 
   // Aktivace animací a sledování scrollu
   useScrollDirection();
-  useIntersectionObserver('.reveal', isLoaded);
+  useIntersectionObserver('.reveal', isDashboardLoaded && !isUserLoading);
 
-  if (!isLoaded) {
+  if (!isDashboardLoaded || isUserLoading) {
     return <DashboardLoading />;
   }
 
@@ -56,16 +60,16 @@ export default function DashboardPage() {
         withNoise
       />
 
-      <div className={`mx-auto max-w-6xl relative z-10 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+      <div className={`mx-auto max-w-6xl relative z-10 transition-all duration-1000 ${isDashboardLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         
         <PageHeader 
           badgeIcon={Zap}
           badgeText="Neural Financial Ecosystem 2.0"
           title={
             <>
-              Vítejte,{" "}
-              <span className="inline-block align-baseline pb-1 pr-1 animate-gradient-text bg-gradient-to-r from-cyan-400 via-indigo-400 to-fuchsia-400 bg-[length:200%_auto] bg-clip-text text-transparent">
-                Peony
+              Vítejte zpět,{" "}
+              <span className="inline-block align-baseline pb-1 pr-1 animate-gradient-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-indigo-400 bg-[length:200%_auto] bg-clip-text text-transparent">
+                {userName}
               </span>
             </>
           }

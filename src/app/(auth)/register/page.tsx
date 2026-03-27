@@ -1,28 +1,37 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Mail, Lock, User, ArrowLeft, ArrowRight, Github, Chrome } from "lucide-react";
 import { PageBackground } from "../../components/ui/PageBackground";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import AuthLoading from "../loading";
+import { useUser } from "../../components/UserContext";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { login } = useUser();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate registration
-    if (typeof window !== "undefined") {
-      localStorage.setItem("finance_auth_session", "true");
+    // Use the new login logic from UserContext
+    try {
+      await login({ 
+        name: formData.name || "Uživatel", 
+        email: formData.email 
+      });
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Chyba při registraci:", err);
     }
-    router.push("/dashboard");
   };
 
   if (!mounted) return <AuthLoading />;
@@ -97,6 +106,8 @@ export default function RegisterPage() {
                 <input 
                   type="text" 
                   placeholder="Jan Novák"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-14 pr-6 text-sm font-medium focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all text-[color:var(--foreground)]"
                   required
                 />
@@ -112,6 +123,8 @@ export default function RegisterPage() {
                 <input 
                   type="email" 
                   placeholder="jmeno@priklad.cz"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-14 pr-6 text-sm font-medium focus:outline-none focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all text-[color:var(--foreground)]"
                   required
                 />
@@ -127,6 +140,8 @@ export default function RegisterPage() {
                 <input 
                   type="password" 
                   placeholder="••••••••"
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-14 pr-6 text-sm font-medium focus:outline-none focus:border-fuchsia-500/50 focus:ring-4 focus:ring-fuchsia-500/10 transition-all text-[color:var(--foreground)]"
                   required
                 />
