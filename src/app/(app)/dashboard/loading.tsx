@@ -1,6 +1,6 @@
 import React from "react";
-import { Skeleton } from "../components/ui/Skeleton";
-import { PageBackground } from "../components/ui/PageBackground";
+import { Skeleton } from "../../components/ui/Skeleton";
+import { PageBackground } from "../../components/ui/PageBackground";
 
 export default function DashboardLoading() {
   return (

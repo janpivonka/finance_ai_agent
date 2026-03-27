@@ -15,6 +15,7 @@ export const useAnalysis = () => {
   const [isEditingFileName, setIsEditingFileName] = useState(false);
   const [tempFileName, setTempFileName] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [showRetry, setShowRetry] = useState(false);
 
   // Duplicate name state
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
@@ -65,19 +66,35 @@ export const useAnalysis = () => {
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+
     if (loading) {
       setLoadingProgress(0);
+      setShowRetry(false);
       interval = setInterval(() => {
         setLoadingProgress(prev => {
-          if (prev < 30) return prev + 0.8; 
-          if (prev < 70) return prev + 0.4;
-          if (prev < 90) return prev + 0.2;
-          if (prev < 98) return prev + 0.05;
-          return prev;
+          const next = prev < 30 ? prev + 0.8 :
+                       prev < 70 ? prev + 0.4 :
+                       prev < 90 ? prev + 0.2 :
+                       prev < 98 ? prev + 0.05 : prev;
+          
+          // Start timer when we reach 98%
+          if (next >= 98 && !timeout) {
+            timeout = setTimeout(() => {
+              setShowRetry(true);
+            }, 5000);
+          }
+          return next;
         });
       }, 50);
+    } else {
+      if (timeout) clearTimeout(timeout);
     }
-    return () => clearInterval(interval);
+
+    return () => {
+      if (interval) clearInterval(interval);
+      if (timeout) clearTimeout(timeout);
+    };
   }, [loading]);
 
   const handleRenameFile = (newName: string) => {
@@ -191,6 +208,24 @@ export const useAnalysis = () => {
     setUploadedFileName(null);
     setDisplayUspora(0);
     setLoadingProgress(0);
+    setLoading(false);
+    setShowRetry(false);
+    setError(null);
+  };
+
+  const handleRetry = () => {
+    if (uploadedFileName) {
+      // Pokud máme soubor, zkusíme ho znovu procesovat
+      const formData = new FormData();
+      // Poznámka: V reálné appce bychom museli mít soubor uložený v refu, 
+      // zde simulujeme restart s původním názvem
+      handleProcess(formData, uploadedFileName);
+    } else if (contractText) {
+      // Pokud máme text, zkusíme ho znovu
+      const formData = new FormData();
+      formData.append("text", contractText);
+      handleProcess(formData);
+    }
   };
 
   const restartUsporaAnimation = useCallback(() => {
@@ -212,6 +247,8 @@ export const useAnalysis = () => {
     tempFileName,
     setTempFileName,
     mounted,
+    showRetry,
+    handleRetry,
     handleRenameFile,
     handleProcess,
     resetAnalysis,

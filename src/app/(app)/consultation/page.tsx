@@ -13,6 +13,7 @@ import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 import { PageBackground } from "../../components/ui/PageBackground";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { LoadingOverlay } from "../../components/ui/LoadingOverlay";
+import ConsultationLoading from "./loading";
 import { Zap, History, Search } from "lucide-react";
 
 function ConsultationContent() {
@@ -39,7 +40,7 @@ function ConsultationContent() {
 
   useIntersectionObserver('.reveal', isMounted);
 
-  if (!isMounted) return <div className="bg-[var(--background)] min-h-screen" />;
+  if (!isMounted) return <ConsultationLoading />;
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col h-screen px-6 py-4 md:px-10 overflow-hidden bg-[var(--background)] relative">

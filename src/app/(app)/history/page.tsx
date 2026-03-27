@@ -8,7 +8,7 @@ import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useHistoryPage } from "@/hooks/useHistoryPage";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
-import { HistoryItem } from "@/types";
+import { HistoryItem, SortField } from "@/types";
 
 import { HistoryList } from "../../components/history/HistoryList";
 import { HistoryEmptyState } from "../../components/history/HistoryEmptyState";
@@ -18,8 +18,8 @@ import { HistoryDetailModal } from "../../components/history/HistoryDetailModal"
 // Shared UI Components
 import { PageBackground } from "../../components/ui/PageBackground";
 import { PageHeader } from "../../components/ui/PageHeader";
+import HistoryLoading from "./loading";
 import { History as HistoryIcon, Search, X, ArrowUpNarrowWide, ArrowDownWideNarrow } from "lucide-react";
-import { SortField } from "@/types";
 
 export default function HistoryPage() {
   const { goToAnalysis, goToConsultation } = useAppNavigation();
@@ -66,7 +66,7 @@ export default function HistoryPage() {
     goToConsultation(item);
   };
 
-  if (!mounted) return <div className="min-h-screen bg-[var(--background)]" />;
+  if (!mounted) return <HistoryLoading />;
 
   return (
     <div className={`min-h-screen bg-[var(--background)] text-[color:var(--foreground)] selection:bg-indigo-500/30 transition-all duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
@@ -88,7 +88,13 @@ export default function HistoryPage() {
           }
           description="Kompletní přehled vašich finančních analýz. Data jsou ukládána lokálně a synchronizována pro okamžitý přístup."
           rightElement={
-            <div className="flex flex-col md:flex-row gap-4 mb-2 reveal">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, margin: "-50px 0px" }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex flex-col md:flex-row gap-4 mb-2"
+            >
               <div className="relative flex-1 group min-w-[300px]">
                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[color:var(--muted)] group-focus-within:text-cyan-400 transition-colors z-10" />
                 <input
@@ -130,7 +136,7 @@ export default function HistoryPage() {
                   </button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           }
         />
         

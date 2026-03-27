@@ -24,6 +24,7 @@ import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 // Shared UI Components
 import { PageBackground } from "../../components/ui/PageBackground";
 import { PageHeader } from "../../components/ui/PageHeader";
+import DashboardLoading from "./loading";
 
 export default function DashboardPage() {
   const { 
@@ -39,6 +40,10 @@ export default function DashboardPage() {
   // Aktivace animací a sledování scrollu
   useScrollDirection();
   useIntersectionObserver('.reveal', isLoaded);
+
+  if (!isLoaded) {
+    return <DashboardLoading />;
+  }
 
   return (
     <div className="min-h-screen bg-[var(--background)] px-6 pt-16 pb-24 relative overflow-x-hidden selection:bg-cyan-500/30 no-scrollbar">

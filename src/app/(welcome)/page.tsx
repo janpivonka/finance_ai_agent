@@ -6,9 +6,23 @@ import { useRouter } from "next/navigation";
 import { PageBackground } from "../components/ui/PageBackground";
 import { ArrowRight, ShieldCheck, Zap, Sparkles, BarChart3, MessageSquare } from "lucide-react";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import WelcomeLoading from "./loading";
 
 export default function WelcomePage() {
   const router = useRouter();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      const session = localStorage.getItem("finance_auth_session");
+      if (session === "true") {
+        router.push("/dashboard");
+      }
+    }
+  }, [router]);
+
+  if (!mounted) return <WelcomeLoading />;
 
   const features = [
     {

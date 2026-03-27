@@ -77,11 +77,22 @@ export const useAppNavigation = () => {
     router.push("/");
   };
 
+  /**
+   * Odhlášení a návrat na domovskou stránku
+   */
+  const logout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("finance_auth_session");
+    }
+    router.push("/");
+  };
+
   return {
     goToAnalysis,
     goToHistory,
     goToConsultation,
     goToDashboard,
     goToHome,
+    logout,
   };
 };

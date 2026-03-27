@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileSearch, Mic2, History } from "lucide-react";
+import { LayoutDashboard, FileSearch, Mic2, History, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
@@ -10,14 +10,14 @@ import { ThemeToggle } from "./ui/ThemeToggle";
 import { useTheme } from "./ui/ThemeProvider";
 
 const navItems = [
-  { label: "Domů", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Analýza", href: "/analysis", icon: FileSearch },
   { label: "Konzultace", href: "/consultation", icon: Mic2 },
   { label: "Historie", href: "/history", icon: History },
 ];
 
 export default function Sidebar() {
-  const { goToHome, goToAnalysis, goToConsultation, goToHistory, goToDashboard } = useAppNavigation();
+  const { goToHome, goToAnalysis, goToConsultation, goToHistory, goToDashboard, logout } = useAppNavigation();
   const { toggleTheme } = useTheme();
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
@@ -29,6 +29,10 @@ export default function Sidebar() {
     else if (href === "/consultation") goToConsultation();
     else if (href === "/history") goToHistory();
     else goToHome();
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   React.useEffect(() => {
@@ -118,6 +122,19 @@ export default function Sidebar() {
             );
           })}
         </nav>
+
+        {/* ODHLÁŠENÍ (DESKTOP) */}
+        <div className="mt-auto pb-4">
+          <button
+            onClick={handleLogout}
+            className="group relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] text-[color:var(--muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-all duration-300 cursor-pointer"
+          >
+            <LogOut size={20} />
+            <div className="pointer-events-none absolute left-16 whitespace-nowrap rounded-lg bg-rose-600 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white opacity-0 shadow-2xl transition-all group-hover:opacity-100 ring-1 ring-white/10 z-[60] translate-x-[-10px] group-hover:translate-x-0">
+              Odhlásit se
+            </div>
+          </button>
+        </div>
       </aside>
 
       {/* --- MOBILE BOTTOM NAVIGATION --- */}
@@ -132,11 +149,11 @@ export default function Sidebar() {
           const isButtonActive = activeId === `nav-${item.label}`;
 
           return (
-            <button
-              key={item.label}
-              onClick={() => handleInteraction(`nav-${item.label}`, () => handleNavigate(item.href), 350)}
-              className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${isButtonActive ? 'scale-110' : ''}`}
-            >
+              <button
+                key={item.label}
+                onClick={() => handleInteraction(`nav-${item.label}`, () => handleNavigate(item.href), 150)}
+                className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${isButtonActive ? 'scale-110' : ''}`}
+              >
               {/* POZADÍ PŘI AKTIVACI (Simulace hover/active z PC) */}
               {isButtonActive && (
                 <motion.div
@@ -177,9 +194,16 @@ export default function Sidebar() {
         })}
 
         <ThemeToggle 
-          className={`h-12 w-12 transition-all duration-300 ${activeId === 'theme-toggle' ? 'scale-110 bg-indigo-600/20' : ''}`} 
-          onClick={() => handleInteraction('theme-toggle', toggleTheme, 350)} 
+          className={`h-12 w-12 rounded-2xl transition-all duration-300 ${activeId === 'theme-toggle' ? 'scale-110 bg-indigo-600/20' : ''}`} 
+          onClick={() => handleInteraction('theme-toggle', toggleTheme, 150)} 
         />
+
+        <button
+          onClick={() => handleInteraction('logout-mobile', handleLogout, 150)}
+          className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${activeId === 'logout-mobile' ? 'scale-110 text-rose-500 bg-rose-500/10 rounded-2xl' : 'text-slate-500'}`}
+        >
+          <LogOut size={22} />
+        </button>
       </motion.nav>
     </>
   );

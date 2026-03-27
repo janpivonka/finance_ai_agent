@@ -6,15 +6,26 @@ import { useRouter } from "next/navigation";
 import { ShieldCheck, Mail, Lock, ArrowLeft, ArrowRight, Github, Chrome } from "lucide-react";
 import { PageBackground } from "../../components/ui/PageBackground";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
+import AuthLoading from "../loading";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate login
+    if (typeof window !== "undefined") {
+      localStorage.setItem("finance_auth_session", "true");
+    }
     router.push("/dashboard");
   };
+
+  if (!mounted) return <AuthLoading />;
 
   return (
     <div className="min-h-screen bg-[var(--background)] relative overflow-hidden flex flex-col items-center justify-center p-6">

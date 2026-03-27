@@ -16,6 +16,7 @@ import { PageBackground } from "../../components/ui/PageBackground";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { ErrorMessage } from "../../components/ui/ErrorMessage";
 import { DuplicateNameModal } from "../../components/ui/DuplicateNameModal";
+import AnalysisSkeleton from "./loading";
 import { Activity, RotateCcw } from "lucide-react";
 
 export default function AnalysisPage() {
@@ -34,6 +35,8 @@ export default function AnalysisPage() {
     tempFileName,
     setTempFileName,
     mounted,
+    showRetry,
+    handleRetry,
     handleRenameFile,
     handleProcess,
     resetAnalysis,
@@ -51,7 +54,7 @@ export default function AnalysisPage() {
   useScrollDirection();
   useIntersectionObserver('.reveal', `${mounted}-${analysis ? 1 : 0}`);
 
-  if (!mounted) return <div className="min-h-screen bg-[var(--background)]" />;
+  if (!mounted) return <AnalysisSkeleton />;
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[color:var(--foreground)] transition-all duration-1000 pb-24 relative overflow-hidden">
@@ -111,7 +114,12 @@ export default function AnalysisPage() {
           )}
 
           {loading && (
-            <AnalysisLoading progress={loadingProgress} />
+            <AnalysisLoading 
+              progress={loadingProgress} 
+              showRetry={showRetry}
+              onRetry={handleRetry}
+              onCancel={resetAnalysis}
+            />
           )}
 
           {analysis && !loading && (
