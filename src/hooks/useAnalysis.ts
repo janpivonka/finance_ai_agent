@@ -224,7 +224,7 @@ export const useAnalysis = () => {
       // Pokud máme text, zkusíme ho znovu
       const formData = new FormData();
       formData.append("text", contractText);
-      handleProcess(formData);
+      handleProcess(formData, "Manuální vstup textu");
     }
   };
 
