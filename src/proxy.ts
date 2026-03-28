@@ -1,4 +1,8 @@
 import NextAuth from "next-auth";
 import authConfig from "./auth.config";
 
-export const { auth: proxy } = NextAuth(authConfig);
+const { auth } = NextAuth(authConfig);
+
+// Explicitní export jako "proxy" i jako default pro maximální kompatibilitu
+export const proxy = auth;
+export default auth;
