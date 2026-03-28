@@ -9,5 +9,6 @@ export default auth;
 
 export const config = {
   // Matcher pro vyloučení statických souborů a API cest z proxy
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Musíme povolit /api/auth aby proběhl callback
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
 };
