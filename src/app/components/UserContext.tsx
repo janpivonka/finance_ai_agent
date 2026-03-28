@@ -24,7 +24,7 @@ interface UserContextType {
   isLoading: boolean;
   updateUser: (data: Partial<UserProfile>) => Promise<void>;
   logout: () => void;
-  login: (data: { name: string; email: string; password?: string }) => Promise<void>;
+  login: (data: { name: string; email: string; password?: string }, isLogin?: boolean) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   connectSocialAccount: (provider: string) => Promise<void>;
   disconnectSocialAccount: (provider: string) => Promise<void>;
@@ -181,13 +181,19 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (data: { name: string; email: string; password?: string }) => {
+  const login = async (data: { name: string; email: string; password?: string }, isLogin: boolean = false) => {
     try {
       const guestId = user?.id;
       const res = await fetch("/api/user/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestId, name: data.name, email: data.email, password: data.password })
+        body: JSON.stringify({ 
+          guestId, 
+          name: data.name, 
+          email: data.email, 
+          password: data.password,
+          isLogin 
+        })
       });
       if (res.ok) {
         const dbUser = await res.json();
@@ -215,7 +221,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         throw new Error(errorData.error || "Login failed");
       }
     } catch (err) {
-      console.error("Login error:", err);
+      // Pokud je to známá chyba z API, nevyhazujeme ji do konzole (Next.js by ji mohl zachytit jako pád)
       throw err;
     }
   };

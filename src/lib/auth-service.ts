@@ -9,7 +9,7 @@ export async function getOrCreateUser(userData?: {
   id?: string; 
   image?: string | null; 
   password?: string | null 
-}): Promise<User> {
+}, isLogin: boolean = false): Promise<User> {
   if (!userData) {
     throw new Error("User data is required");
   }
@@ -28,6 +28,9 @@ export async function getOrCreateUser(userData?: {
         if (!isValid) {
           throw new Error("Invalid password");
         }
+      } else if (userData.password && !user.password) {
+        // If user exists (e.g. from Google) but has no password set
+        throw new Error("Account has no password set. Please login via Google.");
       }
 
       // If user exists but image is missing, update it
@@ -39,6 +42,9 @@ export async function getOrCreateUser(userData?: {
         });
       }
       return user;
+    } else if (isLogin) {
+      // If we are in login mode and user was not found by email
+      throw new Error("User not found");
     }
   }
 
@@ -52,6 +58,11 @@ export async function getOrCreateUser(userData?: {
   }
 
   // 3. Create new user (Guest or Full)
+  // If we reach here and isLogin is true, it means no email was provided or user not found
+  if (isLogin) {
+    throw new Error("Invalid login attempt");
+  }
+
   const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10) : null;
 
   return await prisma.user.create({

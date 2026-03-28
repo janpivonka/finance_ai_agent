@@ -6,8 +6,8 @@ export async function POST(req: Request) {
     if (!process.env.DATABASE_URL) {
       throw new Error("DATABASE_URL is not defined in environment variables");
     }
-    const { guestId, ...userData } = await req.json();
-    const user = await getOrCreateUser(userData);
+    const { guestId, isLogin, ...userData } = await req.json();
+    const user = await getOrCreateUser(userData, !!isLogin);
 
     // If we have a guestId and it's different from the new userId, migrate data
     if (guestId && user.id !== guestId) {
@@ -17,14 +17,23 @@ export async function POST(req: Request) {
 
     return NextResponse.json(user);
   } catch (error: any) {
-    console.error("Sync user error:", {
-      message: error.message,
-      stack: error.stack,
-      cause: error.cause
-    });
+    const isKnownError = [
+      "User not found", 
+      "Invalid password", 
+      "Account has no password set. Please login via Google.",
+      "Invalid login attempt"
+    ].includes(error.message);
+
+    if (!isKnownError) {
+      console.error("Sync user server error:", {
+        message: error.message,
+        stack: error.stack
+      });
+    }
+
     return NextResponse.json({ 
-      error: "Failed to sync user", 
+      error: isKnownError ? error.message : "Failed to sync user", 
       details: error.message 
-    }, { status: 500 });
+    }, { status: isKnownError ? 401 : 500 });
   }
 }

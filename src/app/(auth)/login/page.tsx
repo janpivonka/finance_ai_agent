@@ -29,11 +29,19 @@ export default function LoginPage() {
         name: "Uživatel", 
         email: email,
         password: password
-      });
+      }, true); // isLogin = true
       router.push("/dashboard");
     } catch (err: any) {
-      console.error("Chyba při přihlášení:", err);
-      setError("Neplatný e-mail nebo heslo.");
+      // Už nevypisujeme chybu do konzole, pokud je to očekávaná chyba validace
+      if (err.message === "User not found") {
+        setError("Uživatel s tímto e-mailem neexistuje.");
+      } else if (err.message === "Invalid password") {
+        setError("Zadané heslo není správné.");
+      } else if (err.message.includes("Google")) {
+        setError("Tento účet používá přihlášení přes Google.");
+      } else {
+        setError("Při přihlašování došlo k chybě.");
+      }
     }
   };
 
