@@ -11,7 +11,7 @@ import { useUser } from "../../components/UserContext";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { login } = useUser();
+  const { login, loginWithGoogle } = useUser();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -78,11 +78,17 @@ export default function RegisterPage() {
 
           {/* Social Login */}
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <button className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all cursor-pointer">
+            <button 
+              onClick={() => loginWithGoogle()}
+              className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all cursor-pointer"
+            >
               <Github size={18} />
               <span className="text-xs font-bold uppercase tracking-wider">GitHub</span>
             </button>
-            <button className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all cursor-pointer">
+            <button 
+              onClick={() => loginWithGoogle()}
+              className="flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all cursor-pointer"
+            >
               <Chrome size={18} />
               <span className="text-xs font-bold uppercase tracking-wider">Google</span>
             </button>

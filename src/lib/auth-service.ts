@@ -56,6 +56,15 @@ export async function connectAccount(userId: string, provider: string, providerA
   });
 }
 
+export async function migrateGuestHistory(guestId: string, userId: string) {
+  if (!guestId || !userId || guestId === userId) return;
+
+  return await prisma.analysisHistory.updateMany({
+    where: { userId: guestId },
+    data: { userId }
+  });
+}
+
 export async function disconnectAccount(userId: string, provider: string) {
   // Find account first to get ID
   const account = await prisma.account.findFirst({

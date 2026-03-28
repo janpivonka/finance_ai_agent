@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 interface UserProfile {
   id: string;
@@ -24,6 +25,7 @@ interface UserContextType {
   updateUser: (data: Partial<UserProfile>) => Promise<void>;
   logout: () => void;
   login: (data: { name: string; email: string }) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   connectSocialAccount: (provider: string) => Promise<void>;
   disconnectSocialAccount: (provider: string) => Promise<void>;
 }
@@ -31,65 +33,106 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Sync with localStorage on mount
+  // Sync with session or localStorage on mount/session change
   useEffect(() => {
     const initUser = async () => {
+      // If Auth.js session is loading, wait
+      if (status === "loading") return;
+
       setIsLoading(true);
       try {
-        const storedUserId = localStorage.getItem("finance_user_id");
-        const storedName = localStorage.getItem("finance_user_name") || "Uživatel";
-        const storedEmail = localStorage.getItem("finance_user_email");
-        const storedPhone = localStorage.getItem("finance_user_phone");
-
-        // Fetch user from DB or create a guest session
-        const res = await fetch("/api/user/sync", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            id: storedUserId, 
-            name: storedName, 
-            email: storedEmail,
-            phone: storedPhone
-          })
-        });
-
-        if (res.ok) {
-          const dbUser = await res.json();
-          const profile: UserProfile = {
-            id: dbUser.id,
-            name: dbUser.name || "Uživatel",
-            email: dbUser.email,
-            phone: dbUser.phone,
-            bio: dbUser.bio,
-            image: dbUser.image,
-            isGuest: dbUser.isGuest,
-            connectedAccounts: {
-              github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
-              google: dbUser.accounts?.some((a: any) => a.provider === "google") || false,
-              facebook: dbUser.accounts?.some((a: any) => a.provider === "facebook") || false,
-              tiktok: dbUser.accounts?.some((a: any) => a.provider === "tiktok") || false,
-            }
-          };
-          setUser(profile);
-          localStorage.setItem("finance_user_id", dbUser.id);
-          localStorage.setItem("finance_user_name", dbUser.name || "Uživatel");
-          if (dbUser.email) localStorage.setItem("finance_user_email", dbUser.email);
-          if (dbUser.phone) localStorage.setItem("finance_user_phone", dbUser.phone);
-        } else {
-          // Fallback to local storage only if API fails
-          setUser({
-            id: storedUserId || "guest-" + Date.now(),
-            name: storedName,
-            email: storedEmail || null,
-            phone: storedPhone || null,
-            bio: null,
-            image: null,
-            isGuest: !storedEmail,
-            connectedAccounts: { github: false, google: false, facebook: false, tiktok: false }
+        if (session?.user) {
+          // Logged in via Auth.js
+          const guestId = localStorage.getItem("finance_user_id");
+          
+          const res = await fetch("/api/user/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              email: session.user.email,
+              name: session.user.name,
+              image: session.user.image,
+              guestId: guestId && guestId.startsWith("guest-") ? guestId : undefined
+            })
           });
+
+          if (res.ok) {
+            const dbUser = await res.json();
+            const profile: UserProfile = {
+              id: dbUser.id,
+              name: dbUser.name || "Uživatel",
+              email: dbUser.email,
+              phone: dbUser.phone,
+              bio: dbUser.bio,
+              image: dbUser.image,
+              isGuest: false,
+              connectedAccounts: {
+                github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
+                google: true, // If logged in via Google
+                facebook: dbUser.accounts?.some((a: any) => a.provider === "facebook") || false,
+                tiktok: dbUser.accounts?.some((a: any) => a.provider === "tiktok") || false,
+              }
+            };
+            setUser(profile);
+            localStorage.setItem("finance_user_id", dbUser.id);
+            localStorage.setItem("finance_user_name", dbUser.name || "Uživatel");
+            if (dbUser.email) localStorage.setItem("finance_user_email", dbUser.email);
+            localStorage.setItem("finance_auth_session", "true");
+          }
+        } else {
+          // Guest or not logged in via Auth.js
+          const storedUserId = localStorage.getItem("finance_user_id");
+          const storedName = localStorage.getItem("finance_user_name") || "Uživatel";
+          const storedEmail = localStorage.getItem("finance_user_email");
+          const storedPhone = localStorage.getItem("finance_user_phone");
+
+          const res = await fetch("/api/user/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              id: storedUserId, 
+              name: storedName, 
+              email: storedEmail,
+              phone: storedPhone
+            })
+          });
+
+          if (res.ok) {
+            const dbUser = await res.json();
+            const profile: UserProfile = {
+              id: dbUser.id,
+              name: dbUser.name || "Uživatel",
+              email: dbUser.email,
+              phone: dbUser.phone,
+              bio: dbUser.bio,
+              image: dbUser.image,
+              isGuest: dbUser.isGuest,
+              connectedAccounts: {
+                github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
+                google: dbUser.accounts?.some((a: any) => a.provider === "google") || false,
+                facebook: dbUser.accounts?.some((a: any) => a.provider === "facebook") || false,
+                tiktok: dbUser.accounts?.some((a: any) => a.provider === "tiktok") || false,
+              }
+            };
+            setUser(profile);
+            localStorage.setItem("finance_user_id", dbUser.id);
+            localStorage.setItem("finance_user_name", dbUser.name || "Uživatel");
+          } else {
+            setUser({
+              id: storedUserId || "guest-" + Date.now(),
+              name: storedName,
+              email: storedEmail || null,
+              phone: storedPhone || null,
+              bio: null,
+              image: null,
+              isGuest: !storedEmail,
+              connectedAccounts: { github: false, google: false, facebook: false, tiktok: false }
+            });
+          }
         }
       } catch (err) {
         console.error("User initialization error:", err);
@@ -99,7 +142,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     };
 
     initUser();
-  }, []);
+  }, [session, status]);
 
   const updateUser = async (data: Partial<UserProfile>) => {
     if (!user) return;
@@ -133,10 +176,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (data: { name: string; email: string }) => {
     try {
+      const guestId = user?.id;
       const res = await fetch("/api/user/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: data.name, email: data.email })
+        body: JSON.stringify({ guestId, name: data.name, email: data.email })
       });
       if (res.ok) {
         const dbUser = await res.json();
@@ -165,14 +209,25 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      await signIn("google", { callbackUrl: "/dashboard" });
+    } catch (err) {
+      console.error("Google login error:", err);
+    }
+  };
+
   const logout = () => {
+    if (session) {
+      signOut({ callbackUrl: "/" });
+    }
     setUser(null);
     localStorage.removeItem("finance_user_id");
     localStorage.removeItem("finance_user_name");
     localStorage.removeItem("finance_user_email");
     localStorage.removeItem("finance_user_phone");
     localStorage.removeItem("finance_auth_session");
-    window.location.href = "/";
+    if (!session) window.location.href = "/";
   };
 
   const connectSocialAccount = async (provider: string) => {
@@ -220,6 +275,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       updateUser, 
       logout, 
       login, 
+      loginWithGoogle,
       connectSocialAccount, 
       disconnectSocialAccount 
     }}>
