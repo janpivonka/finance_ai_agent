@@ -14,6 +14,8 @@ export default function LoginPage() {
   const { login, loginWithGoogle } = useUser();
   const [mounted, setMounted] = React.useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   React.useEffect(() => {
     setMounted(true);
@@ -21,15 +23,17 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Use the new login logic from UserContext
+    setError("");
     try {
       await login({ 
         name: "Uživatel", 
-        email: email 
+        email: email,
+        password: password
       });
       router.push("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Chyba při přihlášení:", err);
+      setError("Neplatný e-mail nebo heslo.");
     }
   };
 
@@ -73,6 +77,11 @@ export default function LoginPage() {
             </div>
             <h1 className="text-3xl font-black tracking-tighter text-[color:var(--foreground)] mb-2">Vítejte zpět</h1>
             <p className="text-slate-500 font-medium text-sm">Přihlaste se ke svému finančnímu agentovi</p>
+            {error && (
+              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-bold w-full">
+                {error}
+              </div>
+            )}
           </div>
 
           {/* Social Login */}
@@ -130,6 +139,8 @@ export default function LoginPage() {
                 </div>
                 <input 
                   type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-sm font-medium focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all text-[color:var(--foreground)]"
                   required

@@ -1,30 +1,27 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 model User {
-  id                String            @id @default(cuid())
-  email             String?           @unique
-  name              String?
-  emailVerified     DateTime?
-  phone             String?
-  bio               String?
-  image             String?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  accounts          Account[]
-  sessions          Session[]
-  analyses          AnalysisHistory[]
-  isGuest           Boolean           @default(false)
+  id            String            @id @default(cuid())
+  email         String?           @unique
+  name          String?
+  password      String?
+  emailVerified DateTime?
+  phone         String?
+  bio           String?
+  image         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  isGuest       Boolean           @default(false)
+  accounts      Account[]
+  analyses      AnalysisHistory[]
+  sessions      Session[]
 }
 
 model Account {
@@ -33,15 +30,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -63,23 +59,22 @@ model VerificationToken {
 }
 
 model AnalysisHistory {
-  id                    String   @id @default(cuid())
-  userId                String
-  fixace                String
-  aktualni_splatka      Float
-  uspora                Float
-  aktualni_trzni_sazba  String
-  pojisteni             String
-  top_nabidky           String   // JSON string
-  analyticky_duvod      String
-  kreativni_vypocet     String
-  uspora_slovy          String
-  textovy_obsah         String
-  timestamp             String
-  date                  String
-  fileName              String?
-  clientPhone           String?
-  createdAt             DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String   @id @default(cuid())
+  userId               String
+  fixace               String
+  aktualni_splatka     Float
+  uspora               Float
+  aktualni_trzni_sazba String
+  pojisteni            String
+  top_nabidky          String
+  analyticky_duvod     String
+  kreativni_vypocet    String
+  uspora_slovy         String
+  textovy_obsah        String
+  timestamp            String
+  date                 String
+  fileName             String?
+  clientPhone          String?
+  createdAt            DateTime @default(now())
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

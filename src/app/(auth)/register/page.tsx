@@ -19,18 +19,21 @@ export default function RegisterPage() {
   }, []);
 
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Use the new login logic from UserContext
+    setError("");
     try {
       await login({ 
         name: formData.name || "Uživatel", 
-        email: formData.email 
+        email: formData.email,
+        password: formData.password
       });
       router.push("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Chyba při registraci:", err);
+      setError("Registrace se nezdařila. Zkuste to prosím znovu.");
     }
   };
 
@@ -74,6 +77,11 @@ export default function RegisterPage() {
             </div>
             <h1 className="text-3xl font-black tracking-tighter text-[color:var(--foreground)] mb-2">Vytvořit účet</h1>
             <p className="text-slate-500 font-medium text-sm">Začněte šetřit s AI finančním agentem</p>
+            {error && (
+              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-bold w-full">
+                {error}
+              </div>
+            )}
           </div>
 
           {/* Social Login */}
@@ -145,9 +153,9 @@ export default function RegisterPage() {
                 </div>
                 <input 
                   type="password" 
-                  placeholder="••••••••"
                   value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="••••••••"
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-14 pr-6 text-sm font-medium focus:outline-none focus:border-fuchsia-500/50 focus:ring-4 focus:ring-fuchsia-500/10 transition-all text-[color:var(--foreground)]"
                   required
                 />

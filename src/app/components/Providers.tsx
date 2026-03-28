@@ -6,7 +6,7 @@ import { ThemeProvider } from "./ui/ThemeProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider basePath="/api/auth">
       <UserProvider>
         <ThemeProvider>
           {children}

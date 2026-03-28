@@ -24,7 +24,7 @@ interface UserContextType {
   isLoading: boolean;
   updateUser: (data: Partial<UserProfile>) => Promise<void>;
   logout: () => void;
-  login: (data: { name: string; email: string }) => Promise<void>;
+  login: (data: { name: string; email: string; password?: string }) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   connectSocialAccount: (provider: string) => Promise<void>;
   disconnectSocialAccount: (provider: string) => Promise<void>;
@@ -56,12 +56,19 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               email: session.user.email,
               name: session.user.name,
               image: session.user.image,
-              guestId: guestId && guestId.startsWith("guest-") ? guestId : undefined
+              guestId: guestId // Odebíráme startsWith("guest-"), aby migrace fungovala i pro synchronizované hosty
             })
           });
 
           if (res.ok) {
             const dbUser = await res.json();
+            
+            // Pokud došlo k migraci (guestId byl jiný než dbUser.id), 
+            // promažeme lokální historii, aby se načetla čerstvá ze serveru
+            if (guestId && guestId !== dbUser.id) {
+              localStorage.removeItem("finance_history");
+            }
+
             const profile: UserProfile = {
               id: dbUser.id,
               name: dbUser.name || "Uživatel",
@@ -174,13 +181,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (data: { name: string; email: string }) => {
+  const login = async (data: { name: string; email: string; password?: string }) => {
     try {
       const guestId = user?.id;
       const res = await fetch("/api/user/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestId, name: data.name, email: data.email })
+        body: JSON.stringify({ guestId, name: data.name, email: data.email, password: data.password })
       });
       if (res.ok) {
         const dbUser = await res.json();
@@ -203,9 +210,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("finance_user_name", dbUser.name);
         localStorage.setItem("finance_user_email", dbUser.email);
         localStorage.setItem("finance_auth_session", "true");
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Login failed");
       }
     } catch (err) {
       console.error("Login error:", err);
+      throw err;
     }
   };
 

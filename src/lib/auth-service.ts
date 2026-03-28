@@ -1,9 +1,49 @@
 import { prisma } from "./prisma";
 import { User } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
-export async function getOrCreateUser(userData?: { email?: string; name?: string; phone?: string; id?: string }): Promise<User> {
-  // 1. If ID is provided, try to fetch
-  if (userData?.id) {
+export async function getOrCreateUser(userData?: { 
+  email?: string; 
+  name?: string; 
+  phone?: string; 
+  id?: string; 
+  image?: string | null; 
+  password?: string | null 
+}): Promise<User> {
+  if (!userData) {
+    throw new Error("User data is required");
+  }
+
+  // 1. If email is provided, try to fetch by email first (important for OAuth sync)
+  if (userData.email) {
+    const user = await prisma.user.findUnique({
+      where: { email: userData.email },
+      include: { accounts: true }
+    });
+    
+    if (user) {
+      // If user exists and we are trying to login with password
+      if (userData.password && user.password) {
+        const isValid = await bcrypt.compare(userData.password, user.password);
+        if (!isValid) {
+          throw new Error("Invalid password");
+        }
+      }
+
+      // If user exists but image is missing, update it
+      if (userData.image && !user.image) {
+        return await prisma.user.update({
+          where: { id: user.id },
+          data: { image: userData.image },
+          include: { accounts: true }
+        });
+      }
+      return user;
+    }
+  }
+
+  // 2. If ID is provided, try to fetch
+  if (userData.id) {
     const user = await prisma.user.findUnique({
       where: { id: userData.id },
       include: { accounts: true }
@@ -11,23 +51,19 @@ export async function getOrCreateUser(userData?: { email?: string; name?: string
     if (user) return user;
   }
 
-  // 2. If email is provided, try to fetch by email
-  if (userData?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: userData.email },
-      include: { accounts: true }
-    });
-    if (user) return user;
-  }
-
   // 3. Create new user (Guest or Full)
+  const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10) : null;
+
   return await prisma.user.create({
     data: {
-      email: userData?.email,
-      name: userData?.name || "Uživatel",
-      phone: userData?.phone,
-      isGuest: !userData?.email,
-    }
+      email: userData.email || null,
+      name: userData.name || "Uživatel",
+      phone: userData.phone || null,
+      image: userData.image || null,
+      password: hashedPassword,
+      isGuest: !userData.email,
+    },
+    include: { accounts: true }
   });
 }
 
@@ -59,10 +95,33 @@ export async function connectAccount(userId: string, provider: string, providerA
 export async function migrateGuestHistory(guestId: string, userId: string) {
   if (!guestId || !userId || guestId === userId) return;
 
-  return await prisma.analysisHistory.updateMany({
+  console.log(`Starting migration: ${guestId} -> ${userId}`);
+
+  // 1. Move analysis history
+  const historyResult = await prisma.analysisHistory.updateMany({
     where: { userId: guestId },
     data: { userId }
   });
+
+  console.log(`Migrated ${historyResult.count} history items`);
+
+  // 2. Optionally delete the guest user if it's a "pure" guest (no email)
+  const guestUser = await prisma.user.findUnique({
+    where: { id: guestId }
+  });
+
+  if (guestUser && guestUser.isGuest && !guestUser.email) {
+    try {
+      await prisma.user.delete({
+        where: { id: guestId }
+      });
+      console.log(`Deleted guest user ${guestId}`);
+    } catch (e) {
+      console.error(`Could not delete guest user ${guestId}:`, e);
+    }
+  }
+
+  return historyResult;
 }
 
 export async function disconnectAccount(userId: string, provider: string) {
