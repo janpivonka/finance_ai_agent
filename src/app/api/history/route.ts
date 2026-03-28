@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     });
 
     // Parse top_nabidky back to JSON
-    const parsedHistory = history.map(item => ({
+    const parsedHistory = history.map((item: any) => ({
       ...item,
       top_nabidky: JSON.parse(item.top_nabidky)
     }));
