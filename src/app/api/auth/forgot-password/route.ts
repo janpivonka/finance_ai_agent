@@ -38,7 +38,12 @@ export async function POST(req: Request) {
       }
     });
 
-    await sendPasswordResetEmail(user.email, token);
+    const emailResult = await sendPasswordResetEmail(user.email, token);
+
+    if (!emailResult.success) {
+      console.error("Gmail send error:", emailResult.error);
+      return NextResponse.json({ error: "Nepodařilo se odeslat e-mail" }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
