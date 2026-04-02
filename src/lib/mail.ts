@@ -1,14 +1,38 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_SERVER_USER,
-    pass: process.env.EMAIL_SERVER_PASSWORD,
-  },
-});
+// Pomocná funkce pro získání transportéru s čerstvými env proměnnými
+const getTransporter = () => {
+  // Debug log pro zjištění, co Next.js vidí
+  console.log("DEBUG ENV:", {
+    hasUser: !!process.env.EMAIL_SERVER_USER,
+    hasPass: !!process.env.EMAIL_SERVER_PASSWORD,
+    user: process.env.EMAIL_SERVER_USER
+  });
+
+  const user = process.env.EMAIL_SERVER_USER;
+  const pass = process.env.EMAIL_SERVER_PASSWORD;
+
+  if (!user || !pass) {
+    console.error("Missing EMAIL_SERVER_USER or EMAIL_SERVER_PASSWORD in environment");
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: user,
+      pass: pass.replace(/\s+/g, ''), // Odstraní mezery, pokud tam jsou
+    },
+  });
+};
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
+  const transporter = getTransporter();
+  
+  if (!transporter) {
+    return { success: false, error: "E-mailový server není nakonfigurován" };
+  }
+
   const resetLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
 
   try {

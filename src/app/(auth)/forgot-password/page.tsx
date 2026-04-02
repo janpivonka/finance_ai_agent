@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Mail, ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Mail, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { PageBackground } from "../../components/ui/PageBackground";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import AuthLoading from "../loading";
@@ -14,6 +14,7 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   React.useEffect(() => {
     setMounted(true);
@@ -22,6 +23,7 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
     
     try {
       const res = await fetch("/api/auth/forgot-password", {
@@ -30,13 +32,16 @@ export default function ForgotPasswordPage() {
         headers: { "Content-Type": "application/json" }
       });
       
+      const data = await res.json();
+
       if (res.ok) {
         setIsSubmitted(true);
       } else {
-        const data = await res.json();
+        setError(data.error || "Při odesílání e-mailu došlo k chybě.");
         console.error("Error sending reset email:", data.error);
       }
     } catch (err) {
+      setError("Při odesílání e-mailu došlo k chybě.");
       console.error("Error sending reset email:", err);
     } finally {
       setIsLoading(false);
@@ -89,6 +94,19 @@ export default function ForgotPasswordPage() {
                 ? "Pokud u nás máte účet, poslali jsme vám instrukce k obnovení hesla." 
                 : "Zadejte svůj e-mail a my vám pošleme odkaz pro vytvoření nového hesla."}
             </p>
+
+            <AnimatePresence>
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-bold w-full flex items-center gap-2"
+                >
+                  <AlertCircle size={16} />
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <AnimatePresence mode="wait">

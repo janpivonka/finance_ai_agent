@@ -33,11 +33,25 @@ export async function getOrCreateUser(userData?: {
         throw new Error("Account has no password set. Please login via Google.");
       }
 
-      // If user exists but image is missing, update it
-      if (userData.image && !user.image) {
+      // If user exists but image or name is missing/default, update it
+      const isDefaultName = !user.name || user.name === "Uživatel";
+      const isGoogleLogin = !userData.password && !isLogin; 
+      const hasNewName = userData.name && userData.name !== "Uživatel" && (isDefaultName || isGoogleLogin);
+      
+      // Update image if it's provided and different from current (or if current is missing)
+      const hasNewImage = userData.image && userData.image !== user.image;
+
+      if (hasNewName || hasNewImage) {
+        console.log(`Updating user ${user.id} with new data:`, { 
+          name: hasNewName ? userData.name : 'no change', 
+          image: hasNewImage ? 'new image provided' : 'no change' 
+        });
         return await prisma.user.update({
           where: { id: user.id },
-          data: { image: userData.image },
+          data: { 
+            ...(hasNewName ? { name: userData.name } : {}),
+            ...(hasNewImage ? { image: userData.image } : {})
+          },
           include: { accounts: true }
         });
       }

@@ -49,6 +49,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           // Logged in via Auth.js
           const guestId = localStorage.getItem("finance_user_id");
           
+          console.log("Syncing session user:", {
+            name: session.user.name,
+            email: session.user.email,
+            hasImage: !!session.user.image
+          });
+
           const res = await fetch("/api/user/sync", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -79,7 +85,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               isGuest: false,
               connectedAccounts: {
                 github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
-                google: true, // If logged in via Google
+                google: dbUser.accounts?.some((a: any) => a.provider === "google") || false,
                 facebook: dbUser.accounts?.some((a: any) => a.provider === "facebook") || false,
                 tiktok: dbUser.accounts?.some((a: any) => a.provider === "tiktok") || false,
               }

@@ -25,6 +25,7 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Update hesla a zároveň vymazání tokenů přes findFirst (pokud id zlobí)
     await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -36,7 +37,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Reset password error:", error);
+    console.error("CRITICAL: Reset password error:", error.message || error);
+    if (error.stack) console.error(error.stack);
     return NextResponse.json({ error: "Chyba serveru" }, { status: 500 });
   }
 }

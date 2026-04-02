@@ -22,14 +22,15 @@ export async function POST(req: Request) {
     }
 
     // Pokud uživatel nemá heslo (přihlášen přes Google), neumožníme reset hesla tímto způsobem
-    if (!user.password && user.accounts.length > 0) {
-       // Můžeme odeslat jiný email, ale pro teď jen vrátíme úspěch
+    if (!user.password && user.accounts && user.accounts.length > 0) {
+       console.log("Password reset requested for Google user, skipping email");
        return NextResponse.json({ success: true });
     }
 
     const token = crypto.randomBytes(32).toString("hex");
     const expires = new Date(Date.now() + 3600000); // 1 hodina
 
+    console.log(`Updating reset token for user ${user.id}`);
     await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
       }
     });
 
+    console.log(`Sending reset email to ${user.email}`);
     const emailResult = await sendPasswordResetEmail(user.email, token);
 
     if (!emailResult.success) {
@@ -47,7 +49,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Forgot password error:", error);
+    console.error("CRITICAL: Forgot password error:", error.message || error);
+    if (error.stack) console.error(error.stack);
     return NextResponse.json({ error: "Chyba serveru" }, { status: 500 });
   }
 }
