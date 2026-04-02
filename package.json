@@ -27,6 +27,7 @@
     "prisma": "^7.6.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "resend": "^6.10.0",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.21.0"
   },

@@ -19,6 +19,8 @@ model User {
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
   isGuest       Boolean           @default(false)
+  resetToken         String?   @unique
+  resetTokenExpires  DateTime?
   accounts      Account[]
   analyses      AnalysisHistory[]
   sessions      Session[]

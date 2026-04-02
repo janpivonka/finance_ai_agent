@@ -23,11 +23,24 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulace odeslání požadavku
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsSubmitted(true);
-    setIsLoading(false);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+        headers: { "Content-Type": "application/json" }
+      });
+      
+      if (res.ok) {
+        setIsSubmitted(true);
+      } else {
+        const data = await res.json();
+        console.error("Error sending reset email:", data.error);
+      }
+    } catch (err) {
+      console.error("Error sending reset email:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!mounted) return <AuthLoading />;
