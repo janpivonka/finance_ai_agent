@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileSearch, Mic2, History, LogOut, Settings, User } from "lucide-react";
+import { LayoutDashboard, FileSearch, Mic2, History, LogOut, Settings, User, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
@@ -56,7 +56,7 @@ export default function Sidebar() {
       {/* --- DESKTOP SIDEBAR --- */}
       <aside className="hidden md:flex h-screen w-24 flex-col items-center border-r border-[color:var(--panel-border)] bg-[var(--background)] py-8 shrink-0 z-50">
         
-        {/* LOGO BOX */}
+        {/* LOGO BOX / HOME BUTTON */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -64,11 +64,15 @@ export default function Sidebar() {
           onClick={() => router.push(logoHref)}
           className="mb-12 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--panel)] p-2.5 ring-1 ring-[color:var(--panel-border)] shadow-inner group cursor-pointer hover:bg-indigo-500/20 hover:border-indigo-500/50 transition-all"
         >
-          <img 
-            src="/logo.png" 
-            alt="Logo"
-            className="max-h-full max-w-full object-contain" 
-          />
+          {user?.isGuest ? (
+            <Home className="text-indigo-400" size={24} strokeWidth={2.5} />
+          ) : (
+            <img 
+              src="/logo.png" 
+              alt="Logo"
+              className="max-h-full max-w-full object-contain" 
+            />
+          )}
         </motion.div>
 
         <ThemeToggle className="mb-10 hover:bg-[var(--panel)]" />
@@ -132,75 +136,75 @@ export default function Sidebar() {
 
         {/* PROFIL A ODHLÁŠENÍ (DESKTOP) */}
         <div className="mt-auto flex flex-col items-center gap-4 pb-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative"
-          >
-            <button
-              onClick={() => handleNavigate("/settings")}
-              className={`group relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] transition-all duration-300 cursor-pointer overflow-hidden ${
-                pathname === "/settings" 
-                  ? "text-white" 
-                  : "text-[color:var(--muted)] hover:text-indigo-400"
-              }`}
-            >
-              {pathname === "/settings" && (
-                <motion.div
-                  layoutId="activePill"
-                  className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-indigo-500 to-cyan-400 rounded-[1.25rem] shadow-[0_0_20px_rgba(79,70,229,0.4)] ring-1 ring-white/20"
-                />
-              )}
-              
+          {user && !user.isGuest && (
+            <>
               <motion.div
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
-                className="relative z-10 flex items-center justify-center w-full h-full"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative"
               >
-                {user?.isGuest ? (
-                  <User size={20} strokeWidth={pathname === "/settings" ? 2.5 : 2} />
-                ) : user?.image ? (
-                  <img src={user.image} alt={user?.name || "Profil"} className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20 shadow-lg" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-[10px] font-black text-white shadow-lg ring-2 ring-white/20">
-                    {user?.name?.charAt(0).toUpperCase() || "U"}
+                <button
+                  onClick={() => handleNavigate("/settings")}
+                  className={`group relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] transition-all duration-300 cursor-pointer overflow-hidden ${
+                    pathname === "/settings" 
+                      ? "text-white" 
+                      : "text-[color:var(--muted)] hover:text-indigo-400"
+                  }`}
+                >
+                  {pathname === "/settings" && (
+                    <motion.div
+                      layoutId="activePill"
+                      className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-indigo-500 to-cyan-400 rounded-[1.25rem] shadow-[0_0_20px_rgba(79,70,229,0.4)] ring-1 ring-white/20"
+                    />
+                  )}
+                  
+                  <motion.div
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="relative z-10 flex items-center justify-center w-full h-full"
+                  >
+                    {user?.image ? (
+                      <img src={user.image} alt={user?.name || "Profil"} className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20 shadow-lg" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-[10px] font-black text-white shadow-lg ring-2 ring-white/20">
+                        {user?.name?.charAt(0).toUpperCase() || "U"}
+                      </div>
+                    )}
+                  </motion.div>
+
+                  <div className="pointer-events-none absolute left-16 whitespace-nowrap rounded-lg bg-[var(--panel-strong)] border border-[color:var(--panel-border)] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[color:var(--foreground)] opacity-0 shadow-2xl transition-all group-hover:opacity-100 z-[60] translate-x-[-10px] group-hover:translate-x-0">
+                    {`Profil: ${user?.name || "Uživatel"}`}
                   </div>
-                )}
+
+                  {pathname === "/settings" && (
+                    <motion.div 
+                      layoutId="activeLine"
+                      className="absolute -left-5 h-6 w-1 rounded-r-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]" 
+                    />
+                  )}
+                </button>
               </motion.div>
 
-              <div className="pointer-events-none absolute left-16 whitespace-nowrap rounded-lg bg-[var(--panel-strong)] border border-[color:var(--panel-border)] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[color:var(--foreground)] opacity-0 shadow-2xl transition-all group-hover:opacity-100 z-[60] translate-x-[-10px] group-hover:translate-x-0">
-                {user?.isGuest ? "Můj Profil" : `Profil: ${user?.name || "Uživatel"}`}
-              </div>
-
-              {pathname === "/settings" && (
-                <motion.div 
-                  layoutId="activeLine"
-                  className="absolute -left-5 h-6 w-1 rounded-r-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]" 
-                />
-              )}
-            </button>
-          </motion.div>
-
-          {user && !user.isGuest && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-            >
-              <button
-                onClick={handleLogout}
-                className="group relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] text-[color:var(--muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-all duration-300 cursor-pointer"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
               >
-                <motion.div
-                  whileHover={{ scale: 1.25, rotate: -10 }}
-                  whileTap={{ scale: 0.9 }}
+                <button
+                  onClick={handleLogout}
+                  className="group relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] text-[color:var(--muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-all duration-300 cursor-pointer"
                 >
-                  <LogOut size={20} />
-                </motion.div>
-                <div className="pointer-events-none absolute left-16 whitespace-nowrap rounded-lg bg-rose-600 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white opacity-0 shadow-2xl transition-all group-hover:opacity-100 ring-1 ring-white/10 z-[60] translate-x-[-10px] group-hover:translate-x-0">
-                  Odhlásit se
-                </div>
-              </button>
-            </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.25, rotate: -10 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <LogOut size={20} />
+                  </motion.div>
+                  <div className="pointer-events-none absolute left-16 whitespace-nowrap rounded-lg bg-rose-600 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white opacity-0 shadow-2xl transition-all group-hover:opacity-100 ring-1 ring-white/10 z-[60] translate-x-[-10px] group-hover:translate-x-0">
+                    Odhlásit se
+                  </div>
+                </button>
+              </motion.div>
+            </>
           )}
         </div>
       </aside>
@@ -209,8 +213,23 @@ export default function Sidebar() {
       <motion.nav 
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[460px] h-16 bg-[color:var(--panel)] backdrop-blur-2xl rounded-[2.2rem] border border-[color:var(--panel-border)] flex items-center justify-around px-2 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/5"
+        className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-[480px] h-16 bg-[color:var(--panel)] backdrop-blur-2xl rounded-[2.2rem] border border-[color:var(--panel-border)] flex items-center justify-around px-2 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.6)] ring-1 ring-white/5"
       >
+        {user?.isGuest && (
+          <button
+            onClick={() => handleInteraction('nav-welcome', goToHome, 150)}
+            className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${activeId === 'nav-welcome' ? 'scale-110' : ''}`}
+          >
+            <motion.div
+              whileTap={{ scale: 1.35 }}
+              className="relative z-10 text-indigo-400"
+            >
+              <Home size={20} strokeWidth={2.5} />
+            </motion.div>
+            <span className="absolute -bottom-1 w-1 h-1 bg-indigo-400 rounded-full shadow-[0_0_8px_#818cf8]" />
+          </button>
+        )}
+
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -264,36 +283,36 @@ export default function Sidebar() {
           onClick={() => handleInteraction('theme-toggle', toggleTheme, 150)} 
         />
 
-        <button
-          onClick={() => handleInteraction('nav-settings', () => handleNavigate("/settings"), 150)}
-          className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${pathname === "/settings" ? 'scale-110' : ''}`}
-        >
-          {pathname === "/settings" && (
-            <motion.div
-              layoutId="activeNavMobile"
-              className="absolute inset-0 bg-white/5 rounded-2xl"
-            />
-          )}
-          <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all overflow-hidden ${pathname === "/settings" ? 'ring-2 ring-cyan-400' : 'bg-white/5 text-slate-500'}`}>
-            {user?.isGuest ? (
-              <User size={18} />
-            ) : user?.image ? (
-              <img src={user.image} alt={user?.name || "Profil"} className="w-full h-full object-cover" />
-            ) : (
-              <div className={`w-full h-full flex items-center justify-center text-[10px] font-black ${pathname === "/settings" ? 'bg-gradient-to-br from-indigo-500 to-cyan-400 text-white' : ''}`}>
-                {user?.name?.charAt(0).toUpperCase() || "U"}
-              </div>
-            )}
-          </div>
-        </button>
-
         {user && !user.isGuest && (
-          <button
-            onClick={() => handleInteraction('logout-mobile', handleLogout, 150)}
-            className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${activeId === 'logout-mobile' ? 'scale-110 text-rose-500 bg-rose-500/10 rounded-2xl' : 'text-slate-500'}`}
-          >
-            <LogOut size={20} />
-          </button>
+          <>
+            <button
+              onClick={() => handleInteraction('nav-settings', () => handleNavigate("/settings"), 150)}
+              className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${pathname === "/settings" ? 'scale-110' : ''}`}
+            >
+              {pathname === "/settings" && (
+                <motion.div
+                  layoutId="activeNavMobile"
+                  className="absolute inset-0 bg-white/5 rounded-2xl"
+                />
+              )}
+              <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all overflow-hidden ${pathname === "/settings" ? 'ring-2 ring-cyan-400' : 'bg-white/5 text-slate-500'}`}>
+                {user?.image ? (
+                  <img src={user.image} alt={user?.name || "Profil"} className="w-full h-full object-cover" />
+                ) : (
+                  <div className={`w-full h-full flex items-center justify-center text-[10px] font-black ${pathname === "/settings" ? 'bg-gradient-to-br from-indigo-500 to-cyan-400 text-white' : ''}`}>
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                )}
+              </div>
+            </button>
+
+            <button
+              onClick={() => handleInteraction('logout-mobile', handleLogout, 150)}
+              className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${activeId === 'logout-mobile' ? 'scale-110 text-rose-500 bg-rose-500/10 rounded-2xl' : 'text-slate-500'}`}
+            >
+              <LogOut size={20} />
+            </button>
+          </>
         )}
       </motion.nav>
     </>
