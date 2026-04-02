@@ -58,23 +58,23 @@ export default function WelcomePage() {
       {/* Navigation Header */}
       <header className="relative z-20 flex items-center justify-between px-6 py-6 md:px-12 max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <ShieldCheck className="text-white" size={24} />
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-indigo-600 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <ShieldCheck className="text-white" size={20} />
           </div>
-          <span className="text-xl font-black tracking-tighter text-[color:var(--foreground)] italic">FINANCE<span className="text-cyan-400">AI</span></span>
+          <span className="text-lg md:text-xl font-black tracking-tighter text-[color:var(--foreground)] italic">FINANCE<span className="text-cyan-400">AI</span></span>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <ThemeToggle />
           <button 
             onClick={() => router.push("/login")}
-            className="hidden md:block px-6 py-2.5 text-sm font-bold text-[color:var(--foreground)] hover:text-cyan-400 transition-colors cursor-pointer"
+            className="px-3 md:px-6 py-2.5 text-xs md:text-sm font-bold text-[color:var(--foreground)] hover:text-cyan-400 transition-colors cursor-pointer"
           >
             Přihlásit se
           </button>
           <button 
             onClick={() => router.push("/register")}
-            className="px-6 py-2.5 bg-[var(--panel-strong)] border border-[color:var(--panel-border)] hover:border-cyan-500/50 rounded-xl text-sm font-bold text-[color:var(--foreground)] transition-all hover:scale-105 cursor-pointer shadow-xl"
+            className="px-4 md:px-6 py-2.5 bg-[var(--panel-strong)] border border-[color:var(--panel-border)] hover:border-cyan-500/50 rounded-xl text-xs md:text-sm font-bold text-[color:var(--foreground)] transition-all hover:scale-105 cursor-pointer shadow-xl"
           >
             Registrace
           </button>
