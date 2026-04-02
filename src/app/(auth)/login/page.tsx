@@ -139,7 +139,13 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-4">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Heslo</label>
-                <button type="button" className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors cursor-pointer">Zapomenuté heslo?</button>
+                <button 
+                  type="button" 
+                  onClick={() => router.push("/forgot-password")}
+                  className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  Zapomenuté heslo?
+                </button>
               </div>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
