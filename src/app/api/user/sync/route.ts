@@ -21,7 +21,8 @@ export async function POST(req: Request) {
       "User not found", 
       "Invalid password", 
       "Account has no password set. Please login via Google.",
-      "Invalid login attempt"
+      "Invalid login attempt",
+      "Uživatel s tímto e-mailem již existuje."
     ].includes(error.message);
 
     if (!isKnownError) {

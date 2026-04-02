@@ -60,7 +60,17 @@ export async function getOrCreateUser(userData?: {
   // 3. Create new user (Guest or Full)
   // If we reach here and isLogin is true, it means no email was provided or user not found
   if (isLogin) {
-    throw new Error("Invalid login attempt");
+    throw new Error("User not found");
+  }
+
+  // Check if user with this email already exists before creating (strict registration)
+  if (userData.email) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: userData.email }
+    });
+    if (existingUser) {
+      throw new Error("Uživatel s tímto e-mailem již existuje.");
+    }
   }
 
   const hashedPassword = userData.password ? await bcrypt.hash(userData.password, 10) : null;
