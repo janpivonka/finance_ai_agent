@@ -1,8 +1,23 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Inicializace Resend klienta s kontrolou API klíče
+const getResendClient = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    // Vracíme null nebo házíme chybu až při volání, aby build neselhal
+    console.warn("RESEND_API_KEY is missing. Emails will not be sent.");
+    return null;
+  }
+  return new Resend(apiKey);
+};
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
+  const resend = getResendClient();
+  
+  if (!resend) {
+    return { success: false, error: "E-mailový klient není nakonfigurován" };
+  }
+
   const resetLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
 
   try {
