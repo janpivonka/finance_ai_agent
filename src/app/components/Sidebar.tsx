@@ -18,6 +18,34 @@ const navItems = [
   { label: "Historie", href: "/history", icon: History },
 ];
 
+// Pomocná komponenta pro avatar s robustním fallbackem
+const UserAvatar = ({ user, className, iconSize = 20 }: { user: any, className?: string, iconSize?: number }) => {
+  const [imgError, setImgError] = React.useState(false);
+
+  // Resetovat chybu, pokud se změní URL obrázku
+  React.useEffect(() => {
+    setImgError(false);
+  }, [user?.image]);
+
+  if (user?.image && !imgError) {
+    return (
+      <img
+        src={user.image}
+        alt={user?.name || "Profil"}
+        className={`${className} object-cover`}
+        referrerPolicy="no-referrer"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  return (
+    <div className={`${className} bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-[10px] font-black text-white`}>
+      {user?.name?.charAt(0).toUpperCase() || "U"}
+    </div>
+  );
+};
+
 export default function Sidebar() {
   const { goToHome, goToAnalysis, goToConsultation, goToHistory, goToDashboard } = useAppNavigation();
   const { user, logout } = useUser();
@@ -25,7 +53,9 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = React.useState(false);
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const { activeId, handleInteraction } = useMobileInteraction();
+  const profileRef = React.useRef<HTMLDivElement>(null);
 
   const handleNavigate = (href: string) => {
     if (href === "/dashboard") goToDashboard();
@@ -34,14 +64,25 @@ export default function Sidebar() {
     else if (href === "/history") goToHistory();
     else if (href === "/settings") router.push("/settings");
     else goToHome();
+    setIsProfileOpen(false);
   };
 
   const handleLogout = () => {
     logout();
+    setIsProfileOpen(false);
   };
 
   React.useEffect(() => {
     setMounted(true);
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Vrátíme placeholder se stejnou šířkou, aby obsah neposkočil při hydrataci
@@ -134,77 +175,78 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* PROFIL A ODHLÁŠENÍ (DESKTOP) */}
+        {/* PROFIL (DESKTOP) */}
         <div className="mt-auto flex flex-col items-center gap-4 pb-4">
           {user && !user.isGuest && (
-            <>
+            <div className="relative" ref={profileRef}>
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative"
               >
                 <button
-                  onClick={() => handleNavigate("/settings")}
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className={`group relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] transition-all duration-300 cursor-pointer overflow-hidden ${
-                    pathname === "/settings" 
-                      ? "text-white" 
+                    pathname === "/settings" || isProfileOpen
+                      ? "ring-2 ring-indigo-500/50 bg-indigo-500/10" 
                       : "text-[color:var(--muted)] hover:text-indigo-400"
                   }`}
                 >
-                  {pathname === "/settings" && (
-                    <motion.div
-                      layoutId="activePill"
-                      className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-indigo-500 to-cyan-400 rounded-[1.25rem] shadow-[0_0_20px_rgba(79,70,229,0.4)] ring-1 ring-white/20"
-                    />
-                  )}
-                  
                   <motion.div
                     whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.9 }}
                     className="relative z-10 flex items-center justify-center w-full h-full"
                   >
-                    {user?.image ? (
-                      <img src={user.image} alt={user?.name || "Profil"} className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20 shadow-lg" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-[10px] font-black text-white shadow-lg ring-2 ring-white/20">
-                        {user?.name?.charAt(0).toUpperCase() || "U"}
-                      </div>
-                    )}
+                    <UserAvatar 
+                      user={user} 
+                      className="w-8 h-8 rounded-full ring-2 ring-white/20 shadow-lg" 
+                    />
                   </motion.div>
 
-                  <div className="pointer-events-none absolute left-16 whitespace-nowrap rounded-lg bg-[var(--panel-strong)] border border-[color:var(--panel-border)] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[color:var(--foreground)] opacity-0 shadow-2xl transition-all group-hover:opacity-100 z-[60] translate-x-[-10px] group-hover:translate-x-0">
-                    {`Profil: ${user?.name || "Uživatel"}`}
-                  </div>
-
-                  {pathname === "/settings" && (
-                    <motion.div 
-                      layoutId="activeLine"
-                      className="absolute -left-5 h-6 w-1 rounded-r-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]" 
-                    />
+                  {!isProfileOpen && (
+                    <div className="pointer-events-none absolute left-16 whitespace-nowrap rounded-lg bg-[var(--panel-strong)] border border-[color:var(--panel-border)] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-[color:var(--foreground)] opacity-0 shadow-2xl transition-all group-hover:opacity-100 z-[60] translate-x-[-10px] group-hover:translate-x-0">
+                      {user?.name || "Profil"}
+                    </div>
                   )}
                 </button>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <button
-                  onClick={handleLogout}
-                  className="group relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] text-[color:var(--muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-all duration-300 cursor-pointer"
-                >
+              {/* DROPDOWN MENU */}
+              <AnimatePresence>
+                {isProfileOpen && (
                   <motion.div
-                    whileHover={{ scale: 1.25, rotate: -10 }}
-                    whileTap={{ scale: 0.9 }}
+                    initial={{ opacity: 0, x: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 10, scale: 0.95 }}
+                    className="absolute bottom-0 left-16 w-56 bg-[var(--panel-strong)] backdrop-blur-2xl border border-[color:var(--panel-border)] rounded-2xl shadow-2xl p-2 z-[100] ring-1 ring-white/10"
                   >
-                    <LogOut size={20} />
+                    <div className="px-4 py-3 border-b border-white/5 mb-2">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Přihlášen jako</p>
+                      <p className="text-sm font-bold text-white truncate">{user?.name || "Uživatel"}</p>
+                    </div>
+
+                    <button
+                      onClick={() => handleNavigate("/settings")}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-bold ${
+                        pathname === "/settings" 
+                          ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/20" 
+                          : "text-slate-400 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      <User size={18} />
+                      Nastavení profilu
+                    </button>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 mt-1"
+                    >
+                      <LogOut size={18} />
+                      Odhlásit se
+                    </button>
                   </motion.div>
-                  <div className="pointer-events-none absolute left-16 whitespace-nowrap rounded-lg bg-rose-600 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white opacity-0 shadow-2xl transition-all group-hover:opacity-100 ring-1 ring-white/10 z-[60] translate-x-[-10px] group-hover:translate-x-0">
-                    Odhlásit se
-                  </div>
-                </button>
-              </motion.div>
-            </>
+                )}
+              </AnimatePresence>
+            </div>
           )}
         </div>
       </aside>
@@ -284,35 +326,62 @@ export default function Sidebar() {
         />
 
         {user && !user.isGuest && (
-          <>
+          <div className="relative">
             <button
-              onClick={() => handleInteraction('nav-settings', () => handleNavigate("/settings"), 150)}
-              className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${pathname === "/settings" ? 'scale-110' : ''}`}
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${pathname === "/settings" || isProfileOpen ? 'scale-110' : ''}`}
             >
-              {pathname === "/settings" && (
+              {(pathname === "/settings" || isProfileOpen) && (
                 <motion.div
                   layoutId="activeNavMobile"
                   className="absolute inset-0 bg-white/5 rounded-2xl"
                 />
               )}
-              <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all overflow-hidden ${pathname === "/settings" ? 'ring-2 ring-cyan-400' : 'bg-white/5 text-slate-500'}`}>
-                {user?.image ? (
-                  <img src={user.image} alt={user?.name || "Profil"} className="w-full h-full object-cover" />
-                ) : (
-                  <div className={`w-full h-full flex items-center justify-center text-[10px] font-black ${pathname === "/settings" ? 'bg-gradient-to-br from-indigo-500 to-cyan-400 text-white' : ''}`}>
-                    {user?.name?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                )}
+              <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all overflow-hidden ${pathname === "/settings" || isProfileOpen ? 'ring-2 ring-cyan-400' : 'bg-white/5 text-slate-500'}`}>
+                <UserAvatar 
+                  user={user} 
+                  className="w-full h-full" 
+                />
               </div>
             </button>
 
-            <button
-              onClick={() => handleInteraction('logout-mobile', handleLogout, 150)}
-              className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${activeId === 'logout-mobile' ? 'scale-110 text-rose-500 bg-rose-500/10 rounded-2xl' : 'text-slate-500'}`}
-            >
-              <LogOut size={20} />
-            </button>
-          </>
+            {/* MOBILE DROPDOWN */}
+            <AnimatePresence>
+              {isProfileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute bottom-20 right-0 w-56 bg-[var(--panel-strong)] backdrop-blur-2xl border border-[color:var(--panel-border)] rounded-2xl shadow-2xl p-2 z-[100] ring-1 ring-white/10"
+                >
+                  <div className="px-4 py-3 border-b border-white/5 mb-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Přihlášen jako</p>
+                    <p className="text-sm font-bold text-white truncate">{user?.name || "Uživatel"}</p>
+                  </div>
+
+                  <button
+                    onClick={() => handleNavigate("/settings")}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-bold ${
+                      pathname === "/settings" 
+                        ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/20" 
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <User size={18} />
+                    Nastavení profilu
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 mt-1"
+                  >
+                    <LogOut size={18} />
+                    Odhlásit se
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         )}
       </motion.nav>
     </>
