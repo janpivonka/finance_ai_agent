@@ -6,7 +6,7 @@ import { useUser } from '@/app/components/UserContext';
 export const useHistory = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const { user, isLoading: isUserLoading } = useUser();
+  const { user, isLoading: isUserLoading, refreshUser } = useUser();
 
   const loadHistory = useCallback(async () => {
     // Nejdříve zkusíme načíst z localStorage pro okamžitou odezvu
@@ -72,6 +72,10 @@ export const useHistory = () => {
           localStorage.setItem("finance_history", JSON.stringify(final));
           return final;
         });
+        
+        // Refreshneme data uživatele, aby se aktualizoval totalAnalyses counter
+        await refreshUser();
+        
         return newEntry;
       }
     } catch (e) {

@@ -25,6 +25,7 @@ interface UserContextType {
   user: UserProfile | null;
   isLoading: boolean;
   updateUser: (data: Partial<UserProfile>) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
   login: (data: { name: string; email: string; password?: string }, isLogin?: boolean) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -164,6 +165,43 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     initUser();
   }, [session, status]);
+
+  const refreshUser = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch("/api/user/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          id: user.id,
+          email: user.email,
+          name: user.name
+        })
+      });
+      if (res.ok) {
+        const dbUser = await res.json();
+        setUser({
+          id: dbUser.id,
+          name: dbUser.name || "Uživatel",
+          email: dbUser.email,
+          phone: dbUser.phone,
+          bio: dbUser.bio,
+          image: dbUser.image,
+          createdAt: dbUser.createdAt,
+          totalAnalyses: dbUser.totalAnalyses || 0,
+          isGuest: dbUser.isGuest,
+          connectedAccounts: {
+            github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
+            google: dbUser.accounts?.some((a: any) => a.provider === "google") || false,
+            facebook: dbUser.accounts?.some((a: any) => a.provider === "facebook") || false,
+            tiktok: dbUser.accounts?.some((a: any) => a.provider === "tiktok") || false,
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Refresh user error:", err);
+    }
+  };
 
   const updateUser = async (data: Partial<UserProfile>) => {
     if (!user) return;
@@ -312,7 +350,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       login, 
       loginWithGoogle,
       connectSocialAccount, 
-      disconnectSocialAccount 
+      disconnectSocialAccount, 
+      refreshUser 
     }}>
       {children}
     </UserContext.Provider>
