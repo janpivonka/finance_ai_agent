@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { PageBackground } from "../components/ui/PageBackground";
 import { ArrowRight, ShieldCheck, Zap, Sparkles, BarChart3, MessageSquare } from "lucide-react";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
+import { ScrollToTop } from "../components/ScrollToTop";
 import WelcomeLoading from "./loading";
 
 export default function WelcomePage() {
@@ -158,6 +159,8 @@ export default function WelcomePage() {
           </div>
         </div>
       </footer>
+
+      <ScrollToTop />
     </div>
   );
 }
