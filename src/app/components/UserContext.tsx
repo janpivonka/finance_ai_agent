@@ -132,6 +132,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               image: dbUser.image,
               createdAt: dbUser.createdAt,
               totalAnalyses: dbUser.totalAnalyses || 0,
+              hasPassword: !!dbUser.password,
               isGuest: dbUser.isGuest,
               connectedAccounts: {
                 github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
@@ -271,6 +272,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           image: dbUser.image,
           createdAt: dbUser.createdAt,
           totalAnalyses: dbUser.totalAnalyses || 0,
+          hasPassword: !!dbUser.password,
           isGuest: dbUser.isGuest,
           connectedAccounts: {
             github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
