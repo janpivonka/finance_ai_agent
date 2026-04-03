@@ -289,12 +289,17 @@ export default function SettingsPage() {
                 <ShieldCheck size={20} className="text-indigo-400" />
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Zabezpečení účtu</h4>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium mb-4">Váš účet je chráněn dvoufázovým ověřením a šifrováním dat na úrovni bankovních standardů.</p>
+              <p className="text-[11px] text-slate-500 font-medium mb-4">
+                {user?.hasPassword 
+                  ? "Váš účet je chráněn heslem. Pro maximální bezpečnost doporučujeme heslo pravidelně měnit."
+                  : "Váš účet zatím nemá nastavené heslo (přihlašujete se přes Google). Nastavte si heslo pro alternativní způsob přihlášení."
+                }
+              </p>
               <button 
                 onClick={() => setIsPasswordModalOpen(true)}
                 className="text-[10px] font-black uppercase tracking-widest text-white bg-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-500 transition-colors w-full"
               >
-                Změnit heslo
+                {user?.hasPassword ? "Změnit heslo" : "Nastavit heslo"}
               </button>
             </motion.div>
           </div>
@@ -438,29 +443,33 @@ export default function SettingsPage() {
 
       <AnimatePresence>
         {isPasswordModalOpen && (
-          <Modal onClose={() => setIsPasswordModalOpen(false)} title="Změna hesla" maxWidth="max-w-md">
+          <Modal onClose={() => setIsPasswordModalOpen(false)} title={user?.hasPassword ? "Změna hesla" : "Nastavení hesla"} maxWidth="max-w-md">
             <div className="p-8 space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Současné heslo</label>
-                <div className="relative group">
-                  <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                  <input 
-                    type={showPassword ? "text" : "password"}
-                    value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-sm font-medium focus:outline-none focus:border-indigo-500/50 transition-all text-white"
-                  />
-                  <button 
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+              {user?.hasPassword && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Současné heslo</label>
+                  <div className="relative group">
+                    <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                    <input 
+                      type={showPassword ? "text" : "password"}
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-sm font-medium focus:outline-none focus:border-indigo-500/50 transition-all text-white"
+                    />
+                    <button 
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Nové heslo</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">
+                  {user?.hasPassword ? "Nové heslo" : "Heslo"}
+                </label>
                 <div className="relative group">
                   <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                   <input 
@@ -502,7 +511,10 @@ export default function SettingsPage() {
                 disabled={isSaving}
                 className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-70"
               >
-                {isSaving ? "Měním heslo..." : "Změnit heslo"}
+                {isSaving 
+                  ? (user?.hasPassword ? "Měním heslo..." : "Nastavuji heslo...") 
+                  : (user?.hasPassword ? "Změnit heslo" : "Nastavit heslo")
+                }
               </button>
             </div>
           </Modal>
