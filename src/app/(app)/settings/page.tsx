@@ -483,41 +483,15 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">
-                  {user?.hasPassword ? "Nové heslo" : "Heslo"}
-                </label>
-                <div className="relative group">
-                  <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                  <input 
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-sm font-medium focus:outline-none focus:border-indigo-500/50 transition-all text-white"
-                  />
-                  <button 
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-                  >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Potvrzení {user?.hasPassword ? "nového hesla" : "hesla"}</label>
-                <div className="relative group">
-                  <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                  <input 
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-sm font-medium focus:outline-none focus:border-indigo-500/50 transition-all text-white"
-                  />
-                </div>
-              </div>
-
-              <PasswordStrength password={passwordData.newPassword} />
+              <PasswordFields 
+                passwordValue={passwordData.newPassword}
+                confirmPasswordValue={passwordData.confirmPassword}
+                onPasswordChange={(val) => setPasswordData({...passwordData, newPassword: val})}
+                onConfirmPasswordChange={(val) => setPasswordData({...passwordData, confirmPassword: val})}
+                passwordLabel={user?.hasPassword ? "Nové heslo" : "Heslo"}
+                confirmPasswordLabel={user?.hasPassword ? "Potvrzení nového hesla" : "Potvrzení hesla"}
+                accentColor="indigo"
+              />
 
               {passwordError && (
                 <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-500 text-xs font-bold text-center">

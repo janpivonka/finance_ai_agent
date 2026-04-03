@@ -8,6 +8,7 @@ import { PageBackground } from "../../components/ui/PageBackground";
 import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import AuthLoading from "../loading";
 import { useUser } from "../../components/UserContext";
+import { PasswordFields } from "../../components/ui/PasswordFields";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -356,103 +357,15 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Heslo</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-fuchsia-400 transition-colors">
-                    <Lock size={18} />
-                  </div>
-                  <input 
-                    ref={passwordRef}
-                    type={showPassword ? "text" : "password"} 
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="••••••••"
-                    className={`w-full bg-white/5 border rounded-2xl py-3.5 pl-14 pr-12 text-sm font-medium focus:outline-none focus:ring-4 transition-all text-[color:var(--foreground)] ${
-                      formData.password && isPassStrong 
-                        ? "border-green-500/50 focus:border-green-500 focus:ring-green-500/10" 
-                        : formData.password && !isPassStrong
-                        ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/10"
-                        : "border-white/10 focus:border-fuchsia-500/50 focus:ring-fuchsia-500/10"
-                    }`}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-4 flex items-center text-slate-500 hover:text-white transition-colors cursor-pointer"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {formData.password !== "" && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-3 p-3 bg-white/5 border border-white/10 rounded-2xl space-y-2 ml-1"
-                  >
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 leading-relaxed">
-                      Heslo musí obsahovat alespoň:
-                    </p>
-                    <div className="grid grid-cols-1 gap-1.5">
-                      <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${passChecks.length ? "text-green-500" : "text-red-400"}`}>
-                        {passChecks.length ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
-                        8+ znaků
-                      </div>
-                      <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${passChecks.upper ? "text-green-500" : "text-red-400"}`}>
-                        {passChecks.upper ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
-                        Velké písmeno
-                      </div>
-                      <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${passChecks.number ? "text-green-500" : "text-red-400"}`}>
-                        {passChecks.number ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
-                        Číslice
-                      </div>
-                      <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${passChecks.special ? "text-green-500" : "text-red-400"}`}>
-                        {passChecks.special ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={3} />}
-                        Speciální znak
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
+            <PasswordFields 
+              passwordValue={formData.password}
+              confirmPasswordValue={formData.confirmPassword}
+              onPasswordChange={(val) => setFormData({...formData, password: val})}
+              onConfirmPasswordChange={(val) => setFormData({...formData, confirmPassword: val})}
+              accentColor="fuchsia"
+            />
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Potvrzení hesla</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-fuchsia-400 transition-colors">
-                    <Lock size={18} />
-                  </div>
-                  <input 
-                    ref={confirmPasswordRef}
-                    type={showConfirmPassword ? "text" : "password"} 
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    placeholder="••••••••"
-                    className={`w-full bg-white/5 border rounded-2xl py-3.5 pl-14 pr-12 text-sm font-medium focus:outline-none focus:ring-4 transition-all text-[color:var(--foreground)] ${
-                      passwordsDoNotMatch 
-                        ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/10" 
-                        : passwordsMatch
-                        ? "border-green-500/50 focus:border-green-500 focus:ring-green-500/10"
-                        : "border-white/10 focus:border-fuchsia-500/50 focus:ring-fuchsia-500/10"
-                    }`}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-4 flex items-center text-slate-500 hover:text-white transition-colors cursor-pointer"
-                  >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {formData.confirmPassword !== "" && (
-                  <p className={`text-[10px] font-bold uppercase tracking-widest mt-1.5 ml-4 ${passwordsMatch ? "text-green-500" : "text-red-500"}`}>
-                    {passwordsMatch ? "Hesla se shodují" : "Hesla se neshodují"}
-                  </p>
-                )}
-              </div>
-            </div>
+            <div className="flex items-start gap-3 ml-4 py-2">
 
             <div className="flex items-start gap-3 ml-4 py-2">
               <input 
