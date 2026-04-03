@@ -220,6 +220,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           phone: dbUser.phone,
           bio: dbUser.bio,
           image: dbUser.image,
+          createdAt: dbUser.createdAt,
+          totalAnalyses: dbUser.totalAnalyses || 0,
           isGuest: dbUser.isGuest,
           connectedAccounts: {
             github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
