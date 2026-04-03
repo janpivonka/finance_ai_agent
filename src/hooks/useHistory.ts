@@ -48,11 +48,17 @@ export const useHistory = () => {
   }, [user?.id, isUserLoading, loadHistory]);
 
   const addEntry = useCallback(async (entry: HistoryItem) => {
-    if (!user?.id) return null;
+    if (!user?.id) {
+      console.warn("Cannot add entry: No user ID available");
+      return null;
+    }
 
     try {
+      console.log(`Adding history entry for user: ${user.id}`, entry);
+      
       // 1. Lokální update pro okamžitou odezvu
-      const updatedHistory = [entry, ...history];
+      const entryWithUserId = { ...entry, userId: user.id };
+      const updatedHistory = [entryWithUserId, ...history];
       setHistory(updatedHistory);
       localStorage.setItem("finance_history", JSON.stringify(updatedHistory));
 
@@ -60,12 +66,14 @@ export const useHistory = () => {
       const res = await fetch('/api/history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...entry, userId: user.id })
+        body: JSON.stringify(entryWithUserId)
       });
       
       if (res.ok) {
         const newEntry = await res.json();
-        // Nahradíme dočasný záznam finálním ze serveru (může mít jiné ID/metadata)
+        console.log("History entry saved successfully on server:", newEntry);
+        
+        // Nahradíme dočasný záznam finálním ze serveru
         setHistory(prev => {
           const filtered = prev.filter(item => item.id !== entry.id);
           const final = [newEntry, ...filtered];
@@ -77,12 +85,15 @@ export const useHistory = () => {
         await refreshUser();
         
         return newEntry;
+      } else {
+        const errorData = await res.json();
+        console.error("Server failed to save history entry:", errorData);
       }
     } catch (e) {
       console.error("Chyba při ukládání do historie:", e);
     }
     return null;
-  }, [user?.id, history]);
+  }, [user?.id, history, refreshUser]);
 
   const deleteEntries = useCallback(async (idsToDelete: string[]) => {
     if (!user?.id) return;
