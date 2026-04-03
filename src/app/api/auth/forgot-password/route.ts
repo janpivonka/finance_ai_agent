@@ -18,13 +18,8 @@ export async function POST(req: Request) {
 
     // Z bezpečnostních důvodů neříkáme, zda uživatel existuje nebo ne
     if (!user || !user.email) {
+      console.log(`Password reset requested for non-existent email: ${email}`);
       return NextResponse.json({ success: true });
-    }
-
-    // Pokud uživatel nemá heslo (přihlášen přes Google), neumožníme reset hesla tímto způsobem
-    if (!user.password && user.accounts && user.accounts.length > 0) {
-       console.log("Password reset requested for Google user, skipping email");
-       return NextResponse.json({ success: true });
     }
 
     const token = crypto.randomBytes(32).toString("hex");
