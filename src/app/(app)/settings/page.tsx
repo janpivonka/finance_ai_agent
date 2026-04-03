@@ -59,8 +59,10 @@ export default function SettingsPage() {
     name: "",
     email: "",
     phone: "",
-    bio: ""
+    bio: "",
+    image: ""
   });
+  const [isEditingAvatar, setIsEditingAvatar] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -69,7 +71,8 @@ export default function SettingsPage() {
         name: user.name || "",
         email: user.email || "",
         phone: user.phone || "",
-        bio: user.bio || ""
+        bio: user.bio || "",
+        image: user.image || ""
       });
     }
   }, [user]);
@@ -126,18 +129,49 @@ export default function SettingsPage() {
             >
               <div className="relative flex flex-col items-center text-center">
                 <div className="relative mb-6">
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-600 to-cyan-400 p-1 shadow-2xl group/avatar">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-600 to-cyan-400 p-1 shadow-2xl group/avatar relative">
                     <div className="w-full h-full rounded-full bg-[var(--panel-strong)] flex items-center justify-center overflow-hidden relative">
                       <UserAvatar 
-                        user={user} 
+                        user={{ ...user, image: formData.image }} 
                         className="w-full h-full" 
                       />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                      <button 
+                        onClick={() => setIsEditingAvatar(!isEditingAvatar)}
+                        className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center cursor-pointer border-none outline-none"
+                      >
                         <Camera size={24} className="text-white" />
-                      </div>
+                      </button>
                     </div>
                   </div>
                   <div className="absolute bottom-1 right-1 w-8 h-8 bg-emerald-500 rounded-full border-4 border-[var(--panel)] shadow-lg" />
+                  
+                  {/* Avatar URL Input Tooltip */}
+                  <AnimatePresence>
+                    {isEditingAvatar && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute top-full mt-4 left-1/2 -translate-x-1/2 w-64 p-4 bg-[var(--panel-strong)] border border-[color:var(--panel-border)] rounded-2xl shadow-2xl z-50"
+                      >
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-2">URL Profilové fotky</label>
+                        <input 
+                          type="text"
+                          placeholder="https://..."
+                          value={formData.image}
+                          onChange={(e) => setFormData({...formData, image: e.target.value})}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-indigo-500/50 transition-all text-white"
+                          autoFocus
+                        />
+                        <button 
+                          onClick={() => setIsEditingAvatar(false)}
+                          className="w-full mt-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+                        >
+                          Hotovo
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
                 
                 <h3 className="text-2xl font-black text-[color:var(--foreground)] tracking-tight mb-1">{formData.name}</h3>
