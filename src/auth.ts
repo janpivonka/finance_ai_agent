@@ -19,10 +19,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
-    async jwt({ token, user, account }: any) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.isGuest = user.isGuest;
       }
+      // Striktně odstraníme obrázek z JWT tokenu, aby cookie nebyla příliš velká
+      if (token.picture) delete token.picture;
+      if (token.image) delete token.image;
+      
       return token;
     }
   },
