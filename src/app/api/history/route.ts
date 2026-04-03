@@ -68,11 +68,13 @@ export async function POST(req: Request) {
       }
     });
 
-    // Inkrementujeme celkový počet analýz uživatele (toto číslo se nesnižuje při smazání z historie)
-    await prisma.user.update({
+    // Inkrementujeme celkový počet analýz uživatele
+    console.log(`Incrementing totalAnalyses for user ${dbUserId}`);
+    const updatedUser = await prisma.user.update({
       where: { id: dbUserId },
       data: { totalAnalyses: { increment: 1 } }
     });
+    console.log(`User ${dbUserId} now has ${updatedUser.totalAnalyses} total analyses`);
 
     return NextResponse.json({
       ...entry,

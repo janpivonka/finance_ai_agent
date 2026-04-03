@@ -31,8 +31,21 @@ export async function getOrCreateUser(userData?: {
       } else if (userData.password && !user.password) {
         // If user exists (e.g. from Google) but has no password set
         throw new Error("Account has no password set. Please login via Google.");
-      }
+      }if (user) {
+      // SYNCHRONIZACE: Pokud je totalAnalyses 0, ale v historii už něco je (z dřívějška),
+      // tak to číslo "opravíme" podle skutečného počtu záznamů v DB.
+      const historyCount = await prisma.analysisHistory.count({
+        where: { userId: user.id }
+      });
 
+      if (user.totalAnalyses < historyCount) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { totalAnalyses: historyCount }
+        });
+        user.totalAnalyses = historyCount;
+      }
+      
       // If user exists but image or name is missing/default, update it
       const isDefaultName = !user.name || user.name === "Uživatel";
       const isGoogleLogin = !userData.password && !isLogin; 
