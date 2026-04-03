@@ -38,8 +38,9 @@ export async function getOrCreateUser(userData?: {
       const isGoogleLogin = !userData.password && !isLogin; 
       const hasNewName = userData.name && userData.name !== "Uživatel" && (isDefaultName || isGoogleLogin);
       
-      // Update image if it's provided and different from current (or if current is missing)
-      const hasNewImage = userData.image && userData.image !== user.image;
+      // POUZE AKTUALIZOVAT OBRÁZEK, POKUD UŽIVATEL ŽÁDNÝ NEMÁ
+      // Pokud už v DB obrázek je (např. ručně nahraný), nebudeme ho přepisovat tím z Google OAuth při každém přihlášení
+      const hasNewImage = userData.image && !user.image;
 
       if (hasNewName || hasNewImage) {
         console.log(`Updating user ${user.id} with new data:`, { 
