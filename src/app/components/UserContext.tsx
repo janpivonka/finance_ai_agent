@@ -11,6 +11,7 @@ interface UserProfile {
   bio: string | null;
   image: string | null;
   createdAt: string | null;
+  totalAnalyses: number;
   isGuest: boolean;
   connectedAccounts: {
     github: boolean;
@@ -84,6 +85,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               bio: dbUser.bio,
               image: dbUser.image,
               createdAt: dbUser.createdAt,
+              totalAnalyses: dbUser.totalAnalyses || 0,
               isGuest: false,
               connectedAccounts: {
                 github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
@@ -126,6 +128,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               bio: dbUser.bio,
               image: dbUser.image,
               createdAt: dbUser.createdAt,
+              totalAnalyses: dbUser.totalAnalyses || 0,
               isGuest: dbUser.isGuest,
               connectedAccounts: {
                 github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
@@ -146,6 +149,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               bio: null,
               image: null,
               createdAt: null,
+              totalAnalyses: 0,
               isGuest: !storedEmail,
               connectedAccounts: { github: false, google: false, facebook: false, tiktok: false }
             });
@@ -179,7 +183,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           phone: updatedDbUser.phone || prev.phone,
           image: updatedDbUser.image || prev.image,
           bio: updatedDbUser.bio || prev.bio,
-          createdAt: updatedDbUser.createdAt || prev.createdAt
+          createdAt: updatedDbUser.createdAt || prev.createdAt,
+          totalAnalyses: updatedDbUser.totalAnalyses !== undefined ? updatedDbUser.totalAnalyses : prev.totalAnalyses
         } : null);
         
         // Update localStorage as well

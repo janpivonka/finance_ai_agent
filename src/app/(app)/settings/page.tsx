@@ -20,7 +20,6 @@ import { PageHeader } from "../../components/ui/PageHeader";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 import SettingsLoading from "./loading";
 import { useUser } from "../../components/UserContext";
-import { useHistory } from "@/hooks/useHistory";
 
 // Pomocná komponenta pro avatar s robustním fallbackem (stejná jako v Sidebar)
 const UserAvatar = ({ user, className }: { user: any, className?: string }) => {
@@ -54,7 +53,6 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const { activeId, handleInteraction } = useMobileInteraction();
   const { user, isLoading, updateUser, connectSocialAccount, disconnectSocialAccount } = useUser();
-  const { history } = useHistory();
 
   // Local state for the form to avoid lag
   const [formData, setFormData] = useState({
@@ -192,7 +190,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-[color:var(--muted)]">
                   <span>Analýz celkem</span>
-                  <span className="text-[color:var(--foreground)]">{history.length}</span>
+                  <span className="text-[color:var(--foreground)]">{user?.totalAnalyses || 0}</span>
                 </div>
               </div>
             </motion.div>

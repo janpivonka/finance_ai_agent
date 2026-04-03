@@ -68,6 +68,12 @@ export async function POST(req: Request) {
       }
     });
 
+    // Inkrementujeme celkový počet analýz uživatele (toto číslo se nesnižuje při smazání z historie)
+    await prisma.user.update({
+      where: { id: dbUserId },
+      data: { totalAnalyses: { increment: 1 } }
+    });
+
     return NextResponse.json({
       ...entry,
       top_nabidky: JSON.parse(entry.top_nabidky)
