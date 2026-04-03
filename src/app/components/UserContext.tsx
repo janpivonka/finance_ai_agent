@@ -10,6 +10,7 @@ interface UserProfile {
   phone: string | null;
   bio: string | null;
   image: string | null;
+  createdAt: string | null;
   isGuest: boolean;
   connectedAccounts: {
     github: boolean;
@@ -82,6 +83,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               phone: dbUser.phone,
               bio: dbUser.bio,
               image: dbUser.image,
+              createdAt: dbUser.createdAt,
               isGuest: false,
               connectedAccounts: {
                 github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
@@ -123,6 +125,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               phone: dbUser.phone,
               bio: dbUser.bio,
               image: dbUser.image,
+              createdAt: dbUser.createdAt,
               isGuest: dbUser.isGuest,
               connectedAccounts: {
                 github: dbUser.accounts?.some((a: any) => a.provider === "github") || false,
@@ -142,6 +145,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               phone: storedPhone || null,
               bio: null,
               image: null,
+              createdAt: null,
               isGuest: !storedEmail,
               connectedAccounts: { github: false, google: false, facebook: false, tiktok: false }
             });
@@ -174,7 +178,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           email: updatedDbUser.email || prev.email,
           phone: updatedDbUser.phone || prev.phone,
           image: updatedDbUser.image || prev.image,
-          bio: updatedDbUser.bio || prev.bio
+          bio: updatedDbUser.bio || prev.bio,
+          createdAt: updatedDbUser.createdAt || prev.createdAt
         } : null);
         
         // Update localStorage as well
