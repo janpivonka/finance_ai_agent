@@ -24,22 +24,17 @@ export const useIntersectionObserver = (
           const el = entry.target as HTMLElement;
           
           if (entry.isIntersecting) {
-            // Prvek vstupuje do viewportu (při scrollu dolů zdola, nebo při scrollu nahoru shora)
+            // Prvek vstupuje do viewportu
             el.style.opacity = "1";
             el.style.transform = 'translateY(0)';
-          } else {
-            // Prvek zcela opustil viewport (respektive zmenšenou zónu rootMarginu)
-            // Necháme ho zmizet jen pokud je opravdu mimo (ratio blízko 0)
-            if (entry.intersectionRatio <= 0) {
-              el.style.opacity = "0";
-              el.style.transform = 'translateY(20px)';
-            }
           }
+          // Odstraněna logika pro opětovné skrývání prvků při odscrollování,
+          // což způsobovalo "mizení" prvků na PC kvůli malému viewportu/rootMarginu.
         });
       },
       { 
-        threshold: [0, 0.1, 0.9, 1], // Vyšší threshold pro stabilitu
-        rootMargin: '100px 0px -150px 0px' // Původní nastavení uživatele
+        threshold: 0.1,
+        rootMargin: '50px'
       }
     );
 
