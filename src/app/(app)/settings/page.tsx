@@ -11,7 +11,6 @@ import {
   Chrome, 
   Facebook, 
   Camera,
-  Check,
   Save,
   Smartphone,
   Globe
@@ -21,6 +20,33 @@ import { PageHeader } from "../../components/ui/PageHeader";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 import SettingsLoading from "./loading";
 import { useUser } from "../../components/UserContext";
+
+// Pomocná komponenta pro avatar s robustním fallbackem (stejná jako v Sidebar)
+const UserAvatar = ({ user, className }: { user: any, className?: string }) => {
+  const [imgError, setImgError] = React.useState(false);
+
+  React.useEffect(() => {
+    setImgError(false);
+  }, [user?.image]);
+
+  if (user?.image && !imgError) {
+    return (
+      <img
+        src={user.image}
+        alt={user?.name || "Profil"}
+        className={`${className} object-cover`}
+        referrerPolicy="no-referrer"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  return (
+    <div className={`${className} bg-gradient-to-br from-indigo-500 to-cyan-400 flex items-center justify-center text-white font-black`}>
+      <User size={className?.includes('w-32') ? 64 : 20} className="text-white/80" />
+    </div>
+  );
+};
 
 export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
@@ -100,10 +126,13 @@ export default function SettingsPage() {
             >
               <div className="relative flex flex-col items-center text-center">
                 <div className="relative mb-6">
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-600 to-cyan-400 p-1 shadow-2xl">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-600 to-cyan-400 p-1 shadow-2xl group/avatar">
                     <div className="w-full h-full rounded-full bg-[var(--panel-strong)] flex items-center justify-center overflow-hidden relative">
-                      <User size={64} className="text-indigo-400" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                      <UserAvatar 
+                        user={user} 
+                        className="w-full h-full" 
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                         <Camera size={24} className="text-white" />
                       </div>
                     </div>
