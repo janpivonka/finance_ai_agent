@@ -13,13 +13,18 @@ import {
   Camera,
   Save,
   Smartphone,
-  Globe
+  Globe,
+  Lock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { PageBackground } from "../../components/ui/PageBackground";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { useMobileInteraction } from "@/hooks/useMobileInteraction";
 import SettingsLoading from "./loading";
 import { useUser } from "../../components/UserContext";
+import { SaveConfirmModal } from "../../components/ui/SaveConfirmModal";
+import { Modal } from "../../components/ui/Modal";
 
 // Pomocná komponenta pro avatar s robustním fallbackem (stejná jako v Sidebar)
 const UserAvatar = ({ user, className }: { user: any, className?: string }) => {
@@ -54,6 +59,18 @@ export default function SettingsPage() {
   const { activeId, handleInteraction } = useMobileInteraction();
   const { user, isLoading, updateUser, connectSocialAccount, disconnectSocialAccount } = useUser();
 
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [passwordError, setPasswordError] = useState("");
+  const [emailError, setEmailError] = useState("");
+
   // Local state for the form to avoid lag
   const [formData, setFormData] = useState({
     name: "",
@@ -77,13 +94,79 @@ export default function SettingsPage() {
     }
   }, [user]);
 
-  const handleSave = async () => {
+  const validateEmail = async (email: string) => {
+    if (email === user?.email) return true;
+    
+    try {
+      const res = await fetch("/api/user/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, currentUserId: user?.id })
+      });
+      const data = await res.json();
+      if (!data.available) {
+        setEmailError("Tento e-mail již používá jiný uživatel.");
+        return false;
+      }
+      setEmailError("");
+      return true;
+    } catch (error) {
+      console.error("Email validation error:", error);
+      return false;
+    }
+  };
+
+  const handleSaveClick = async () => {
+    const isEmailValid = await validateEmail(formData.email);
+    if (!isEmailValid) return;
+    
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmSave = async () => {
+    setIsConfirmModalOpen(false);
     handleInteraction('save-settings', async () => {
       setIsSaving(true);
       await updateUser(formData);
       setIsSaving(false);
-      alert("Nastavení bylo úspěšně uloženo.");
     }, 350);
+  };
+
+  const handlePasswordChange = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("Hesla se neshodují.");
+      return;
+    }
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError("Heslo musí mít alespoň 6 znaků.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/user/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          password: passwordData.newPassword,
+          currentPassword: passwordData.currentPassword 
+        })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) {
+        setPasswordError(data.error || "Chyba při změně hesla.");
+      } else {
+        setIsPasswordModalOpen(false);
+        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        setPasswordError("");
+        alert("Heslo bylo úspěšně změněno.");
+      }
+    } catch (error) {
+      setPasswordError("Nastala neočekávaná chyba.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const toggleAccount = async (provider: string, isConnected: boolean) => {
@@ -207,7 +290,12 @@ export default function SettingsPage() {
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Zabezpečení účtu</h4>
               </div>
               <p className="text-[11px] text-slate-500 font-medium mb-4">Váš účet je chráněn dvoufázovým ověřením a šifrováním dat na úrovni bankovních standardů.</p>
-              <button className="text-[10px] font-black uppercase tracking-widest text-white bg-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-500 transition-colors">Změnit heslo</button>
+              <button 
+                onClick={() => setIsPasswordModalOpen(true)}
+                className="text-[10px] font-black uppercase tracking-widest text-white bg-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-500 transition-colors w-full"
+              >
+                Změnit heslo
+              </button>
             </motion.div>
           </div>
 
@@ -244,9 +332,14 @@ export default function SettingsPage() {
                       type="email" 
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-sm font-medium focus:outline-none focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all text-[color:var(--foreground)]"
+                      className={`w-full bg-white/5 border rounded-2xl py-4 pl-14 pr-6 text-sm font-medium focus:outline-none focus:ring-4 transition-all text-[color:var(--foreground)] ${
+                        emailError 
+                          ? 'border-rose-500/50 focus:border-rose-500 focus:ring-rose-500/10' 
+                          : 'border-white/10 focus:border-cyan-500/50 focus:ring-cyan-500/10'
+                      }`}
                     />
                   </div>
+                  {emailError && <p className="text-[10px] text-rose-500 font-bold ml-4 mt-1">{emailError}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -315,9 +408,9 @@ export default function SettingsPage() {
 
               <div className="mt-12 flex justify-end">
                 <button
-                  onClick={handleSave}
+                  onClick={handleSaveClick}
                   disabled={isSaving}
-                  className={`group relative flex items-center gap-3 px-10 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:scale-105 hover:shadow-[0_20px_40px_rgba(79,70,229,0.3)] cursor-pointer overflow-hidden ${isSaving ? 'opacity-70 scale-95' : ''}`}
+                  className={`group relative flex items-center gap-3 px-10 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:scale-105 hover:shadow-[0_20px_40px_rgba(79,70_229,0.3)] cursor-pointer overflow-hidden ${isSaving ? 'opacity-70 scale-95' : ''}`}
                 >
                   <div className="relative z-10 flex items-center gap-3">
                     {isSaving ? (
@@ -334,6 +427,87 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <SaveConfirmModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmSave}
+        title="Uložit změny?"
+        description="Opravdu si přejete uložit provedené změny v profilu? Všechny informace budou aktualizovány v databázi."
+      />
+
+      <AnimatePresence>
+        {isPasswordModalOpen && (
+          <Modal onClose={() => setIsPasswordModalOpen(false)} title="Změna hesla" maxWidth="max-w-md">
+            <div className="p-8 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Současné heslo</label>
+                <div className="relative group">
+                  <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                  <input 
+                    type={showPassword ? "text" : "password"}
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-sm font-medium focus:outline-none focus:border-indigo-500/50 transition-all text-white"
+                  />
+                  <button 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Nové heslo</label>
+                <div className="relative group">
+                  <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                  <input 
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-sm font-medium focus:outline-none focus:border-indigo-500/50 transition-all text-white"
+                  />
+                  <button 
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Potvrzení nového hesla</label>
+                <div className="relative group">
+                  <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                  <input 
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-12 text-sm font-medium focus:outline-none focus:border-indigo-500/50 transition-all text-white"
+                  />
+                </div>
+              </div>
+
+              {passwordError && (
+                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-500 text-xs font-bold text-center">
+                  {passwordError}
+                </div>
+              )}
+
+              <button
+                onClick={handlePasswordChange}
+                disabled={isSaving}
+                className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-70"
+              >
+                {isSaving ? "Měním heslo..." : "Změnit heslo"}
+              </button>
+            </div>
+          </Modal>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

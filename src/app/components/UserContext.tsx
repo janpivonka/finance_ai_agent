@@ -204,7 +204,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUser = async (data: Partial<UserProfile>) => {
-    if (!user) return;
+    if (!user?.id) return;
     try {
       const res = await fetch("/api/user/update", {
         method: "POST",
@@ -229,9 +229,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         if (data.name) localStorage.setItem("finance_user_name", data.name);
         if (data.email) localStorage.setItem("finance_user_email", data.email);
         if (data.phone) localStorage.setItem("finance_user_phone", data.phone);
+
+        alert("Nastavení bylo úspěšně uloženo.");
+      } else {
+        const error = await res.json();
+        alert(error.error || "Chyba při ukládání změn.");
       }
     } catch (err) {
-      console.error("Update profile error:", err);
+      console.error("Update user error:", err);
+      alert("Nastala neočekávaná chyba při ukládání.");
     }
   };
 

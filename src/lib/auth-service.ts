@@ -118,10 +118,16 @@ export async function getOrCreateUser(userData?: {
   });
 }
 
-export async function updateProfile(userId: string, data: Partial<User>) {
+export async function updateProfile(userId: string, data: any) {
+  const updateData: any = { ...data };
+  
+  if (data.password) {
+    updateData.password = await bcrypt.hash(data.password, 10);
+  }
+
   return await prisma.user.update({
     where: { id: userId },
-    data
+    data: updateData
   });
 }
 
