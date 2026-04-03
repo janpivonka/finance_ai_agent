@@ -61,8 +61,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({ 
               email: session.user.email,
               name: session.user.name,
-              image: session.user.image,
-              guestId: guestId // Odebíráme startsWith("guest-"), aby migrace fungovala i pro synchronizované hosty
+              // NEPŘEDÁVÁME image: session.user.image, pokud je to Base64 (ze session jsme ho smazali)
+              guestId: guestId
             })
           });
 

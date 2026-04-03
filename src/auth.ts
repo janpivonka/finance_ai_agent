@@ -13,6 +13,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user && token.sub) {
         session.user.id = token.sub;
         session.user.isGuest = token.isGuest as boolean;
+        // Odstraníme obrázek ze session, aby hlavičky nebyly příliš velké (Base64)
+        // UserContext si ho načte sám z databáze přes /api/user/sync
+        session.user.image = null;
       }
       return session;
     },
