@@ -25,6 +25,7 @@ import SettingsLoading from "./loading";
 import { useUser } from "../../components/UserContext";
 import { SaveConfirmModal } from "../../components/ui/SaveConfirmModal";
 import { Modal } from "../../components/ui/Modal";
+import { PasswordStrength } from "../../components/ui/PasswordStrength";
 
 // Pomocná komponenta pro avatar s robustním fallbackem (stejná jako v Sidebar)
 const UserAvatar = ({ user, className }: { user: any, className?: string }) => {
@@ -133,13 +134,29 @@ export default function SettingsPage() {
   };
 
   const handlePasswordChange = async () => {
+    // Validace hesla (shodná s register page)
+    const passChecks = {
+      length: passwordData.newPassword.length >= 8,
+      upper: /[A-Z]/.test(passwordData.newPassword),
+      number: /[0-9]/.test(passwordData.newPassword),
+      special: /[^A-Za-z0-9]/.test(passwordData.newPassword)
+    };
+    const isPassStrong = Object.values(passChecks).every(Boolean);
+
+    if (!isPassStrong) {
+      setPasswordError("Heslo musí splňovat všechny bezpečnostní požadavky.");
+      return;
+    }
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setPasswordError("Hesla se neshodují.");
       return;
     }
-    if (passwordData.newPassword.length < 6) {
-      setPasswordError("Heslo musí mít alespoň 6 znaků.");
-      return;
+
+    // Upozornění pro OAuth uživatele při prvním nastavení hesla
+    if (!user?.hasPassword) {
+      const confirmSecurity = confirm("Nastavením hesla měníte způsob zabezpečení vašeho účtu. Budete se moci přihlásit jak přes Google, tak pomocí e-mailu a hesla. Přejete si pokračovat?");
+      if (!confirmSecurity) return;
     }
 
     setIsSaving(true);
@@ -488,7 +505,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Potvrzení nového hesla</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Potvrzení {user?.hasPassword ? "nového hesla" : "hesla"}</label>
                 <div className="relative group">
                   <Lock size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                   <input 
@@ -499,6 +516,8 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
+
+              <PasswordStrength password={passwordData.newPassword} />
 
               {passwordError && (
                 <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-500 text-xs font-bold text-center">
