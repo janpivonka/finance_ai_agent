@@ -9,7 +9,7 @@ export async function getOrCreateUser(userData?: {
   id?: string; 
   image?: string | null; 
   password?: string | null 
-}, isLogin: boolean = false): Promise<User> {
+}, isLogin: boolean = false): Promise<any> {
   if (!userData) {
     throw new Error("User data is required");
   }
@@ -31,19 +31,21 @@ export async function getOrCreateUser(userData?: {
       } else if (userData.password && !user.password) {
         // If user exists (e.g. from Google) but has no password set
         throw new Error("Account has no password set. Please login via Google.");
-      }if (user) {
+      }
+  
       // SYNCHRONIZACE: Pokud je totalAnalyses 0, ale v historii už něco je (z dřívějška),
       // tak to číslo "opravíme" podle skutečného počtu záznamů v DB.
       const historyCount = await prisma.analysisHistory.count({
         where: { userId: user.id }
       });
 
-      if (user.totalAnalyses < historyCount) {
+      const currentTotal = (user as any).totalAnalyses || 0;
+      if (currentTotal < historyCount) {
         await prisma.user.update({
           where: { id: user.id },
           data: { totalAnalyses: historyCount }
         });
-        user.totalAnalyses = historyCount;
+        (user as any).totalAnalyses = historyCount;
       }
       
       // If user exists but image or name is missing/default, update it
@@ -141,8 +143,8 @@ export async function connectAccount(userId: string, provider: string, providerA
   });
 }
 
-export async function migrateGuestHistory(guestId: string, userId: string) {
-  if (!guestId || !userId || guestId === userId) return;
+export async function migrateGuestHistory(guestId: string, userId: string): Promise<any> {
+  if (!guestId || !userId || guestId === userId) return null;
 
   console.log(`Starting migration: ${guestId} -> ${userId}`);
 
@@ -173,7 +175,7 @@ export async function migrateGuestHistory(guestId: string, userId: string) {
   return historyResult;
 }
 
-export async function disconnectAccount(userId: string, provider: string) {
+export async function disconnectAccount(userId: string, provider: string): Promise<any> {
   // Find account first to get ID
   const account = await prisma.account.findFirst({
     where: {
@@ -187,4 +189,5 @@ export async function disconnectAccount(userId: string, provider: string) {
       where: { id: account.id }
     });
   }
+  return null;
 }
