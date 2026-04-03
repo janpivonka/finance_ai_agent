@@ -68,6 +68,8 @@ export default function HistoryPage() {
 
   if (!mounted || !isLoaded) return <HistoryLoading />;
 
+  console.log(`Rendering HistoryPage with ${filteredAndSortedHistory.length} items`);
+
   return (
     <div className={`min-h-screen bg-[var(--background)] text-[color:var(--foreground)] selection:bg-indigo-500/30 transition-all duration-1000 opacity-100`}>
       <div className="mx-auto max-w-4xl px-6 py-12 relative">
